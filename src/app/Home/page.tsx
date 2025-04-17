@@ -1,4 +1,4 @@
-export default function Hero() {
+export default function Home() {
   return (
     <section
       className="relative h-[80vh] flex items-center justify-center text-center bg-cover bg-center"

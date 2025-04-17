@@ -12,6 +12,7 @@
     "next": "15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-router-dom": "^7.5.0",
     "three": "^0.152.2"
   },
   "devDependencies": {

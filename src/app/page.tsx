@@ -1,9 +1,10 @@
-import Hero from "@/app/components/Hero";
+// app/page.tsx
+import Home from "./components/Home";
 
-export default function Home() {
+export default function Page() {
   return (
-    <div>
-      <Hero />
-    </div>
+    <main>
+      <Home />
+    </main>
   );
 }
