@@ -1,18 +1,61 @@
-export default function Home() {
+// ExamplePage.tsx
+import React from "react";
+import { EventsLayout } from "@/app/EventLayout";
+
+const dummyEvents = [
+  {
+    image: "/poster2.jpg",
+    title: "Techno Night",
+    date: "April 26, 2025",
+    location: "Warehouse 22, SLC",
+    description: "Get lost in the rhythm. All night rave.",
+  },
+  {
+    image: "/poster3.jpg",
+    title: "Sunset Drift",
+    date: "May 3, 2025",
+    location: "Rooftop Lounge, São Luís",
+    description: "Tropical house and chill vibes.",
+  },
+  {
+    image: "/poster3.jpg",
+    title: "Sunset Drift",
+    date: "May 3, 2025",
+    location: "Rooftop Lounge, São Luís",
+    description: "Tropical house and chill vibes.",
+  },
+];
+
+const dummyEvents2 = [
+  {
+    image: "/poster2.jpg",
+    title: "Techno Night",
+    date: "April 26, 2025",
+    location: "Warehouse 22, SLC",
+    description: "Get lost in the rhythm. All night rave.",
+  },
+  {
+    image: "/poster3.jpg",
+    title: "Sunset Drift",
+    date: "May 3, 2025",
+    location: "Rooftop Lounge, São Luís",
+    description: "Tropical house and chill vibes.",
+  },
+  {
+    image: "/poster3.jpg",
+    title: "Sunset Drift",
+    date: "May 3, 2025",
+    location: "Rooftop Lounge, São Luís",
+    description: "Tropical house and chill vibes.",
+  },
+];
+
+export default function ExamplePage() {
   return (
-    <section
-      className="relative h-[80vh] flex items-center justify-center text-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/thermal-bg.jpg')" }}
-    >
-      <div className="bg-black/60 p-6 rounded-xl max-w-2xl">
-        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-          Step into the Pulse of Soundsdf
-        </h2>
-        <p className="mt-4 text-lg text-gray-300">
-          Dance, react, and transform in the world's first reactive audio-visual
-          ritual.
-        </p>
-      </div>
-    </section>
+    <EventsLayout
+      topEvents={dummyEvents}
+      liveEvents={dummyEvents}
+      upcomingEvents={dummyEvents2}
+    />
   );
 }
