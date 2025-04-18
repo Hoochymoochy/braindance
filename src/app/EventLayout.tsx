@@ -13,7 +13,10 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   upcomingEvents = [],
 }) => {
   return (
-    <div className="min-h-screen bg-zinc-950 p-8">
+    <div
+      className="bg-fixed bg-cover bg-center min-h-screen w-full p-8"
+      style={{ backgroundImage: "url('/2k_earth_daymaptry.jpg')" }}
+    >
       <h1 className="text-4xl font-bold text-white mb-6 tracking-tight">
         TOP EVENTS
       </h1>

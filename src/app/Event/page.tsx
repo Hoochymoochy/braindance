@@ -9,6 +9,7 @@ const dummyEvents = [
     date: "April 26, 2025",
     location: "Warehouse 22, SLC",
     description: "Get lost in the rhythm. All night rave.",
+    live: true,
   },
   {
     image: "/poster3.jpg",
@@ -16,6 +17,7 @@ const dummyEvents = [
     date: "May 3, 2025",
     location: "Rooftop Lounge, São Luís",
     description: "Tropical house and chill vibes.",
+    live: true,
   },
   {
     image: "/poster3.jpg",

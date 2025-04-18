@@ -7,7 +7,6 @@ import Globe from "react-globe.gl";
 const GlobeHeatmap: React.FC = () => {
   const globeEl = useRef<any>(null);
 
-  // Generate random data
   const gData = [...Array(900).keys()].map(() => ({
     lat: (Math.random() - 0.5) * 160,
     lng: (Math.random() - 0.5) * 360,
@@ -22,9 +21,19 @@ const GlobeHeatmap: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ margin: 0 }}>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        maxWidth: "600px", // You can adjust or remove this
+        maxHeight: "600px", // You can adjust or remove this
+        position: "relative",
+      }}
+    >
       <Globe
         ref={globeEl}
+        width={undefined} // Let Globe handle width via container
+        height={undefined} // Let Globe handle height via container
         globeImageUrl="//cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg"
         heatmapsData={[gData]}
         heatmapPointLat="lat"
