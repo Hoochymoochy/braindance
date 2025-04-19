@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
+import Link from "next/link";
 
 export type EventPosterProps = {
   image: string;
@@ -60,9 +61,9 @@ export const EventPoster: React.FC<EventPosterProps> = ({
           </div>
 
           {live && (
-            <div className="bg-zinc-800 text-white px-4 py-1 rounded-full shadow-md flex items-center justify-center text-sm font-semibold">
-              JOIN
-            </div>
+            <button className="bg-zinc-800 text-white px-4 py-1 rounded-full shadow-md flex items-center justify-center text-sm font-semibold hover:bg-zinc-600 ease-in-out duration-300">
+              <Link href="/Heatmap">Join</Link>
+            </button>
           )}
         </div>
       </div>
