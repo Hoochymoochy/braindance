@@ -7,11 +7,16 @@ import { Card, CardContent } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import YouTubeEmbed from "@/app/components/Youtube";
 
-
 export default function BraindanceStreamPage() {
-  return(
-  <div>
-    <YouTubeEmbed videoId="67f9t5bPyQY" />
-  </div>
-  )
+  const [shouldUnmute, setShouldUnmute] = useState(false);
+
+  return (
+    <>
+      <YouTubeEmbed videoId="67f9t5bPyQY" triggerUnmute={shouldUnmute} />
+      <div onClick={() => setShouldUnmute(true)}>
+        {/* This could be a cool intro animation or hidden zone */}
+        Click to Enter (or any aesthetic touch you want)
+      </div>
+    </>
+  );
 }
