@@ -1,66 +1,56 @@
-import React, { useEffect, useRef } from "react";
-
-interface YouTubeEmbedProps {
-  videoId: string;
-  triggerUnmute?: boolean; // optional external control
-}
+import React, { useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
-    YT: any;
     onYouTubeIframeAPIReady: () => void;
+    YT: any;
   }
 }
 
-const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
-  videoId,
-  triggerUnmute,
-}) => {
-  const playerRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+interface YouTubeEmbedProps {
+  videoId: string;
+}
+
+const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ videoId }) => {
+  const playerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.body.appendChild(tag);
+    const script = document.createElement("script");
+    script.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(script);
 
     window.onYouTubeIframeAPIReady = () => {
-      playerRef.current = new window.YT.Player(`yt-stealth-${videoId}`, {
+      new window.YT.Player(playerRef.current!, {
         videoId,
-        playerVars: {
-          autoplay: 1,
-          mute: 1,
-          controls: 0,
-          disablekb: 1,
-          rel: 0,
-          modestbranding: 1,
-          playsinline: 1,
-          showinfo: 0,
-        },
         events: {
           onReady: (event: any) => {
+            event.target.mute();
             event.target.playVideo();
           },
+        },
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          rel: 0,
+          showinfo: 0,
+          modestbranding: 1,
+          disablekb: 1,
+          playsinline: 1,
         },
       });
     };
 
-    return () => {
-      if (playerRef.current?.destroy) {
-        playerRef.current.destroy();
-      }
-    };
-  }, [videoId]);
+    // Fade in after 5 seconds
+    const timeout = setTimeout(() => {
+      setVisible(true);
+    }, 5000);
 
-  useEffect(() => {
-    if (triggerUnmute && playerRef.current) {
-      playerRef.current.unMute();
-    }
-  }, [triggerUnmute]);
+    return () => clearTimeout(timeout);
+  }, [videoId]);
 
   return (
     <div
-      ref={containerRef}
       style={{
         position: "relative",
         paddingBottom: "56.25%",
@@ -68,17 +58,19 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
         overflow: "hidden",
         maxWidth: "100%",
         background: "#000",
+        opacity: visible ? 1 : 0,
+        transition: "opacity 1s ease-in-out",
       }}
     >
       <div
-        id={`yt-stealth-${videoId}`}
+        ref={playerRef}
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           width: "100%",
           height: "100%",
-          pointerEvents: "none", // prevents interactions
+          pointerEvents: "none", // prevents user interaction
         }}
       />
     </div>
