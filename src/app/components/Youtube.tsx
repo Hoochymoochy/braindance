@@ -9,19 +9,25 @@ declare global {
 
 interface YouTubeEmbedProps {
   videoId: string;
+  triggerUnmute?: boolean;
 }
 
-const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ videoId }) => {
+const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
+  videoId,
+  triggerUnmute,
+}) => {
   const playerRef = useRef<HTMLDivElement>(null);
+  const youtubePlayer = useRef<any>(null); // Ref to store the YouTube player instance
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    // Dynamically load YouTube's iframe API script
     const script = document.createElement("script");
     script.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(script);
 
     window.onYouTubeIframeAPIReady = () => {
-      new window.YT.Player(playerRef.current!, {
+      youtubePlayer.current = new window.YT.Player(playerRef.current!, {
         videoId,
         events: {
           onReady: (event: any) => {
@@ -49,6 +55,13 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ videoId }) => {
     return () => clearTimeout(timeout);
   }, [videoId]);
 
+  useEffect(() => {
+    // Unmute when `triggerUnmute` prop changes
+    if (triggerUnmute && youtubePlayer.current) {
+      youtubePlayer.current.unMute();
+    }
+  }, [triggerUnmute]);
+
   return (
     <div
       style={{
@@ -70,7 +83,7 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ videoId }) => {
           left: 0,
           width: "100%",
           height: "100%",
-          pointerEvents: "none", // prevents user interaction
+          pointerEvents: "none", // Prevent user interaction
         }}
       />
     </div>
