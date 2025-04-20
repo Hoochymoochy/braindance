@@ -27,7 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/Lore"
+    "src/app/Event/Lore"
   ],
   "exclude": ["node_modules"]
 }

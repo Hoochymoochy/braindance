@@ -1,6 +1,6 @@
 // app/EventLayout.tsx
 import React from "react";
-import { EventPosterProps, EventPoster } from "@/app/components/Poster";
+import { EventPosterProps, EventPoster } from "@/app/components/user/Poster";
 
 type EventsLayoutProps = {
   topEvents: EventPosterProps[];

@@ -1,6 +1,8 @@
 "use client";
 import { useEffect } from "react";
-
+import Charts from "../../components/AnalyticsChart";
+import Email from "../../components/EmailManager";
+import EmailManager from "../../components/EmailManager";
 export default function Dashboard() {
   useEffect(() => {
     // Protect route (add real auth check later)
@@ -81,6 +83,8 @@ export default function Dashboard() {
             </table>
           </div>
         </section>
+        <Charts />
+        <EmailManager />
       </main>
     </div>
   );
