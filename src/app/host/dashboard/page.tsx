@@ -1,8 +1,7 @@
 "use client";
 import { useEffect } from "react";
-import Charts from "../../components/AnalyticsChart";
-import Email from "../../components/EmailManager";
-import EmailManager from "../../components/EmailManager";
+import Charts from "@/app/components/host/AnalyticsChart";
+import EmailManager from "@/app/components/host/EmailManager";
 export default function Dashboard() {
   useEffect(() => {
     // Protect route (add real auth check later)
