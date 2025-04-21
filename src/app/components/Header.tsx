@@ -8,17 +8,17 @@ export default function Header() {
       <nav>
         <ul className="flex gap-6 text-sm uppercase tracking-wide">
           <li>
-            <Link href="/Home" className="hover:text-pink-400">
+            <Link href="/user/home" className="hover:text-pink-400">
               Home
             </Link>
           </li>
           <li>
-            <Link href="/Event" className="hover:text-pink-400">
+            <Link href="/user/events" className="hover:text-pink-400">
               Event
             </Link>
           </li>
           <li>
-            <Link href="/Lore" className="hover:text-pink-400">
+            <Link href="/user/lore" className="hover:text-pink-400">
               Lore
             </Link>
           </li>
