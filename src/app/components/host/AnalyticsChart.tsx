@@ -24,18 +24,18 @@ export default function AnalyticsChart() {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
-        label: "Tickets Sold",
-        data: [100, 250, 400, 320, 540, 680, 450],
+        label: "View Count",
+        data: [10, 20, 40, 60, 80, 50, 120],
         fill: false,
         borderColor: "rgb(147 51 234)",
-        tension: 0.3,
+        tension: 0.5,
       },
     ],
   };
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md">
-      <h3 className="text-lg font-semibold mb-4">Weekly Ticket Sales</h3>
+      <h3 className="text-lg font-semibold mb-4">Weekly View Count</h3>
       <Line data={data} />
     </div>
   );

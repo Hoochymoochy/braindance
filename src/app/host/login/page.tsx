@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -15,10 +16,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-purple-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-400 via-red-500 to-pink-500">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
-          EventHolder Login
+          Host login
         </h2>
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-5">
@@ -51,7 +52,7 @@ export default function Login() {
         </form>
         <p className="text-center text-sm text-gray-500 mt-4">
           Don’t have an account?{" "}
-          <a href="#" className="text-purple-600 hover:underline">
+          <a href="/host/sign-up" className="text-purple-600 hover:underline">
             Sign up
           </a>
         </p>

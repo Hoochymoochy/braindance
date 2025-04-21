@@ -3,6 +3,15 @@ import { useEffect } from "react";
 import Charts from "@/app/components/host/AnalyticsChart";
 import EmailManager from "@/app/components/host/EmailManager";
 export default function Dashboard() {
+  async function fetchEvents() {
+    const res = await fetch("http://localhost:4000/", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const events = await res.json();
+    return events;
+  }
+
   useEffect(() => {
     // Protect route (add real auth check later)
     const isLoggedIn = true; // Replace with real session check
@@ -15,7 +24,7 @@ export default function Dashboard() {
       {/* Topbar */}
       <header className="bg-purple-700 text-white p-4 shadow-md">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold">Nightclub Dashboard</h1>
+          <h1 className="text-xl font-bold">Event Dashboard</h1>
           <button className="bg-purple-900 px-3 py-1 rounded hover:bg-purple-800 text-sm">
             Log Out
           </button>
@@ -26,9 +35,9 @@ export default function Dashboard() {
       <main className="max-w-6xl mx-auto p-6 space-y-8">
         {/* Analytics Overview */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <Card title="Upcoming Events" value="4" />
-          <Card title="Tickets Sold (This Week)" value="1,234" />
-          <Card title="Revenue" value="$18,720" />
+          <Card title="Upcoming Events" value="" />
+          <Card title="Intrested Attendees (This Week)" value="" />
+          <Card title="Top city" value="" />
         </section>
 
         {/* Event List */}
@@ -49,8 +58,8 @@ export default function Dashboard() {
                   {
                     name: "Techno Rave",
                     date: "Apr 25",
-                    tickets: 320,
-                    revenue: "$4,800",
+                    rated: "4.5",
+                    total: "$4,800",
                   },
                   {
                     name: "House of Bass",
@@ -83,7 +92,6 @@ export default function Dashboard() {
           </div>
         </section>
         <Charts />
-        <EmailManager />
       </main>
     </div>
   );
