@@ -1,8 +1,23 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Charts from "@/app/components/host/AnalyticsChart";
 import EmailManager from "@/app/components/host/EmailManager";
+import { EventPoster } from "@/app/components/user/Poster";
+
 export default function Dashboard() {
+  const [posterData, setPosterData] = useState({
+    title: "",
+    description: "",
+    date: "",
+    location: "",
+    image: "/grainy-3.jpg",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setPosterData((prev) => ({ ...prev, [name]: value }));
+  };
+
   async function fetchEvents() {
     const res = await fetch("http://localhost:4000/", {
       method: "GET",
@@ -14,14 +29,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Protect route (add real auth check later)
-    const isLoggedIn = true; // Replace with real session check
+    const isLoggedIn = true;
     if (!isLoggedIn) {
     }
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800">
-      {/* Topbar */}
       <header className="bg-purple-700 text-white p-4 shadow-md">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold">Event Dashboard</h1>
@@ -31,16 +45,13 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="max-w-6xl mx-auto p-6 space-y-8">
-        {/* Analytics Overview */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <Card title="Upcoming Events" value="" />
           <Card title="Intrested Attendees (This Week)" value="" />
           <Card title="Top city" value="" />
         </section>
 
-        {/* Event List */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
           <div className="overflow-x-auto bg-white shadow-md rounded-xl">
@@ -49,8 +60,8 @@ export default function Dashboard() {
                 <tr>
                   <th className="py-3 px-4">Event</th>
                   <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Tickets Sold</th>
-                  <th className="py-3 px-4">Revenue</th>
+                  <th className="py-3 px-4">Intrested</th>
+                  <th className="py-3 px-4">Liked</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,7 +102,78 @@ export default function Dashboard() {
             </table>
           </div>
         </section>
-        <Charts />
+
+        <section>
+          <h2 className="text-xl font-semibold mb-4">Create Event</h2>
+          <div className="w-auto h-auto flex flex-col md:flex-row gap-4">
+            <div className="md:w-1/2 h-full border border-gray-300 rounded-2xl p-4">
+              <EventPoster
+                description={posterData.description}
+                image={posterData.image}
+                title={posterData.title}
+                date={posterData.date}
+                location={posterData.location}
+              />
+            </div>
+            <div className="md:w-1/2 bg-white shadow-md rounded-2xl p-6 space-y-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // Submit logic here
+                  console.log("Form submitted:", posterData);
+                }}
+              >
+                <div>
+                  <label className="block font-medium">Title</label>
+                  <input
+                    name="title"
+                    type="text"
+                    value={posterData.title}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium">Description</label>
+                  <textarea
+                    name="description"
+                    value={posterData.description}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium">Date</label>
+                  <input
+                    name="date"
+                    type="date"
+                    value={posterData.date}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium">Location</label>
+                  <input
+                    name="location"
+                    type="text"
+                    value={posterData.location}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                  />
+                </div>
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800"
+                  >
+                    Submit Event
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );

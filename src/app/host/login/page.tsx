@@ -16,15 +16,19 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-400 via-red-500 to-pink-500">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-[url(/grainy-3.jpg)] bg-no-repeat bg-cover">
+<div
+  className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md"
+  style={{ background: "rgba(76, 175, 80, 0.3)" }}
+>
+
+        <h2 className="text-3xl font-bold text-center mb-6 text-white">
           Host login
         </h2>
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-gray-700">Email</label>
+            <label className="block text-white">Email</label>
             <input
               type="email"
               value={email}
@@ -34,7 +38,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-gray-700">Password</label>
+            <label className="block text-white">Password</label>
             <input
               type="password"
               value={password}
@@ -45,14 +49,14 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-xl transition duration-300"
+            className="w-full bg-white hover:bg-purple-700 py-2 rounded-xl transition duration-300 text-black"
           >
             Log In
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-white mt-4">
           Don’t have an account?{" "}
-          <a href="/host/sign-up" className="text-purple-600 hover:underline">
+          <a href="/host/sign-up" className="text-black hover:underline">
             Sign up
           </a>
         </p>
