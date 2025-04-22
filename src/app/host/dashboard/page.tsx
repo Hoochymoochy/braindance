@@ -4,6 +4,19 @@ import Charts from "@/app/components/host/AnalyticsChart";
 import EmailManager from "@/app/components/host/EmailManager";
 import { EventPoster } from "@/app/components/user/Poster";
 
+interface Event {
+  name: string;
+  date: string;
+  total: number;
+  rated: number;
+}
+
+interface Stats {
+  upcomingEvents: number;
+  topCity: string;
+  interested: number;
+}
+
 export default function Dashboard() {
   const [posterData, setPosterData] = useState({
     title: "",
@@ -13,24 +26,54 @@ export default function Dashboard() {
     image: "/grainy-3.jpg",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const [stats, setStats] = useState<Stats>({
+    upcomingEvents: 0,
+    topCity: "",
+    interested: 0,
+  });
+
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [passedEvents, setPassedEvents] = useState<Event[]>([]); // not used visually yet but kept for completeness
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setPosterData((prev) => ({ ...prev, [name]: value }));
   };
 
-  async function fetchEvents() {
-    const res = await fetch("http://localhost:4000/", {
-      method: "GET",
+  async function createEvent() {
+    const res = await fetch("http://localhost:4000/create-events", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(posterData),
     });
-    const events = await res.json();
-    return events;
+    const data = await res.json();
+    return data;
+  }
+
+  async function getData() {
+    try {
+      const res = await fetch("http://localhost:4000/get-events");
+      const data = await res.json();
+      setStats({
+        upcomingEvents: data.upcomingEvents.length,
+        topCity: data.topCity,
+        interested: data.interestedCount,
+      });
+      setUpcomingEvents(data.upcomingEvents);
+      setPassedEvents(data.passedEvents);
+    } catch (error) {
+      console.error("Error fetching event data:", error);
+    }
   }
 
   useEffect(() => {
-    // Protect route (add real auth check later)
     const isLoggedIn = true;
     if (!isLoggedIn) {
+      window.location.href = "/login";
+    } else {
+      getData();
     }
   }, []);
 
@@ -47,9 +90,12 @@ export default function Dashboard() {
 
       <main className="max-w-6xl mx-auto p-6 space-y-8">
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <Card title="Upcoming Events" value="" />
-          <Card title="Intrested Attendees (This Week)" value="" />
-          <Card title="Top city" value="" />
+          <Card title="Upcoming Events" value={String(stats.upcomingEvents)} />
+          <Card
+            title="Interested Attendees (This Week)"
+            value={String(stats.interested)}
+          />
+          <Card title="Top City" value={stats.topCity} />
         </section>
 
         <section>
@@ -60,42 +106,17 @@ export default function Dashboard() {
                 <tr>
                   <th className="py-3 px-4">Event</th>
                   <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Intrested</th>
+                  <th className="py-3 px-4">Interested</th>
                   <th className="py-3 px-4">Liked</th>
                 </tr>
               </thead>
               <tbody>
-                {[
-                  {
-                    name: "Techno Rave",
-                    date: "Apr 25",
-                    rated: "4.5",
-                    total: "$4,800",
-                  },
-                  {
-                    name: "House of Bass",
-                    date: "Apr 27",
-                    tickets: 500,
-                    revenue: "$7,500",
-                  },
-                  {
-                    name: "Neon Nights",
-                    date: "May 3",
-                    tickets: 250,
-                    revenue: "$3,750",
-                  },
-                  {
-                    name: "Latin Heat",
-                    date: "May 10",
-                    tickets: 164,
-                    revenue: "$2,460",
-                  },
-                ].map((event, i) => (
+                {upcomingEvents.map((event, i) => (
                   <tr key={i} className="border-t">
                     <td className="py-3 px-4 font-medium">{event.name}</td>
                     <td className="py-3 px-4">{event.date}</td>
-                    <td className="py-3 px-4">{event.tickets}</td>
-                    <td className="py-3 px-4">{event.revenue}</td>
+                    <td className="py-3 px-4">{event.total}</td>
+                    <td className="py-3 px-4">{event.rated}</td>
                   </tr>
                 ))}
               </tbody>
@@ -117,10 +138,24 @@ export default function Dashboard() {
             </div>
             <div className="md:w-1/2 bg-white shadow-md rounded-2xl p-6 space-y-4">
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  // Submit logic here
-                  console.log("Form submitted:", posterData);
+                  try {
+                    const result = await createEvent();
+                    console.log("Event created:", result);
+                    alert("Event created successfully!");
+                    setPosterData({
+                      title: "",
+                      description: "",
+                      date: "",
+                      location: "",
+                      image: "/grainy-3.jpg",
+                    });
+                    getData();
+                  } catch (error) {
+                    console.error("Failed to create event", error);
+                    alert("Something went wrong.");
+                  }
                 }}
               >
                 <div>
@@ -129,15 +164,6 @@ export default function Dashboard() {
                     name="title"
                     type="text"
                     value={posterData.title}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium">Description</label>
-                  <textarea
-                    name="description"
-                    value={posterData.description}
                     onChange={handleChange}
                     className="w-full p-2 border rounded-md"
                   />
@@ -158,6 +184,15 @@ export default function Dashboard() {
                     name="location"
                     type="text"
                     value={posterData.location}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium">Description</label>
+                  <textarea
+                    name="description"
+                    value={posterData.description}
                     onChange={handleChange}
                     className="w-full p-2 border rounded-md"
                   />
