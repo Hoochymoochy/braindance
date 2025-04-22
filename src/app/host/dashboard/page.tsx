@@ -43,23 +43,40 @@ export default function Dashboard() {
   };
 
   async function createEvent() {
-    const res = await fetch("http://localhost:4000/create-events", {
+    if (
+      !posterData.title ||
+      !posterData.description ||
+      !posterData.date ||
+      !posterData.location
+    ) {
+      alert("Please fill in all required fields.");
+      return; // Don't create the event if any required field is missing
+    }
+
+    await fetch("http://localhost:4000/create-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(posterData),
     });
-    const data = await res.json();
-    return data;
+    setPosterData({
+      title: "",
+      description: "",
+      date: "",
+      location: "",
+      image: "/grainy-3.jpg",
+    });
+    alert("Event created successfully!");
   }
 
   async function getData() {
     try {
       const res = await fetch("http://localhost:4000/get-events");
       const data = await res.json();
+      console.log(data.stats.topCity);
       setStats({
-        upcomingEvents: data.upcomingEvents.length,
-        topCity: data.topCity,
-        interested: data.interestedCount,
+        upcomingEvents: data.stats.upcomingEvent,
+        interested: data.stats.interested,
+        topCity: data.stats.topCity,
       });
       setUpcomingEvents(data.upcomingEvents);
       setPassedEvents(data.passedEvents);
@@ -141,16 +158,7 @@ export default function Dashboard() {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   try {
-                    const result = await createEvent();
-                    console.log("Event created:", result);
-                    alert("Event created successfully!");
-                    setPosterData({
-                      title: "",
-                      description: "",
-                      date: "",
-                      location: "",
-                      image: "/grainy-3.jpg",
-                    });
+                    createEvent();
                     getData();
                   } catch (error) {
                     console.error("Failed to create event", error);
