@@ -1,11 +1,12 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,13 +24,16 @@ export default function Login() {
       });
 
       const data = await response.json();
-      console.log(data);
       if (data.status === 500) {
         alert(data.message);
       } else {
-        alert(data.message);
+        if (data.id) {
+          // Redirect to dashboard
+          router.push(`/host/${data.id}/dashboard`);
+        } else {
+          console.error("No hostId returned from server.");
+        }
       }
-
       // Assuming the server responds with JSON
     } catch (error) {
       console.error("Error during login:", error);

@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,13 +25,17 @@ export default function SignUp() {
           body: JSON.stringify({ email, password }),
         });
 
-        // Assuming the server responds with JSON
         const data = await response.json();
-        console.log(data);
+
         if (data.status === 400 || data.status === 500) {
           alert(data.message);
         } else {
-          alert(data.message);
+          if (data.id) {
+            // Redirect to dashboard
+            router.push(`/host/${data.id}/dashboard`);
+          } else {
+            console.error("No hostId returned from server.");
+          }
         }
       } catch (error) {
         console.error("Error during sign-up:", error);
