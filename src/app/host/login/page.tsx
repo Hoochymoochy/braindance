@@ -8,20 +8,40 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
-    // Dummy login logic
-    if (email === "event@holder.com" && password === "password123") {
-    } else {
-      setError("Invalid credentials");
+    e.preventDefault();
+
+    if (!email || !password) {
+      setError("All fields are required");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:4000/host-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log(data);
+      if (data.status === 500) {
+        alert(data.message);
+      } else {
+        alert(data.message);
+      }
+
+      // Assuming the server responds with JSON
+    } catch (error) {
+      console.error("Error during login:", error);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[url(/grainy-3.jpg)] bg-no-repeat bg-cover">
-<div
-  className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md"
-  style={{ background: "rgba(76, 175, 80, 0.3)" }}
->
-
+      <div
+        className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md"
+        style={{ background: "rgba(76, 175, 80, 0.3)" }}
+      >
         <h2 className="text-3xl font-bold text-center mb-6 text-white">
           Host login
         </h2>

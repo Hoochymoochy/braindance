@@ -15,13 +15,25 @@ export default function SignUp() {
       return;
     }
 
-    // Dummy sign-up logic
     if (email && password) {
-      await fetch("/sign-up", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      }).then((res) => res.json());
+      try {
+        const response = await fetch("http://localhost:4000/sign-up", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        // Assuming the server responds with JSON
+        const data = await response.json();
+        console.log(data);
+        if (data.status === 400 || data.status === 500) {
+          alert(data.message);
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error("Error during sign-up:", error);
+      }
     } else {
       setError("All fields are required");
     }

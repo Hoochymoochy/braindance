@@ -1,4 +1,5 @@
 "use client";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Charts from "@/app/components/host/AnalyticsChart";
 import EmailManager from "@/app/components/host/EmailManager";
@@ -18,6 +19,9 @@ interface Stats {
 }
 
 export default function Dashboard() {
+  const params = useParams();
+  const hostId = params?.id as string;
+
   const [posterData, setPosterData] = useState({
     title: "",
     description: "",
@@ -33,7 +37,7 @@ export default function Dashboard() {
   });
 
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [passedEvents, setPassedEvents] = useState<Event[]>([]); // not used visually yet but kept for completeness
+  const [passedEvents, setPassedEvents] = useState<Event[]>([]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -50,14 +54,15 @@ export default function Dashboard() {
       !posterData.location
     ) {
       alert("Please fill in all required fields.");
-      return; // Don't create the event if any required field is missing
+      return;
     }
 
     await fetch("http://localhost:4000/create-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(posterData),
+      body: JSON.stringify({ ...posterData, hostId }),
     });
+
     setPosterData({
       title: "",
       description: "",
@@ -65,21 +70,22 @@ export default function Dashboard() {
       location: "",
       image: "/grainy-3.jpg",
     });
+
     alert("Event created successfully!");
   }
 
   async function getData() {
     try {
-      const res = await fetch("http://localhost:4000/get-events");
+      const res = await fetch(
+        `http://localhost:4000/get-events?host=${hostId}`
+      );
       const data = await res.json();
-      console.log(data.upcomingEvents);
       setStats({
         upcomingEvents: data.stats.upcomingEvent,
         interested: data.stats.interested,
         topCity: data.stats.topCity,
       });
       setUpcomingEvents(data.upcomingEvents);
-      console.log(data.upcomingEvents);
       setPassedEvents(data.passedEvents);
     } catch (error) {
       console.error("Error fetching event data:", error);
@@ -90,10 +96,10 @@ export default function Dashboard() {
     const isLoggedIn = true;
     if (!isLoggedIn) {
       window.location.href = "/login";
-    } else {
+    } else if (hostId) {
       getData();
     }
-  }, []);
+  }, [hostId]);
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800">
@@ -159,8 +165,8 @@ export default function Dashboard() {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   try {
-                    createEvent();
-                    getData();
+                    await createEvent();
+                    await getData();
                   } catch (error) {
                     console.error("Failed to create event", error);
                     alert("Something went wrong.");
