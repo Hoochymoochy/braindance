@@ -17,7 +17,11 @@ export default function SignUp() {
 
     // Dummy sign-up logic
     if (email && password) {
-      // Here you would typically POST to your API
+      await fetch("/sign-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      }).then((res) => res.json());
     } else {
       setError("All fields are required");
     }

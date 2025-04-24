@@ -5,10 +5,10 @@ import EmailManager from "@/app/components/host/EmailManager";
 import { EventPoster } from "@/app/components/user/Poster";
 
 interface Event {
-  name: string;
+  title: string;
   date: string;
-  total: number;
-  rated: number;
+  intrested: number;
+  liked: number;
 }
 
 interface Stats {
@@ -72,13 +72,14 @@ export default function Dashboard() {
     try {
       const res = await fetch("http://localhost:4000/get-events");
       const data = await res.json();
-      console.log(data.stats.topCity);
+      console.log(data.upcomingEvents);
       setStats({
         upcomingEvents: data.stats.upcomingEvent,
         interested: data.stats.interested,
         topCity: data.stats.topCity,
       });
       setUpcomingEvents(data.upcomingEvents);
+      console.log(data.upcomingEvents);
       setPassedEvents(data.passedEvents);
     } catch (error) {
       console.error("Error fetching event data:", error);
@@ -130,10 +131,10 @@ export default function Dashboard() {
               <tbody>
                 {upcomingEvents.map((event, i) => (
                   <tr key={i} className="border-t">
-                    <td className="py-3 px-4 font-medium">{event.name}</td>
+                    <td className="py-3 px-4 font-medium">{event.title}</td>
                     <td className="py-3 px-4">{event.date}</td>
-                    <td className="py-3 px-4">{event.total}</td>
-                    <td className="py-3 px-4">{event.rated}</td>
+                    <td className="py-3 px-4">{event.intrested}</td>
+                    <td className="py-3 px-4">{event.liked}</td>
                   </tr>
                 ))}
               </tbody>
