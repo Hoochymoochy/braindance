@@ -10,6 +10,7 @@ interface Event {
   date: string;
   intrested: number;
   liked: number;
+  viewed: number;
 }
 
 interface Stats {
@@ -57,11 +58,16 @@ export default function Dashboard() {
       return;
     }
 
-    await fetch("http://localhost:4000/create-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...posterData, hostId }),
-    });
+    const response = await fetch(
+      `http://localhost:4000/create-event?host=${hostId}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...posterData }),
+      }
+    );
+
+    console.log(await response.json());
 
     setPosterData({
       title: "",
@@ -71,6 +77,8 @@ export default function Dashboard() {
       image: "/grainy-3.jpg",
     });
 
+    getData();
+
     alert("Event created successfully!");
   }
 
@@ -79,6 +87,7 @@ export default function Dashboard() {
       const res = await fetch(
         `http://localhost:4000/get-events?host=${hostId}`
       );
+
       const data = await res.json();
       setStats({
         upcomingEvents: data.stats.upcomingEvent,
@@ -90,6 +99,22 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error fetching event data:", error);
     }
+  }
+
+  function handleDelete(id: string) {
+    fetch(`http://localhost:4000/delete-event/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      getData();
+    });
+  }
+
+  function handleLike(id: string) {
+    fetch(`http://localhost:4000/like-event/${id}`, {
+      method: "POST",
+    }).then(() => {
+      getData();
+    });
   }
 
   useEffect(() => {
@@ -122,25 +147,73 @@ export default function Dashboard() {
           <Card title="Top City" value={stats.topCity} />
         </section>
 
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
-          <div className="overflow-x-auto bg-white shadow-md rounded-xl">
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold mb-6">Upcoming Events</h2>
+          <div className="overflow-x-auto bg-white shadow-lg rounded-2xl">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-200 text-left">
+              <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
                 <tr>
-                  <th className="py-3 px-4">Event</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Interested</th>
-                  <th className="py-3 px-4">Liked</th>
+                  <th className="py-3 px-5">Event</th>
+                  <th className="py-3 px-5">Date</th>
+                  <th className="py-3 px-5">Interested</th>
+                  <th className="py-3 px-5">Liked</th>
+                  <th className="py-3 px-5 text-center" colSpan={3}>
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {upcomingEvents.map((event, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="py-3 px-4 font-medium">{event.title}</td>
-                    <td className="py-3 px-4">{event.date}</td>
-                    <td className="py-3 px-4">{event.intrested}</td>
-                    <td className="py-3 px-4">{event.liked}</td>
+                  <tr key={i} className="border-t hover:bg-gray-50 transition">
+                    <td className="py-4 px-5 font-medium text-gray-800">
+                      {event.title}
+                    </td>
+                    <td className="py-4 px-5 text-gray-600">{event.date}</td>
+                    <td className="py-4 px-5 text-center">{event.intrested}</td>
+                    <td className="py-4 px-5 text-center">{event.liked}</td>
+                    <td className="py-4 px-2 text-center">
+                      <button className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600">
+                        Edit
+                      </button>
+                    </td>
+                    <td className="py-4 px-2 text-center">
+                      <button className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600">
+                        Start
+                      </button>
+                    </td>
+                    <td className="py-4 px-2 text-center">
+                      <button className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Passed Events</h2>
+          <div className="overflow-x-auto bg-white shadow-lg rounded-2xl">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="py-3 px-5">Event</th>
+                  <th className="py-3 px-5">Date</th>
+                  <th className="py-3 px-5">Viewed</th>
+                  <th className="py-3 px-5">Liked</th>
+                </tr>
+              </thead>
+              <tbody>
+                {passedEvents.map((event, i) => (
+                  <tr key={i} className="border-t hover:bg-gray-50 transition">
+                    <td className="py-4 px-5 font-medium text-gray-800">
+                      {event.title}
+                    </td>
+                    <td className="py-4 px-5 text-gray-600">{event.date}</td>
+                    <td className="py-4 px-5 text-center">{event.viewed}</td>
+                    <td className="py-4 px-5 text-center">{event.liked}</td>
                   </tr>
                 ))}
               </tbody>
