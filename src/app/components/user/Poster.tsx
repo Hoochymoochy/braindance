@@ -10,6 +10,8 @@ export type EventPosterProps = {
   date: string;
   location: string;
   description?: string;
+  host_id: string;
+  id: string;
   live?: boolean;
 };
 
@@ -20,6 +22,8 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   location,
   description,
   live,
+  host_id,
+  id,
 }) => {
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -62,7 +66,9 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
           {live && (
             <button className="bg-zinc-800 text-white px-4 py-1 rounded-full shadow-md flex items-center justify-center text-sm font-semibold hover:bg-zinc-600 ease-in-out duration-300">
-              <Link href="/Heatmap">Join</Link>
+              <Link href={`/user/stream?host_id=${host_id}&id=${id}`}>
+                Join
+              </Link>
             </button>
           )}
         </div>

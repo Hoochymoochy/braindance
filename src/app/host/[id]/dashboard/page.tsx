@@ -101,6 +101,10 @@ export default function Dashboard() {
     }
   }
 
+  async function handleStart(){
+
+  }
+
   function handleDelete(id: string) {
     fetch(`http://localhost:4000/delete-event/${id}`, {
       method: "DELETE",

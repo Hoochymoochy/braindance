@@ -1,6 +1,8 @@
 // ExamplePage.tsx
-import React from "react";
+"use client";
+import React, { use, useEffect } from "react";
 import { EventsLayout } from "@/app/EventLayout";
+import { EventPosterProps } from "@/app/components/user/Poster";
 
 const dummyEvents = [
   {
@@ -53,11 +55,25 @@ const dummyEvents2 = [
 ];
 
 export default function ExamplePage() {
+  const [topEvents, setTopEvents] = React.useState(null);
+  const [liveEvents, setLiveEvents] = React.useState<EventPosterProps[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = React.useState<
+    EventPosterProps[]
+  >([]);
+  useEffect(() => {
+    fetch("http://localhost:4000/get-events")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        setUpcomingEvents(data.upcomingEvents);
+        setLiveEvents(data.liveEvents);
+      });
+  }, []);
   return (
     <EventsLayout
       topEvents={dummyEvents}
-      liveEvents={dummyEvents}
-      upcomingEvents={dummyEvents2}
+      liveEvents={liveEvents}
+      upcomingEvents={upcomingEvents}
     />
   );
 }
