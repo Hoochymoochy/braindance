@@ -1,10 +1,13 @@
 export default function Home() {
   return (
     <section
-      className="relative h-[80vh] flex items-center justify-center text-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/thermal-bg.jpg')" }}
+      className="relative w-full h-full min-h-screen flex items-center justify-center text-center bg-cover bg-center"
+      style={{
+        backgroundImage: "url('/lol.jpg')",
+        // fontFamily: "Merriweather, serif",
+      }}
     >
-      <div className="bg-black/60 p-6 rounded-xl max-w-2xl">
+      <div className="bg-black/90 p-6 rounded-xl max-w-2xl">
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
           Step into the Pulse of Sound
         </h2>

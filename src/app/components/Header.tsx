@@ -17,11 +17,6 @@ export default function Header() {
               Event
             </Link>
           </li>
-          <li>
-            <Link href="/user/lore" className="hover:text-pink-400">
-              Lore
-            </Link>
-          </li>
         </ul>
       </nav>
     </header>

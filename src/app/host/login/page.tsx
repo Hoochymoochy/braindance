@@ -17,11 +17,15 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/host-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "http://localhost:4000/api/hosts/host-login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          credentials: "include",
+        }
+      );
 
       const data = await response.json();
       if (data.status === 500) {
@@ -41,7 +45,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url(/grainy-3.jpg)] bg-no-repeat bg-cover">
+    <div className="min-h-screen flex items-center justify-center bg-[url(/pop.jpg)] bg-no-repeat bg-cover">
       <div
         className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md"
         style={{ background: "rgba(76, 175, 80, 0.3)" }}

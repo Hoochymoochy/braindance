@@ -15,7 +15,7 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   return (
     <div
       className="bg-fixed bg-cover bg-center min-h-screen w-full p-8"
-      style={{ backgroundImage: "url('/2k_earth_daymaptry.jpg')" }}
+      style={{ backgroundImage: "url('/3.jpeg')" }}
     >
       <h1 className="text-4xl font-bold text-white mb-6 tracking-tight">
         TOP EVENTS

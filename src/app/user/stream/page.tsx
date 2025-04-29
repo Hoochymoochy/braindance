@@ -25,7 +25,10 @@ export default function BraindanceStreamPage() {
       });
   });
   return (
-    <>
+    <div
+      className="bg-fixed bg-cover bg-center min-h-screen w-full p-8"
+      style={{ backgroundImage: "url('/3.jpeg')" }}
+    >
       <YouTubeEmbed videoId={url} triggerUnmute={shouldUnmute} />
 
       {/* Maybe you want to show Host info somewhere? */}
@@ -38,6 +41,6 @@ export default function BraindanceStreamPage() {
         {/* This could be a cool intro animation or hidden zone */}
         Click to Enter (or any aesthetic touch you want)
       </div>
-    </>
+    </div>
   );
 }

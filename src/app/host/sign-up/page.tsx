@@ -19,23 +19,23 @@ export default function SignUp() {
 
     if (email && password) {
       try {
-        const response = await fetch("http://localhost:4000/sign-up", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
+        const response = await fetch(
+          "http://localhost:4000/api/hosts/sign-up",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+            credentials: "include", // Ensure cookies are sent with the request
+          }
+        );
 
         const data = await response.json();
 
-        if (data.status === 400 || data.status === 500) {
+        if (response.status === 400 || response.status === 500) {
           alert(data.message);
         } else {
-          if (data.id) {
-            // Redirect to dashboard
-            router.push(`/host/${data.id}/dashboard`);
-          } else {
-            console.error("No hostId returned from server.");
-          }
+          // Redirect after successful sign-up
+          router.push(`/host/${data.id}/dashboard`);
         }
       } catch (error) {
         console.error("Error during sign-up:", error);
