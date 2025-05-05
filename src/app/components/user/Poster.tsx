@@ -15,6 +15,10 @@ export type EventPosterProps = {
   live?: boolean;
 };
 
+function addCount(){
+  //add acount to t
+}
+
 export const EventPoster: React.FC<EventPosterProps> = ({
   image,
   title,
@@ -66,7 +70,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
           {live && (
             <button className="bg-zinc-800 text-white px-4 py-1 rounded-full shadow-md flex items-center justify-center text-sm font-semibold hover:bg-zinc-600 ease-in-out duration-300">
-              <Link href={`/user/stream?host_id=${host_id}&id=${id}`}>
+              <Link href={`/user/stream?host_id=${host_id}&id=${id}`} onClick={()=> addCount}>
                 Join
               </Link>
             </button>
