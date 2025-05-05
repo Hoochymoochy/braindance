@@ -1,0 +1,17 @@
+✅ USER SIDE
+ Get user location (latitude, longitude) ✅ 
+ Get user ip if decline or error
+ Store location in memory
+ Reverse geocode to get city + country
+ Update heatmap with location data
+ Increment view count when user joins event/stream
+ 
+✅ HOST SIDE
+ Allow host to add a livestream
+ Let host take/upload pictures
+ Let host add pictures to the event
+ Let host add optional links to event (bottom section)
+ Keep login session so host can navigate freely
+ Host profile: username + profile picture
+ Connect poster image to livestream
+ Allow host to add tags to their stream

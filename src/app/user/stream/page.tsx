@@ -1,5 +1,6 @@
 import { Play, Users, Globe, Share, Heart, MessageSquare } from "lucide-react"
 import Image from "next/image"
+import LocationButton from "@/app/components/host/Locationbutton"
 
 export default function BraindanceUserStream() {
   return (
@@ -17,6 +18,7 @@ export default function BraindanceUserStream() {
               <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md text-sm font-medium hover:from-purple-500 hover:to-pink-500">
                 Join Now
               </button>
+              <LocationButton/>
             </div>
           </div>
         </header>
