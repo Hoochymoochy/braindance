@@ -15,7 +15,7 @@ export type EventPosterProps = {
   live?: boolean;
 };
 
-function addCount(){
+function addCount() {
   //add acount to t
 }
 
@@ -36,23 +36,36 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   const toggleLiked = () => setLiked((prev) => !prev);
 
   return (
-    <div className="bg-zinc-900 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition duration-300 ease-in-out">
-      <img src={image} alt={title} className="w-full object-cover" />
+    <div className="bg-black border border-thermal-hot/30 rounded-xl overflow-hidden shadow-xl hover:shadow-thermal group hover:border-thermal-hot/70 transition-all duration-300">
+      <div className="relative">
+        <img
+          src={image || "/placeholder.svg"}
+          alt={title}
+          className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        {live && (
+          <div className="absolute top-3 left-3 bg-thermal-hot text-black px-3 py-1 rounded-full text-xs font-semibold">
+            LIVE
+          </div>
+        )}
+      </div>
       <div className="p-4 text-white">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        <p className="text-sm text-zinc-400">
+        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <p className="text-sm text-thermal-neutral">
           {date} · {location}
         </p>
         {description && (
-          <p className="mt-2 text-sm text-zinc-300">{description}</p>
+          <p className="mt-2 text-sm text-zinc-400">{description}</p>
         )}
 
         <div className="flex justify-between items-center mt-4">
           <div className="flex gap-2">
             <button
               className={`p-2 rounded-full ${
-                saved ? "text-blue-600" : "text-gray-500"
-              } hover:bg-gray-100`}
+                saved
+                  ? "text-thermal-hot bg-thermal-hot/20"
+                  : "text-zinc-400 hover:text-thermal-hot"
+              }`}
               onClick={toggleSaved}
             >
               <Bookmark size={20} />
@@ -60,8 +73,10 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
             <button
               className={`p-2 rounded-full ${
-                liked ? "text-red-500" : "text-gray-500"
-              } hover:bg-gray-100`}
+                liked
+                  ? "text-thermal-hot bg-thermal-hot/20"
+                  : "text-zinc-400 hover:text-thermal-hot"
+              }`}
               onClick={toggleLiked}
             >
               <Heart size={20} />
@@ -69,11 +84,13 @@ export const EventPoster: React.FC<EventPosterProps> = ({
           </div>
 
           {live && (
-            <button className="bg-zinc-800 text-white px-4 py-1 rounded-full shadow-md flex items-center justify-center text-sm font-semibold hover:bg-zinc-600 ease-in-out duration-300">
-              <Link href={`/user/stream?host_id=${host_id}&id=${id}`} onClick={()=> addCount}>
-                Join
-              </Link>
-            </button>
+            <Link
+              href={`/user/stream?host_id=${host_id}&id=${id}`}
+              onClick={() => addCount}
+              className="bg-thermal-hot hover:bg-thermal-warm text-black px-4 py-1 rounded-full shadow-md flex items-center justify-center text-sm font-semibold transition-colors duration-300"
+            >
+              Join
+            </Link>
           )}
         </div>
       </div>

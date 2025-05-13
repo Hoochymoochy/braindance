@@ -1,12 +1,13 @@
 import React, { useState } from "react";
+import { supabase } from "@/app/lib/supabaseClient"; // <-- your Supabase client
 import axios from "axios";
 
 const PhotoUpload = ({
   eventId,
-  userId,
+  hostId,
 }: {
   eventId: string;
-  userId: string;
+  hostId: string;
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<
@@ -14,20 +15,47 @@ const PhotoUpload = ({
   >("idle");
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      setStatus("error");
+      console.error("No file selected.");
+      return;
+    }
 
     setStatus("uploading");
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("eventId", eventId);
-    formData.append("userId", userId);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `event-${eventId}/${hostId}-${Date.now()}.${fileExt}`;
 
     try {
-      await axios.post("/api/photos/upload", formData);
+      const { data, error: uploadError } = await supabase.storage
+        .from("moderation-photos")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error("Supabase Storage upload error:", uploadError);
+        setStatus("error");
+        return;
+      }
+
+      if (!data) {
+        console.error("No data returned from Supabase upload");
+        setStatus("error");
+        return;
+      }
+
+      console.log("Upload successful:", data);
+
+      // Uncomment if you're saving path to your backend
+      await axios.post("http://localhost:4000/api/photo/upload", {
+        eventId,
+        hostId,
+        filePath,
+      });
+
       setStatus("success");
-    } catch (err) {
-      console.error(err);
+      setFile(null);
+    } catch (err: any) {
+      console.error("Unexpected upload error:", err?.message || err);
       setStatus("error");
     }
   };

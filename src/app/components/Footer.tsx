@@ -1,7 +1,45 @@
+"use client";
+import Link from "next/link";
+import { BrainLogo } from "@/app/components/Brain-logo";
+
 export default function Footer() {
   return (
-    <footer className="w-full py-6 text-center border-t border-white/10 text-sm text-gray-400">
-      &copy; {new Date().getFullYear()} Braindance. All rights reserved.
+    <footer className="border-t border-thermal-neutral/10 mt-20">
+      <div className="container mx-auto px-4 py-10">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center space-x-2 mb-4 md:mb-0">
+            <BrainLogo className="h-6 w-6 text-thermal-hot" />
+            <span className="text-lg font-bold bg-gradient-to-r from-thermal-hot via-thermal-warm to-thermal-neutral bg-clip-text text-transparent">
+              braindance
+            </span>
+          </div>
+          <div className="flex space-x-6">
+            <Link
+              href="#"
+              className="text-sm text-thermal-neutral/70 hover:text-thermal-hot transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="#"
+              className="text-sm text-thermal-neutral/70 hover:text-thermal-hot transition-colors"
+            >
+              Terms
+            </Link>
+            <Link
+              href="#"
+              className="text-sm text-thermal-neutral/70 hover:text-thermal-hot transition-colors"
+            >
+              Contact
+            </Link>
+          </div>
+        </div>
+        <div className="mt-8 text-center md:text-left">
+          <p className="text-sm text-thermal-neutral/50">
+            © {new Date().getFullYear()} Braindance. All rights reserved.
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }

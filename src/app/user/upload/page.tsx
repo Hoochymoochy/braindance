@@ -6,7 +6,7 @@ import PhotoUpload from "@/app/components/photouploade";
 export default function BraindanceUserStream() {
   return (
     <div className="min-h-screen bg-[#0a0014] text-white font-sans">
-      <PhotoUpload eventId="" userId="" />
+      <PhotoUpload eventId="1" hostId="1" />
     </div>
   );
 }

@@ -2,11 +2,134 @@
 
 @tailwind utilities;
 
-/* Optional: Font and gradient setup */
-.text-gradient {
-  @apply bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text text-transparent;
-}
+/* Add these thermal styling components */
+@layer components {
+  .thermal-background {
+    background-color: #000;
+    background-image: linear-gradient(
+        to right,
+        rgba(0, 255, 0, 0.1) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+      radial-gradient(
+        circle at 30% 30%,
+        rgba(255, 0, 0, 0.15) 0%,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 70% 70%,
+        rgba(0, 255, 0, 0.15) 0%,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        rgba(0, 0, 255, 0.05) 0%,
+        transparent 50%
+      );
+    background-size: 20px 20px, 20px 20px, 100% 100%, 100% 100%, 100% 100%;
+    position: relative;
+    overflow: hidden;
+  }
 
+  .thermal-background::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 1px,
+        rgba(255, 255, 255, 0.03) 1px,
+        rgba(0, 0, 0, 0) 2px
+      ),
+      repeating-linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 1px,
+        rgba(255, 255, 255, 0.03) 1px,
+        rgba(0, 0, 0, 0) 2px
+      );
+    background-size: 2px 2px;
+    pointer-events: none;
+    z-index: 1;
+    animation: scanlines 8s linear infinite;
+  }
+
+  .thermal-background::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 0, 0, 0.05) 0%,
+      rgba(0, 255, 0, 0.05) 33%,
+      rgba(0, 0, 255, 0.05) 66%,
+      rgba(255, 0, 0, 0.05) 100%
+    );
+    background-size: 100% 200%;
+    pointer-events: none;
+    z-index: 2;
+    animation: colorshift 20s linear infinite;
+    mix-blend-mode: color;
+    opacity: 0.3;
+  }
+
+  .thermal-background > * {
+    position: relative;
+    z-index: 3;
+  }
+  .shadow-thermal {
+    box-shadow: 0 0 15px 2px rgba(255, 69, 0, 0.3);
+  }
+
+  .bg-gradient-radial {
+    background-image: radial-gradient(var(--tw-gradient-stops));
+  }
+
+  .thermal-cursor {
+    position: fixed;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 69, 0, 0.3) 0%,
+      rgba(255, 140, 0, 0.2) 30%,
+      rgba(255, 215, 0, 0.1) 60%,
+      transparent 100%
+    );
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    mix-blend-mode: screen;
+    filter: blur(10px);
+  }
+
+  @keyframes scanlines {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 0 100px;
+    }
+  }
+
+  @keyframes colorshift {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 0 100%;
+    }
+  }
+}
 body {
   font-family: "Inter", sans-serif;
 }
