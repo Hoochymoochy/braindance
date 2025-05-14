@@ -37,6 +37,7 @@ export default function ExamplePage() {
       topEvents={topEvents}
       liveEvents={liveEvents}
       upcomingEvents={upcomingEvents}
+      hideStuff={{}}
     />
   );
 }

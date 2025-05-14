@@ -1,13 +1,14 @@
 "use client";
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { EventPosterProps, EventPoster } from "@/app/components/user/Poster";
-import { useState, useEffect } from "react";
 
 type EventsLayoutProps = {
   topEvents: EventPosterProps[];
   liveEvents: EventPosterProps[];
   upcomingEvents: EventPosterProps[];
   hideStuff?: {
+    title?: boolean;
     bookmark?: boolean;
     heart?: boolean;
   };
@@ -33,7 +34,7 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   }, []);
 
   return (
-    <div className="thermal-background min-h-screen w-full p-8">
+    <div className="thermal-background min-h-screen w-full p-4 sm:p-6 md:p-8 lg:p-10">
       <div
         className="thermal-cursor"
         style={{
@@ -42,10 +43,10 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
         }}
       />
 
-      {topEvents && topEvents.length > 0 && (
+      {topEvents.length > 0 && (
         <>
-          {!hideStuff && (
-            <h1 className="text-4xl font-bold text-thermal-hot mb-6 tracking-tight">
+          {!hideStuff.title && (
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-thermal-hot mb-6 tracking-tight">
               TOP EVENTS
             </h1>
           )}
@@ -62,9 +63,9 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
         </>
       )}
 
-      {liveEvents && liveEvents.length > 0 && (
+      {liveEvents.length > 0 && (
         <>
-          <h1 className="text-4xl font-bold text-thermal-warm mb-6 tracking-tight mt-10">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-thermal-warm mb-6 tracking-tight mt-12">
             Live Events
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -80,9 +81,9 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
         </>
       )}
 
-      {upcomingEvents && upcomingEvents.length > 0 && (
+      {upcomingEvents.length > 0 && (
         <>
-          <h1 className="text-4xl font-bold text-thermal-neutral mb-6 tracking-tight mt-10">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-thermal-neutral mb-6 tracking-tight mt-12">
             Upcoming Events
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

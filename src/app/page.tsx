@@ -62,7 +62,7 @@ export default function Home() {
       <main>
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-20 md:py-32">
-          <div className="max-w-3xl mx-auto text-center bg-black rounded-full p-10">
+          <div className="max-w-3xl mx-auto text-center bg-black rounded-full p-10 border border-thermal-neutral/20">
             <div className="inline-block p-1 mb-6 rounded-full">
               <div className="bg-black px-4 py-1 rounded-full">
                 <span className="text-sm font-medium">
@@ -141,7 +141,7 @@ export default function Home() {
         <section className="container mx-auto px-4 py-20">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold">Featured Events</h2>
-            <Link href="/user/events" className="flex items-center">
+            <Link href="/user/events" className="flex items-center ">
               View all events
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
