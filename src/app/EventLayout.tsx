@@ -7,12 +7,17 @@ type EventsLayoutProps = {
   topEvents: EventPosterProps[];
   liveEvents: EventPosterProps[];
   upcomingEvents: EventPosterProps[];
+  hideStuff?: {
+    bookmark?: boolean;
+    heart?: boolean;
+  };
 };
 
 export const EventsLayout: React.FC<EventsLayoutProps> = ({
   topEvents = [],
   liveEvents = [],
   upcomingEvents = [],
+  hideStuff = {},
 }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -39,16 +44,18 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
 
       {topEvents && topEvents.length > 0 && (
         <>
-          <h1 className="text-4xl font-bold text-thermal-hot mb-6 tracking-tight">
-            TOP EVENTS
-          </h1>
+          {!hideStuff && (
+            <h1 className="text-4xl font-bold text-thermal-hot mb-6 tracking-tight">
+              TOP EVENTS
+            </h1>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {topEvents.map((event, index) => (
               <div
                 key={index}
                 className="transform transition-transform hover:scale-[1.02] duration-300"
               >
-                <EventPoster {...event} />
+                <EventPoster {...event} hideStuff={hideStuff} />
               </div>
             ))}
           </div>
