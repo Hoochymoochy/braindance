@@ -32,10 +32,10 @@ export default function About() {
 
       {/* Hero Banner */}
       <section className="w-full h-[80vh] flex flex-col items-center justify-center text-center px-6">
-        <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight">
-          About <span className="text-thermal-hot">Braindance</span>
+        <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
+          About <span className="">Braindance</span>
         </h1>
-        <p className="max-w-2xl text-lg md:text-xl text-thermal-neutral mb-10">
+        <p className="max-w-2xl text-lg md:text-xl mb-10">
           The ritual begins with sound. Braindance is a streaming platform where
           DJs broadcast live and event photos tell the real story. No filters.
           No faking. Just raw, connected energy.
@@ -48,7 +48,7 @@ export default function About() {
 
       {/* Feature Sections */}
       <section className="container mx-auto px-4 py-20 space-y-24">
-        <div className="flex flex-col md:flex-row gap-12 items-center">
+        <div className="flex flex-col md:flex-row gap-12 items-center ">
           <div className="flex-1">
             <Radio className="w-14 h-14 mb-4 text-thermal-hot" />
             <h2 className="text-3xl font-bold mb-4">Live Sets, Global Reach</h2>
@@ -103,7 +103,7 @@ export default function About() {
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button className="text-black font-semibold">Join Braindance</Button>
-          <Link href="/user/events">
+          <Link href="/events">
             <Button variant="outline">Explore Events</Button>
           </Link>
         </div>

@@ -1,6 +1,6 @@
-import { Play, Users, Globe, Share, Heart, MessageSquare } from "lucide-react"
-import Image from "next/image"
-import LocationButton from "@/app/components/host/Locationbutton"
+import { Play, Users, Globe, Share, Heart, MessageSquare } from "lucide-react";
+import Image from "next/image";
+import LocationButton from "@/app/components/host/Locationbutton";
 
 export default function BraindanceUserStream() {
   return (
@@ -18,7 +18,7 @@ export default function BraindanceUserStream() {
               <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md text-sm font-medium hover:from-purple-500 hover:to-pink-500">
                 Join Now
               </button>
-              <LocationButton/>
+              <LocationButton />
             </div>
           </div>
         </header>
@@ -61,7 +61,9 @@ export default function BraindanceUserStream() {
                 </div>
               </div>
               <div className="p-4">
-                <h2 className="text-xl font-bold">DJ Neon Pulse - Live from Club Vertex</h2>
+                <h2 className="text-xl font-bold">
+                  DJ Neon Pulse - Live from Club Vertex
+                </h2>
                 <div className="flex items-center gap-2 mt-2">
                   <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
                     <span className="text-xs font-bold">DJ</span>
@@ -93,7 +95,10 @@ export default function BraindanceUserStream() {
                 </div>
               </div>
               <button className="w-full py-3 rounded-md bg-purple-900/40 border border-purple-500/50 hover:bg-purple-800/60 transition-colors flex items-center justify-center gap-2 group">
-                <Globe size={18} className="text-purple-400 group-hover:text-purple-300" />
+                <Globe
+                  size={18}
+                  className="text-purple-400 group-hover:text-purple-300"
+                />
                 <span className="font-medium">heatmap / 3D globe</span>
               </button>
 
@@ -128,7 +133,9 @@ export default function BraindanceUserStream() {
                 className="aspect-square relative rounded-md overflow-hidden border border-pink-500/30 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
               >
                 <Image
-                  src={`/placeholder.svg?height=300&width=300&text=Photo${i + 1}`}
+                  src={`/placeholder.svg?height=300&width=300&text=Photo${
+                    i + 1
+                  }`}
                   alt={`Gallery photo ${i + 1}`}
                   layout="fill"
                   className="object-cover hover:scale-110 transition-transform duration-500"
@@ -190,5 +197,5 @@ export default function BraindanceUserStream() {
         </div>
       </div>
     </div>
-  )
+  );
 }

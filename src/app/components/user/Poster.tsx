@@ -100,7 +100,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
           {live && (
             <Link
-              href={`/user/stream?host_id=${host_id}&id=${id}`}
+              href={`/stream?host_id=${host_id}&id=${id}`}
               onClick={addCount}
               className="bg-thermal-hot hover:bg-thermal-warm text-black px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition-colors duration-300"
             >
