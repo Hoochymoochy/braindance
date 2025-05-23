@@ -8,10 +8,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-10">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <BrainLogo className="h-6 w-6 text-thermal-hot" />
-            <span className="text-lg font-bold bg-gradient-to-r from-thermal-hot via-thermal-warm to-thermal-neutral bg-clip-text text-transparent">
-              braindance
-            </span>
+            <BrainLogo withText={false} className="h-6 w-6 text-thermal-hot" />
           </div>
           <div className="flex space-x-6">
             <Link

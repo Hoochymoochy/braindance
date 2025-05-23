@@ -1,11 +1,15 @@
 ✅ USER SIDE
- Get user location (latitude, longitude) ✅ 
- Get user ip if decline or error
- Store location in memory
- Reverse geocode to get city + country
- Update heatmap with location data
- Increment view count when user joins event/stream
- 
+        Home page
+            . Fix explore braindance button need to find out what to do with that
+            . Need to add better poster ux
+
+        Event page  
+            . Need to make it look more eye prettier 
+            
+        About page
+            . Fix explore braindance button need to find out what to do with that
+
+
 ✅ HOST SIDE
  Allow host to add a livestream
  Let host take/upload pictures
@@ -15,3 +19,4 @@
  Host profile: username + profile picture
  Connect poster image to livestream
  Allow host to add tags to their stream
+
