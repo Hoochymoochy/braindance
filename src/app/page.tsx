@@ -15,6 +15,8 @@ export default function Home() {
   const [upcomingEvents, setUpcomingEvents] = React.useState<
     EventPosterProps[]
   >([]);
+  const [joinWaitlist, setJoinWaitlist] = useState(false);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:4000/api/events/get-global-events")
@@ -48,6 +50,7 @@ export default function Home() {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
+  const handleJoinWaitlist = () => {};
 
   return (
     <div className="min-h-screen bg-black thermal-background">
@@ -164,12 +167,67 @@ export default function Home() {
                 Join our community of explorers and experience the next
                 evolution of digital consciousness.
               </p>
-              <Button className="text-black font-semibold border-2">
-                Join the Waitlist
-              </Button>
+              <button
+                className="border-1 border-thermal-hot px-4 py-2 rounded-md"
+                onClick={() => setJoinWaitlist(!joinWaitlist)}
+              >
+                Join waitlist
+              </button>
             </div>
           </div>
         </section>
+
+        {joinWaitlist && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center animate-fadeIn"
+            onClick={() => setJoinWaitlist(false)} // click outside closes
+          >
+            <div
+              className="bg-black p-8 rounded-xl border border-thermal-neutral/20 hover:border-thermal-hot/50 transition-colors group relative animate-scaleIn"
+              onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setJoinWaitlist(false)}
+                className="absolute top-3 right-3 text-thermal-neutral hover:text-thermal-hot transition"
+              >
+                ✕
+              </button>
+
+              {/* Icon */}
+              <div className="w-12 h-12 bg-thermal-hot rounded-lg flex items-center justify-center mb-6 group-hover:bg-thermal-hot/80 transition-colors">
+                <Flame className="h-6 w-6 text-black" />
+              </div>
+
+              {/* Text */}
+              <h3 className="text-xl font-semibold text-thermal-hot mb-3">
+                Join our waitlist
+              </h3>
+              <p className="text-thermal-neutral">
+                Be the first to experience Braindance.
+              </p>
+
+              {/* Form */}
+              <form onSubmit={handleJoinWaitlist} className="mt-4">
+                <div className="flex items-center">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-black border border-thermal-neutral/20 rounded-md px-4 py-2 w-full mr-2"
+                  />
+                  <button
+                    type="submit"
+                    className="border border-thermal-hot text-thermal-hot px-4 py-2 rounded-md hover:bg-thermal-hot hover:text-black transition"
+                  >
+                    Join
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
