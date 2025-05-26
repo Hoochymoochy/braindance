@@ -1,4 +1,3 @@
-// GlobeHeatmap.tsx
 "use client";
 
 import React, { useEffect, useRef } from "react";
@@ -15,8 +14,11 @@ const GlobeHeatmap: React.FC = () => {
 
   useEffect(() => {
     if (globeEl.current) {
-      globeEl.current.controls().autoRotate = true;
-      globeEl.current.controls().autoRotateSpeed = 0.3;
+      const controls = globeEl.current.controls();
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.3;
+      controls.enableZoom = false; // Disable zooming
+      controls.enablePan = false;
     }
   }, []);
 
@@ -25,16 +27,18 @@ const GlobeHeatmap: React.FC = () => {
       style={{
         width: "100%",
         height: "100%",
-        maxWidth: "600px", // You can adjust or remove this
-        maxHeight: "600px", // You can adjust or remove this
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         position: "relative",
       }}
     >
       <Globe
         ref={globeEl}
-        width={undefined} // Let Globe handle width via container
-        height={undefined} // Let Globe handle height via container
-        globeImageUrl="//cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg"
+        width={250} // or '100%' for responsiveness
+        height={250}
+        globeImageUrl="https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg"
+        backgroundColor="rgba(0,0,0,0)"
         heatmapsData={[gData]}
         heatmapPointLat="lat"
         heatmapPointLng="lng"
@@ -45,6 +49,7 @@ const GlobeHeatmap: React.FC = () => {
       />
     </div>
   );
+  
 };
 
 export default GlobeHeatmap;
