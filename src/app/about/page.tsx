@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ArrowRight, Radio, Camera, Globe2 } from "lucide-react";
 import { Button } from "@/app/components/Button";
 import Link from "next/link";
 
 export default function About() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const eventsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -41,9 +42,14 @@ export default function About() {
             where DJs broadcast live and event photos tell the real story. No
             filters. No faking. Just raw, connected energy.
           </p>
-          <Button variant="outline" className="w-full sm:w-auto">
+          <button
+            onClick={() =>
+              eventsRef.current?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="w-full sm:w-auto border border-white text-white px-4 py-2 rounded-md hover:bg-white hover:text-black transition"
+          >
             Explore Braindance
-          </Button>
+          </button>
         </div>
       </section>
 
@@ -96,7 +102,10 @@ export default function About() {
       </section>
 
       {/* Final CTA */}
-      <section className="container mx-auto px-4 py-24 text-center">
+      <section
+        ref={eventsRef}
+        className="container mx-auto px-4 py-24 text-center"
+      >
         <div className="bg-black p-10  border-thermal-hot border-1">
           <h2 className="text-4xl font-bold mb-6">The Ritual Has Begun</h2>
           <p className="text-lg mb-8 text-thermal-neutral max-w-xl mx-auto">
@@ -104,10 +113,10 @@ export default function About() {
             reshaping nightlife from the stream outward.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button className="text-black font-semibold">
+            <div className="text-black font-semibold flex flex-row justify-center items-center">
               Join Braindance
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+              <ArrowRight className="ml-2 h-4 w-4 flex" />
+            </div>
 
             <Link href="/events">
               <Button variant="outline">Explore Events</Button>

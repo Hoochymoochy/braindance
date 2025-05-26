@@ -56,7 +56,7 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
                 key={index}
                 className="transform transition-transform hover:scale-[1.02] duration-300"
               >
-                <EventPoster {...event} hideStuff={hideStuff} />
+                <EventPoster {...event} hideStuff={hideStuff} live={true} />
               </div>
             ))}
           </div>

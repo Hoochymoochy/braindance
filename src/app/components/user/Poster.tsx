@@ -48,11 +48,11 @@ export const EventPoster: React.FC<EventPosterProps> = ({
           alt={title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {live && (
+        {/* {live && (
           <div className="absolute top-3 left-3 bg-thermal-hot text-black px-3 py-1 rounded-full text-xs font-semibold">
             LIVE
           </div>
-        )}
+        )} */}
       </div>
 
       <div className="p-4 sm:p-5 md:p-6 text-white">

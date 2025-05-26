@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/app/components/Button";
 import { ArrowRight, Flame, Zap } from "lucide-react";
 import { BrainLogo } from "@/app/components/Brain-logo";
@@ -18,6 +18,7 @@ export default function Home() {
   const [joinWaitlist, setJoinWaitlist] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const eventsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("http://localhost:4000/api/events/get-global-events")
@@ -83,13 +84,18 @@ export default function Home() {
               global rhythm is born. It's more than just music—it's movement.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button className="w-full sm:w-auto text-black border-0 font-semibold">
+              <div className="w-full sm:w-auto text-black px-4 py-2 rounded-md font-semibold flex items-center justify-center">
                 Join the Ritual
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button variant="outline" className="w-full sm:w-auto">
+              </div>
+              <button
+                onClick={() =>
+                  eventsRef.current?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="w-full sm:w-auto border border-white text-white px-4 py-2 rounded-md hover:bg-white hover:text-black transition"
+              >
                 Explore Braindance
-              </Button>
+              </button>
             </div>
           </div>
         </section>
@@ -142,17 +148,17 @@ export default function Home() {
         </section>
 
         {/* Events Preview Section */}
-        <section className="container mx-auto px-4 py-20">
+        <section ref={eventsRef} className="container mx-auto px-4 py-20">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold">Featured Events</h2>
-            <Link href="/user/events" className="flex items-center ">
+            <Link href="/events" className="flex items-center ">
               View all events
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>
           <EventsLayout
             topEvents={upcomingEvents}
-            hideStuff={{ bookmark: true, heart: true }}
+            hideStuff={{ bookmark: true, heart: true, title: true }}
           />
         </section>
 
@@ -205,16 +211,12 @@ export default function Home() {
               {!submitted ? (
                 <>
                   <div className="flex items-center justify-center mb-4">
-                    <div className="w-12 h-12 bg-thermal-hot rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center">
                       <Flame className="h-6 w-6 text-black" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-thermal-hot mb-2">
-                    Join our waitlist
-                  </h3>
-                  <p className="text-thermal-neutral mb-4">
-                    Be the first to experience Braindance.
-                  </p>
+                  <h3 className="text-xl font-bold mb-2">Join our waitlist</h3>
+                  <p className="mb-4">Be the first to experience Braindance.</p>
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -229,11 +231,11 @@ export default function Home() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="flex-1 px-4 py-2 bg-black border border-thermal-neutral/20 rounded-md text-white placeholder:text-thermal-neutral"
+                      className="flex-1 px-4 py-2 bg-black border border-thermal-neutral/20 rounded-md text-white "
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 border border-thermal-hot text-thermal-hot rounded-md hover:bg-thermal-hot hover:text-black transition"
+                      className="px-4 py-2 border border-thermal-hot rounded-md hover:bg-white transition"
                     >
                       Join
                     </button>
@@ -241,10 +243,10 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <h3 className="text-2xl font-bold text-thermal-hot mb-2">
+                  <h3 className="text-2xl font-bold mb-2">
                     You're on the list!
                   </h3>
-                  <p className="text-thermal-neutral">
+                  <p className="">
                     We about to bring the heat around the world!!! 🔥
                   </p>
                 </>
