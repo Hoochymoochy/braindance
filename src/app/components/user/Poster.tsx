@@ -98,7 +98,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
             )}
           </div>
 
-          {live && (
+          {live === true && (
             <Link
               href={`/stream?host_id=${host_id}&id=${id}`}
               onClick={addCount}
