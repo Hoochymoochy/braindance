@@ -57,6 +57,7 @@ export default function Dashboard() {
       );
       const data = await res.json();
 
+      console.log(data);
       setStats(data.stats);
       setUpcomingEvents(data.upcomingEvents);
       setPassedEvents(data.passedEvents);
@@ -145,9 +146,8 @@ export default function Dashboard() {
   }, [hostId]);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800">
-      <Header />
-      <main className="max-w-6xl mx-auto p-6 space-y-8">
+    <div className="min-h-screen thermal-background">
+      <main className="max-w-6xl mx-auto p-6 space-y-8 pt-10">
         <StatsSection stats={stats} />
         <EventsTable
           title="Upcoming Events"
@@ -170,28 +170,23 @@ export default function Dashboard() {
   );
 }
 
-function Header() {
-  return (
-    <header className="bg-purple-700 text-white p-4 shadow-md">
-      <div className="max-w-6xl mx-auto flex justify-between items-center">
-        <h1 className="text-xl font-bold">Event Dashboard</h1>
-        <button className="bg-purple-900 px-3 py-1 rounded hover:bg-purple-800 text-sm">
-          Log Out
-        </button>
-      </div>
-    </header>
-  );
-}
-
 function StatsSection({ stats }: { stats: Stats }) {
   return (
     <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <Card title="Upcoming Events" value={String(stats.upcomingEvents)} />
+      <Card
+        title="Upcoming Events"
+        value={
+          stats?.upcomingEvents != null ? String(stats.upcomingEvents) : "0"
+        }
+      />
       <Card
         title="Interested Attendees (This Week)"
-        value={String(stats.interested)}
+        value={stats?.interested != null ? String(stats.interested) : "0"}
       />
-      <Card title="Top City" value={stats.topCity} />
+      <Card
+        title="Top City"
+        value={stats?.topCity?.trim() ? stats.topCity : "N/A"}
+      />
     </section>
   );
 }
@@ -214,7 +209,7 @@ function EventsTable({
       <h2 className="text-2xl font-bold mb-6">{title}</h2>
       <div className="overflow-x-auto bg-white shadow-lg rounded-2xl">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+          <thead className="bg-black text-white uppercase text-xs">
             <tr>
               <th className="py-3 px-5">Event</th>
               <th className="py-3 px-5">Date</th>
@@ -230,46 +225,57 @@ function EventsTable({
             </tr>
           </thead>
           <tbody>
-            {events.map((event) => (
-              <tr
-                key={event.id}
-                className="border-t hover:bg-gray-50 transition"
-              >
-                <td className="py-4 px-5 font-medium text-gray-800">
-                  {event.title}
+            {!events || events.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={showActions ? 7 : 4}
+                  className="py-4 px-5 text-center"
+                >
+                  No events found
                 </td>
-                <td className="py-4 px-5 text-gray-600">{event.date}</td>
-                <td className="py-4 px-5 text-center">
-                  {showActions ? event.intrested : event.viewed}
-                </td>
-                <td className="py-4 px-5 text-center">{event.liked}</td>
-                {showActions && (
-                  <>
-                    <td className="py-4 px-2 text-center">
-                      <button
-                        className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
-                        onClick={() => onEdit?.(event.id)}
-                      >
-                        Edit
-                      </button>
-                    </td>
-                    <td className="py-4 px-2 text-center">
-                      <button className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600">
-                        Start
-                      </button>
-                    </td>
-                    <td className="py-4 px-2 text-center">
-                      <button
-                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
-                        onClick={() => onDelete?.(event.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </>
-                )}
               </tr>
-            ))}
+            ) : (
+              events.map((event) => (
+                <tr
+                  key={event.id}
+                  className="border-t hover:bg-gray-50 transition"
+                >
+                  <td className="py-4 px-5 font-medium text-white">
+                    {event.title}
+                  </td>
+                  <td className="py-4 px-5 text-white">{event.date}</td>
+                  <td className="py-4 px-5 text-center">
+                    {showActions ? event.intrested : event.viewed}
+                  </td>
+                  <td className="py-4 px-5 text-center">{event.liked}</td>
+                  {showActions && (
+                    <>
+                      <td className="py-4 px-2 text-center">
+                        <button
+                          className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
+                          onClick={() => onEdit?.(event.id)}
+                        >
+                          Edit
+                        </button>
+                      </td>
+                      <td className="py-4 px-2 text-center">
+                        <button className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600">
+                          Start
+                        </button>
+                      </td>
+                      <td className="py-4 px-2 text-center">
+                        <button
+                          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                          onClick={() => onDelete?.(event.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -301,7 +307,7 @@ function CreateEventForm({
       </h2>
       <div className="flex flex-col md:flex-row gap-4">
         <div className="md:w-1/2 border border-gray-300 rounded-2xl p-4">
-          <EventPoster {...data} />
+          <EventPoster {...data} hideStuff={{ bookmark: true, heart: true }} />
         </div>
         <div className="md:w-1/2 bg-white shadow-md rounded-2xl p-6 space-y-4">
           <form
@@ -357,8 +363,8 @@ function CreateEventForm({
 
 function Card({ title, value }: { title: string; value: string }) {
   return (
-    <div className="bg-white p-5 rounded-xl shadow-md">
-      <h3 className="text-sm text-gray-500">{title}</h3>
+    <div className="bg-black p-5 rounded-xl shadow-md">
+      <h3 className="text-sm text-white">{title}</h3>
       <p className="text-2xl font-bold mt-1">{value}</p>
     </div>
   );

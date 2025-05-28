@@ -1,13 +1,17 @@
-'use client';
+"use client";
 import { useState } from "react";
 import { Play, Users, Globe, Share, Heart, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import GlobeHeatmap from "../components/GlobeHeatmap";
 
 export default function BraindanceUserStream() {
-  const [photoData, setPhotoData] = useState<{ src: string; alt: string; user: string }[]>([]);
+  const [photoData, setPhotoData] = useState<
+    { src: string; alt: string; user: string }[]
+  >([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [merchItems, setMerchItems] = useState<{ title: string; subtitle: string }[]>([]);
+  const [merchItems, setMerchItems] = useState<
+    { title: string; subtitle: string }[]
+  >([]);
 
   return (
     <div className="mx-auto p-10 bg-black thermal-background">
@@ -27,7 +31,9 @@ export default function BraindanceUserStream() {
 
             {/* Info Panel */}
             <div className="p-4">
-              <h2 className="text-xl font-bold">DJ Neon Pulse - Live from Club Vertex</h2>
+              <h2 className="text-xl font-bold">
+                DJ Neon Pulse - Live from Club Vertex
+              </h2>
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
                   <span className="text-xs font-bold">DJ</span>
@@ -110,7 +116,9 @@ export default function BraindanceUserStream() {
           <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
             Photos of the Night
           </h3>
-          <span className="text-sm text-gray-400">{photoData.length} photos</span>
+          <span className="text-sm text-gray-400">
+            {photoData.length} photos
+          </span>
         </div>
 
         {/* Photo Grid - Larger Photos */}
@@ -138,7 +146,9 @@ export default function BraindanceUserStream() {
               </div>
             ))
           ) : (
-            <p className="text-sm text-gray-500 col-span-full text-center">No photos yet.</p>
+            <p className="text-sm text-gray-500 col-span-full text-center">
+              No photos yet.
+            </p>
           )}
         </div>
       </div>
@@ -176,7 +186,9 @@ export default function BraindanceUserStream() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 text-center">No merch or tickets available.</p>
+          <p className="text-sm text-gray-500 text-center">
+            No merch or tickets available.
+          </p>
         )}
       </div>
     </div>
