@@ -105,7 +105,7 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-black p-8 rounded-xl border border-thermal-neutral/20 hover:border-thermal-hot/50 transition-colors group">
               <div className="w-12 h-12 bg-thermal-hot rounded-lg flex items-center justify-center mb-6 group-hover:bg-thermal-hot/80 transition-colors">
-                <Flame className="h-6 w-6 text-black" />
+                <Flame className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-thermal-hot mb-3">
                 Global Hype Rituals
@@ -119,7 +119,7 @@ export default function Home() {
 
             <div className="bg-black p-8 rounded-xl border border-thermal-neutral/20 hover:border-thermal-warm/50 transition-colors group">
               <div className="w-12 h-12 bg-thermal-warm rounded-lg flex items-center justify-center mb-6 group-hover:bg-thermal-warm/80 transition-colors">
-                <BrainLogo withText={false} className="h-6 w-6 text-black" />
+                <BrainLogo withText={false} className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-thermal-warm mb-3">
                 DJ-Driven Energy
@@ -133,7 +133,7 @@ export default function Home() {
 
             <div className="bg-black p-8 rounded-xl border border-thermal-neutral/20 hover:border-thermal-neutral/50 transition-colors group">
               <div className="w-12 h-12 bg-thermal-neutral rounded-lg flex items-center justify-center mb-6 group-hover:bg-thermal-neutral/80 transition-colors">
-                <Zap className="h-6 w-6 text-black" />
+                <Zap className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-thermal-neutral mb-3">
                 Real-Time Connection
