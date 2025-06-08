@@ -1,6 +1,8 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signUpHost } from "@/app/lib/sign-up";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
@@ -12,33 +14,22 @@ export default function SignUp() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
     if (!email || !password || !confirmPassword) {
       setError("All fields are required");
       return;
     }
 
-    try {
-      const response = await fetch("http://localhost:4000/api/hosts/sign-up", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
-      const data = await response.json();
+    const res = await signUpHost(email, password);
 
-      if (response.status === 400 || response.status === 500) {
-        alert(data.message);
-      } else {
-        router.push(`/host/${data.id}/dashboard`);
-      }
-    } catch (error) {
-      console.error("Error during sign-up:", error);
+    if (res.error) {
+      setError(res.error);
+    } else {
+      router.push(`/host/${res.id}/dashboard`);
     }
   };
 

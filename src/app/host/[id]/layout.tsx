@@ -1,23 +1,46 @@
-// app/host/[id]/dashboard/layout.tsx
-import { ReactNode } from "react";
-import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
-import { redirect } from "next/navigation";
+"use client";
+
+import * as React from "react";
+import { useRouter, useParams } from "next/navigation";
+import { supabase } from "@/app/lib/supabaseClient";
 
 interface Props {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-export default async function DashboardLayout({ children }: Props) {
-  const token = (await cookies()).get("token")?.value;
-  console.log(token);
-  console.log(process.env.JWT_SECRET);
-  if (!token) redirect("/host/login");
+export default function DashboardLayout({ children }: Props) {
+  const router = useRouter();
+  const params = useParams();
+  const userId = params?.id;
 
-  try {
-    jwt.verify(token, process.env.JWT_SECRET!);
-    return <>{children}</>;
-  } catch {
-    redirect("/host/login");
+  const [isAuthorized, setIsAuthorized] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const verifySession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session || session.user.id !== userId) {
+        router.push("/host/login");
+      } else {
+        setIsAuthorized(true);
+      }
+
+      setLoading(false);
+    };
+
+    if (userId) verifySession();
+  }, [userId, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        Loading your dashboard...
+      </div>
+    );
   }
+
+  return isAuthorized ? <>{children}</> : null;
 }

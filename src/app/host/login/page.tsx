@@ -1,6 +1,8 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginHost } from "@/app/lib/login";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,30 +19,17 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:4000/api/hosts/host-login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-          credentials: "include",
-        }
-      );
+      const user = await loginHost(email, password);
 
-      const data = await response.json();
-      if (data.status === 500) {
-        alert(data.message);
+      if (user?.id) {
+        router.push(`/host/${user.id}/dashboard`);
       } else {
-        if (data.id) {
-          // Redirect to dashboard
-          router.push(`/host/${data.id}/dashboard`);
-        } else {
-          console.error("No hostId returned from server.");
-        }
+        setError("User login successful but ID not found.");
+        console.error("User object:", user);
       }
-      // Assuming the server responds with JSON
-    } catch (error) {
-      console.error("Error during login:", error);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Login failed:", err.message);
     }
   };
 
