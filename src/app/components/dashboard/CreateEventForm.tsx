@@ -11,7 +11,6 @@ export default function CreateEventForm({
   isEditing,
   ref,
   setImageFile,
-
 }: {
   data: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
@@ -23,18 +22,18 @@ export default function CreateEventForm({
   setImageFile: (file: File | null) => void;
 }) {
   const [dragActive, setDragActive] = useState(false);
-
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Handle files dropped or selected
-
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const file = files[0];
-    setImageFile(file); // pass up to Dashboard
-  };
-  
-  
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      onChange({ target: { name: "image", value: reader.result } } as any);
+    };
+    reader.readAsDataURL(file);};
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -60,9 +59,12 @@ export default function CreateEventForm({
   return (
     <section ref={ref}>
       <div className="flex flex-col md:flex-row gap-4">
+        {/* Poster Preview */}
         <div className="md:w-1/2 border border-card">
           <EventPoster {...data} hideStuff={{ bookmark: true, heart: true }} />
         </div>
+
+        {/* Form Area */}
         <div className="md:w-1/2 bg-black border-card shadow-md rounded-2xl p-6 space-y-4">
           <form
             onSubmit={(e) => {
@@ -70,40 +72,45 @@ export default function CreateEventForm({
               isEditing ? onUpdate() : onCreate();
             }}
           >
-      {/* Drag & Drop zone */}
-      <div
-        onDragEnter={handleDrag}
-        onDragOver={handleDrag}
-        onDragLeave={handleDrag}
-        onDrop={handleDrop}
-        className={`mb-6 flex items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer ${
-          dragActive ? "border-thermal-hot bg-thermal-hot/10" : "border-zinc-600"
-        }`}
-        onClick={() => inputRef.current?.click()}
-      >
+            {/* Drag-and-Drop Image Upload */}
+            <div
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              onClick={() => inputRef.current?.click()}
+              className={`mb-6 flex items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
+                dragActive
+                  ? "border-thermal-hot bg-thermal-hot/10"
+                  : "border-zinc-600"
+              }`}
+            >
+              <p className="text-zinc-400">Drag & drop a photo here, or click to upload</p>
+              <input
+                ref={inputRef}
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleInputChange}
+                className="hidden"
+              />
+            </div>
 
-          <p className="text-zinc-400">Drag & drop a photo here, or click to upload</p>
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleInputChange}
-          className="hidden"
-        />
-      </div>
+            {/* Standard Inputs */}
             {["title", "date", "location"].map((field) => (
               <div key={field}>
                 <label className="block font-medium capitalize">{field}</label>
                 <input
                   name={field}
                   type={field === "date" ? "date" : "text"}
-                  value={(data as any)[field]}
+                  value={data[field] || ""}
                   onChange={onChange}
                   className="w-full p-2 border rounded-md"
                 />
               </div>
             ))}
+
+            {/* Description */}
             <div>
               <label className="block font-medium">Description</label>
               <textarea
@@ -113,6 +120,8 @@ export default function CreateEventForm({
                 className="w-full p-2 border rounded-md"
               />
             </div>
+
+            {/* Submit Buttons */}
             <div className="pt-4 flex gap-2">
               {isEditing && (
                 <button

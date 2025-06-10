@@ -41,6 +41,7 @@ export default function Dashboard() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
     setPosterData(prev => ({ ...prev,  [name]: value }));
   };
 
