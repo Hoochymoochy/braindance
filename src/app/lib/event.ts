@@ -24,16 +24,12 @@ export async function GET_ONE(id: String) {
 }
 
 // UPDATE EVENT
-export async function PATCH(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
-  const updates = await req.json();
-
-  const { error } = await supabase.from("events").update(updates).eq("id", id);
+export async function PATCH(id: string, body: any) {
+  const { error } = await supabase.from("events").update({ title: body.title, description: body.description, date: body.date, location: body.location, image_url: body.image }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
   return NextResponse.json({ success: true });
 }
+
 
 // DELETE EVENT
 export async function DELETE(id: string) {

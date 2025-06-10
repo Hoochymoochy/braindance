@@ -1,23 +1,30 @@
 "use client";
 
 import { GET_ONE, DELETE } from "@/app/lib/event";
+import { ParamValue } from "next/dist/server/request/params";
+import { useRouter } from "next/navigation";
+
+
 import React from "react";
 
 export default function EventsTable({
   title,
   events,
   showActions = false,
+  hostId,
   onEdit,
   fetchEvents,
 }: {
   title: string;
   events: Event[];
   showActions?: boolean;
+  hostId?: ParamValue;
   onEdit?: (id: string) => void;
   fetchEvents?: () => void;
 }) {
-  const onStart = async (id: string) => {
-    console.log(await GET_ONE(id));
+    const router = useRouter();
+  const onStart = async (eventId: string) => {
+    router.push(`/host/${hostId}/${eventId}/stream`);
   };
 
   const onDelete = async (id: string) => {

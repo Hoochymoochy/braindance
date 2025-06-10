@@ -11,7 +11,7 @@ interface Props {
 export default function DashboardLayout({ children }: Props) {
   const router = useRouter();
   const params = useParams();
-  const userId = params?.id;
+  const hostId = params?.hostId;
 
   const [isAuthorized, setIsAuthorized] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: Props) {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session || session.user.id !== userId) {
+      if (!session || session.user.id !== hostId) {
         router.push("/host/login");
       } else {
         setIsAuthorized(true);
@@ -31,8 +31,8 @@ export default function DashboardLayout({ children }: Props) {
       setLoading(false);
     };
 
-    if (userId) verifySession();
-  }, [userId, router]);
+    if (hostId) verifySession();
+  }, [hostId, router]);
 
   if (loading) {
     return (
@@ -41,6 +41,5 @@ export default function DashboardLayout({ children }: Props) {
       </div>
     );
   }
-
   return isAuthorized ? <>{children}</> : null;
 }

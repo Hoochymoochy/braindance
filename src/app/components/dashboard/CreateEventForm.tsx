@@ -1,5 +1,6 @@
+"use client";
 import { EventPoster } from "@/app/components/user/Poster";
-import React from "react";
+import React, { useState, useRef } from "react";
 
 export default function CreateEventForm({
   data,
@@ -8,6 +9,9 @@ export default function CreateEventForm({
   onUpdate,
   onCancel,
   isEditing,
+  ref,
+  setImageFile,
+
 }: {
   data: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
@@ -15,10 +19,46 @@ export default function CreateEventForm({
   onUpdate: () => void;
   onCancel: () => void;
   isEditing: boolean;
+  ref?: React.RefObject<HTMLDivElement>;
+  setImageFile: (file: File | null) => void;
 }) {
+  const [dragActive, setDragActive] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Handle files dropped or selected
+
+  const handleFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setImageFile(file); // pass up to Dashboard
+  };
+  
+  
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    handleFiles(e.dataTransfer.files);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFiles(e.target.files);
+  };
+
   return (
-    <section>
-      <h2 className="text-xl font-semibold mb-4">{isEditing ? "Edit Event" : "Create Event"}</h2>
+    <section ref={ref}>
       <div className="flex flex-col md:flex-row gap-4">
         <div className="md:w-1/2 border border-card">
           <EventPoster {...data} hideStuff={{ bookmark: true, heart: true }} />
@@ -30,6 +70,28 @@ export default function CreateEventForm({
               isEditing ? onUpdate() : onCreate();
             }}
           >
+      {/* Drag & Drop zone */}
+      <div
+        onDragEnter={handleDrag}
+        onDragOver={handleDrag}
+        onDragLeave={handleDrag}
+        onDrop={handleDrop}
+        className={`mb-6 flex items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer ${
+          dragActive ? "border-thermal-hot bg-thermal-hot/10" : "border-zinc-600"
+        }`}
+        onClick={() => inputRef.current?.click()}
+      >
+
+          <p className="text-zinc-400">Drag & drop a photo here, or click to upload</p>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleInputChange}
+          className="hidden"
+        />
+      </div>
             {["title", "date", "location"].map((field) => (
               <div key={field}>
                 <label className="block font-medium capitalize">{field}</label>
