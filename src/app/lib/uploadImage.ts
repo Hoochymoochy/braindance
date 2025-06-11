@@ -1,18 +1,44 @@
 import { supabase } from "@/app/lib/supabaseClient";
 
 export async function uploadEventImage(file: File, eventId: string): Promise<string> {
-  const ext = file.name.split(".").pop();
-  const path = `events/${eventId}.${ext}`;
+  try {
+    if (!file) throw new Error("No file provided!");
 
-  const { error } = await supabase.storage
-    .from("event-photos")
-    .upload(path, file, {
-      cacheControl: "3600",
-      upsert: true,
-    });
+    const ext = file.name.split(".").pop();
+    if (!ext) throw new Error("File extension missing!");
 
-  if (error) throw new Error("Upload failed: " + error.message);
+    const path = `events/${eventId}.${ext}`;
 
-  const { data } = supabase.storage.from("event-posters").getPublicUrl(path);
-  return data.publicUrl;
+    console.log("🔍 Uploading File:", file);
+    console.log("File Name:", file.name);
+    console.log("Event ID:", eventId);
+    console.log("Upload Path:", path);
+
+    // Session check (just for debugging, can remove later)
+    const { data: userSession, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) console.warn("⚠️ Session Error:", sessionError);
+    else console.log("👤 User Session Active");
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("event-photos")
+      .upload(path, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("❌ Upload Error:", uploadError);
+      throw new Error("Upload failed: " + uploadError.message);
+    }
+    console.log("📤 Upload Success:", uploadData);
+
+    // Supabase's getPublicUrl does NOT return an error obj, just returns the URL
+    const { publicUrl } = supabase.storage.from("event-photos").getPublicUrl(path);
+    console.log("🌐 Public URL:", publicUrl);
+
+    return publicUrl;
+  } catch (err: any) {
+    console.error("🔥 Full Upload Failure:", err.message);
+    throw err;
+  }
 }
