@@ -14,9 +14,10 @@ import {
 } from "lucide-react";
 
 import VenueLinks from "@/app/components/host/VenueLinks";
-import { addStream} from "@/app/lib/stream";
+import { addStream, getStreams } from "@/app/lib/stream";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { get } from "http";
 
 // Mock GlobeHeatmap component since it's not available
 const GlobeHeatmap = () => (
@@ -116,14 +117,14 @@ export default function BraindanceMockup() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const inputUrl = formData.get("url") as string;
     const videoId = extractVideoId(inputUrl);
     if (videoId) {
       setUrl(videoId);
-      addStream(eventId, videoId);
+      await addStream(videoId, eventId);
     } else {
       alert("Invalid YouTube URL");
     }
@@ -147,6 +148,13 @@ export default function BraindanceMockup() {
       setShowAnimation("");
     }, 500);
   };
+
+  useEffect(() => {
+    getStreams(eventId).then((data) => {
+      setUrl(data[0].link);
+    })
+    
+  }, [pendingPhotos]);
 
   const progressPercentage =
     totalPhotos > 0 ? (approvedPhotos.length / totalPhotos) * 100 : 0;
