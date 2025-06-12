@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 
 import VenueLinks from "@/app/components/host/VenueLinks";
-
+import { addStream} from "@/app/lib/stream";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 
 // Mock GlobeHeatmap component since it's not available
@@ -25,6 +26,8 @@ const GlobeHeatmap = () => (
 );
 
 export default function BraindanceMockup() {
+  const params = useParams();
+  const eventId = params?.eventId;
   const [pendingPhotos, setPendingPhotos] = useState([
     {
       id: 1,
@@ -96,6 +99,36 @@ export default function BraindanceMockup() {
     }, 500);
   };
 
+    const [url, setUrl] = useState("");
+
+  const extractVideoId = (fullUrl: string) => {
+    try {
+      const urlObj = new URL(fullUrl);
+      if (urlObj.hostname === "youtu.be") {
+        return urlObj.pathname.slice(1); // youtu.be/VIDEO_ID
+      }
+      if (urlObj.hostname.includes("youtube.com")) {
+        return urlObj.searchParams.get("v"); // youtube.com/watch?v=VIDEO_ID
+      }
+      return null;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const inputUrl = formData.get("url") as string;
+    const videoId = extractVideoId(inputUrl);
+    if (videoId) {
+      setUrl(videoId);
+      addStream(eventId, videoId);
+    } else {
+      alert("Invalid YouTube URL");
+    }
+  };
+
   // Function to reject photo (placeholder for your implementation)
   const rejectPhoto = () => {
     if (!currentPhoto) return;
@@ -125,13 +158,35 @@ export default function BraindanceMockup() {
           {/* Left Column - Live Stream + Photo Review */}
           <div className="lg:col-span-2 flex flex-col gap-4">
             {/* Live Stream */}
-            <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-              <div className="aspect-video relative bg-gradient-to-br from-purple-900/40 to-pink-900/40 flex items-center justify-center">
-                <div className="text-center">
-                  <Play className="mx-auto mb-2 text-purple-400" size={48} />
-                  <p className="text-gray-400">Live Stream Placeholder</p>
+          <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+            <div className="aspect-video relative">
+              {url ? (
+                <iframe
+                  className="w-full h-full absolute top-0 left-0"
+                  src={`https://www.youtube.com/embed/${url}?autoplay=1&mute=1`}
+                  title="YouTube Live Stream"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-black">
+                  <form onSubmit={handleSubmit} className="flex gap-2">
+                    <input
+                      type="text"
+                      name="url"
+                      placeholder="Enter YouTube URL"
+                      className="px-4 py-2 rounded-lg bg-gray-800 text-white w-72"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      Go Live
+                    </button>
+                  </form>
                 </div>
-              </div>
+              )}
+            </div>
 
               {/* Info Panel */}
               <div className="p-4">
