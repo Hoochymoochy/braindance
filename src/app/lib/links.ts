@@ -3,7 +3,7 @@ import { supabase } from "@/app/lib/supabaseClient";
 import { ParamValue } from "next/dist/server/request/params";
 
 export async function addLink(body: any, id: ParamValue) {
-  const { error } = await supabase.from("links").insert({ event_id: id, label: body.label, description: body.text, link: body.url });
+  const { error } = await supabase.from("links").insert({ event_id: id, label: body.label, description: body.description, link: body.link });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

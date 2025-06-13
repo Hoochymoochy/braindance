@@ -8,8 +8,8 @@ import { ParamValue } from "next/dist/server/request/params";
 
 type Link = {
   label: string;
-  text: string;
-  url: string;
+  description: string;
+  link: string;
   id: string;
 };
 type Tag = {
@@ -27,7 +27,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({id}) => {
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [isEditingLinks, setIsEditingLinks] = useState(false);
   const [tagInput, setTagInput] = useState("");
-  const [linkInput, setLinkInput] = useState({ label: "", text: "", url: "", id: "" });
+  const [linkInput, setLinkInput] = useState({ label: "", description: "", link: "", id: "" });
   const [tags, setTags] = useState<Tag[]>([]);
   const [links, setLinks] = useState<Link[]>([]);
 
@@ -124,18 +124,18 @@ const VenueLinks: React.FC<VenueLinksProps> = ({id}) => {
 
       {/* Links */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {links.map(({ label, text, url, id }) => (
+        {links.map(({ label, description, link, id }) => (
           <div key={id} className="relative group">
             <a
-              href={url}
+              href={link}
               target="_blank"
               rel="noopener noreferrer"
               className="block p-3 bg-gray-700 rounded-md text-center hover:bg-gray-600 transition-colors"
             >
               <p className="text-xs text-gray-400">{label}</p>
-              <p className="text-sm text-white">{text}</p>
+              <p className="text-sm text-white">{description}</p>
 
-              {url && url !== "#" && (
+              {link && link !== "#" && (
                 <ExternalLink
                   size={12}
                   className="absolute top-1 right-1 text-gray-500"
