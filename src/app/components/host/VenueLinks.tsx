@@ -55,9 +55,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({id}) => {
   }
 
   const handleDeleteLink = async (id: string) => {
-    console.log(id);
     await deleteLink(id);
-    
     fetchDates();
   }
 
@@ -126,28 +124,37 @@ const VenueLinks: React.FC<VenueLinksProps> = ({id}) => {
 
       {/* Links */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {links.map(({ label, text, url, id }, index) => (
-          <div
-            key={index}
-            className="relative group p-3 bg-gray-700 rounded-md text-center hover:bg-gray-600 transition-colors cursor-pointer"
-            onClick={() => url && url !== "#" && window.open(url, "_blank")}
-          >
-            <p className="text-xs text-gray-400">{label}</p>
-            <p className="text-sm text-white">{text}</p>
-            {url && url !== "#" && (
-              <ExternalLink
-                size={12}
-                className="absolute top-1 right-1 text-gray-500"
-              />
+        {links.map(({ label, text, url, id }) => (
+          <div key={id} className="relative group">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-3 bg-gray-700 rounded-md text-center hover:bg-gray-600 transition-colors"
+            >
+              <p className="text-xs text-gray-400">{label}</p>
+              <p className="text-sm text-white">{text}</p>
+
+              {url && url !== "#" && (
+                <ExternalLink
+                  size={12}
+                  className="absolute top-1 right-1 text-gray-500"
+                />
+              )}
+            </a>
+
+            {isEditingLinks && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault(); // stops <a> navigation
+                  e.stopPropagation(); // stops bubbling
+                  handleDeleteLink(id);
+                }}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              >
+                <X size={12} className="text-white" />
+              </button>
             )}
-{isEditingLinks && (
-  <button
-    onClick={(e) => handleDeleteLink(linkInput.id)}
-    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-  >
-    <X size={12} className="text-white" />
-  </button>
-)}
           </div>
         ))}
 
