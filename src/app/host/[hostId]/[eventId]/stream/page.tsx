@@ -420,7 +420,7 @@ export default function BraindanceMockup() {
             </div>
           </div>
         </main>{" "}
-        <VenueLinks />
+        <VenueLinks id={eventId} />
       </div>
     </div>
   );

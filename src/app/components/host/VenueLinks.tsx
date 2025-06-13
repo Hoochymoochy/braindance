@@ -1,67 +1,72 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, X, ExternalLink } from "lucide-react";
+
+import { addLink, getLinks, deleteLink } from "@/app/lib/links";
+import { addTag, getTags, deleteTag } from "@/app/lib/tags";
+import { useParams } from "next/navigation";
+import { ParamValue } from "next/dist/server/request/params";
 
 type Link = {
   label: string;
   text: string;
   url: string;
+  id: string;
 };
+type Tag = {
+  tag: string;
+  id: string;
+}
+
+
 
 type VenueLinksProps = {
-  tags?: string[];
-  links?: Link[];
-  onUpdateTags?: (newTags: string[]) => void;
-  onUpdateLinks?: (newLinks: Link[]) => void;
+  id: ParamValue;
 };
 
-const VenueLinks: React.FC<VenueLinksProps> = ({
-  tags = [
-    "#ClubVertex",
-    "#NeonNights",
-    "#DJNeonPulse",
-    "#LiveMusic",
-    "#LosAngeles",
-  ],
-  links = [
-    { label: "MERCH", text: "Shop Collection", url: "#" },
-    { label: "TICKETS", text: "Upcoming Events", url: "#" },
-    { label: "PARTNERS", text: "View Sponsors", url: "#" },
-    { label: "DRINKS", text: "Menu & Specials", url: "#" },
-  ],
-  onUpdateTags = () => {},
-  onUpdateLinks = () => {},
-}) => {
-  // rest of your fire code...
-
+const VenueLinks: React.FC<VenueLinksProps> = ({id}) => {
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [isEditingLinks, setIsEditingLinks] = useState(false);
-  const [newTag, setNewTag] = useState("");
-  const [newLink, setNewLink] = useState({ label: "", text: "", url: "" });
+  const [tagInput, setTagInput] = useState("");
+  const [linkInput, setLinkInput] = useState({ label: "", text: "", url: "", id: "" });
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [links, setLinks] = useState<Link[]>([]);
 
-  const addTag = () => {
-    if (newTag.trim()) {
-      const formattedTag = newTag.startsWith("#") ? newTag : `#${newTag}`;
-      onUpdateTags([...tags, formattedTag]);
-      setNewTag("");
-    }
+  const fetchDates = async () => {
+    const tags = await getTags(id);
+    const links = await getLinks(id);
+    setTags(tags);
+    setLinks(links);
   };
 
-  const removeTag = (tagToRemove: string) => {
-    onUpdateTags(tags.filter((tag) => tag !== tagToRemove));
+  const handleAddTag = async () => {
+    await addTag(tagInput, id);
+    fetchDates();
   };
 
-  const addLink = () => {
-    if (newLink.label.trim() && newLink.text.trim()) {
-      onUpdateLinks([...links, { ...newLink }]);
-      setNewLink({ label: "", text: "", url: "" });
-    }
+  const handleAddLink = async () => {
+    await addLink(linkInput, id);
+    console.log(linkInput.label + " " + id);
+    fetchDates();
   };
 
-  const removeLink = (indexToRemove: number) => {
-    onUpdateLinks(links.filter((_, index) => index !== indexToRemove));
-  };
+  const handleDeleteTag = async (id: string) => {
+    await deleteTag(id);
+    fetchDates();
+  }
+
+  const handleDeleteLink = async (id: string) => {
+    console.log(id);
+    await deleteLink(id);
+    
+    fetchDates();
+  }
+
+  useEffect(() => {
+    fetchDates();
+  }, [id]);
 
   return (
+
     <div className="mt-4 rounded-lg border border-gray-800 bg-gray-800/50 p-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-bold text-white">Venue Tags / Links</h3>
@@ -86,11 +91,11 @@ const VenueLinks: React.FC<VenueLinksProps> = ({
         {tags.map((tag, index) => (
           <div key={index} className="relative group">
             <span className="px-3 py-1 bg-gray-700 rounded-full text-sm text-gray-300 hover:bg-gray-600 transition-colors">
-              {tag}
+              #{tag.tag}
             </span>
             {isEditingTags && (
               <button
-                onClick={() => removeTag(tag)}
+                onClick={() => handleDeleteTag(tag.id)}
                 className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X size={10} className="text-white" />
@@ -103,14 +108,14 @@ const VenueLinks: React.FC<VenueLinksProps> = ({
           <div className="flex items-center gap-2">
             <input
               type="text"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
               placeholder="Add tag..."
               className="px-2 py-1 bg-gray-600 rounded text-sm text-white placeholder-gray-400 w-24"
-              onKeyDown={(e) => e.key === "Enter" && addTag()}
+              onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
             />
             <button
-              onClick={addTag}
+              onClick={handleAddTag}
               className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center hover:bg-green-700 transition-colors"
             >
               <Plus size={12} className="text-white" />
@@ -121,7 +126,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({
 
       {/* Links */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {links.map(({ label, text, url }, index) => (
+        {links.map(({ label, text, url, id }, index) => (
           <div
             key={index}
             className="relative group p-3 bg-gray-700 rounded-md text-center hover:bg-gray-600 transition-colors cursor-pointer"
@@ -135,17 +140,14 @@ const VenueLinks: React.FC<VenueLinksProps> = ({
                 className="absolute top-1 right-1 text-gray-500"
               />
             )}
-            {isEditingLinks && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeLink(index);
-                }}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X size={12} className="text-white" />
-              </button>
-            )}
+{isEditingLinks && (
+  <button
+    onClick={(e) => handleDeleteLink(linkInput.id)}
+    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+  >
+    <X size={12} className="text-white" />
+  </button>
+)}
           </div>
         ))}
 
@@ -153,29 +155,29 @@ const VenueLinks: React.FC<VenueLinksProps> = ({
           <div className="p-3 bg-gray-600 rounded-md border-2 border-dashed border-gray-500">
             <input
               type="text"
-              value={newLink.label}
+              value={linkInput.label}
               onChange={(e) =>
-                setNewLink({ ...newLink, label: e.target.value })
+                setLinkInput({ ...linkInput, label: e.target.value })
               }
               placeholder="Label"
               className="w-full mb-1 px-1 py-0.5 bg-gray-500 rounded text-xs text-white placeholder-gray-300"
             />
             <input
               type="text"
-              value={newLink.text}
-              onChange={(e) => setNewLink({ ...newLink, text: e.target.value })}
+              value={linkInput.text}
+              onChange={(e) => setLinkInput({ ...linkInput, text: e.target.value })}
               placeholder="Display text"
               className="w-full mb-1 px-1 py-0.5 bg-gray-500 rounded text-xs text-white placeholder-gray-300"
             />
             <input
               type="url"
-              value={newLink.url}
-              onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-              placeholder="URL (optional)"
+              value={linkInput.url}
+              onChange={(e) => setLinkInput({ ...linkInput, url: e.target.value })}
+              placeholder="URL"
               className="w-full mb-2 px-1 py-0.5 bg-gray-500 rounded text-xs text-white placeholder-gray-300"
             />
             <button
-              onClick={addLink}
+              onClick={handleAddLink}
               className="w-full py-1 bg-green-600 rounded text-xs hover:bg-green-700 transition-colors"
             >
               Add Link
