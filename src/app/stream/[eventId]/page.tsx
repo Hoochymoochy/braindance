@@ -1,10 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Play, Users, Globe, Share, Heart, MessageSquare } from "lucide-react";
 import Image from "next/image";
-import GlobeHeatmap from "../components/GlobeHeatmap";
-
+import GlobeHeatmap from "@/app/components/GlobeHeatmap";
+import { useParams } from "next/navigation";
+import { getStreams } from "@/app/lib/stream";
+import { get } from "http";
 export default function BraindanceUserStream() {
+    const params = useParams();
+    const hostId = params?.eventId;
   const [photoData, setPhotoData] = useState<
     { src: string; alt: string; user: string }[]
   >([]);
@@ -12,6 +16,18 @@ export default function BraindanceUserStream() {
   const [merchItems, setMerchItems] = useState<
     { title: string; subtitle: string }[]
   >([]);
+
+  const [streams, setStreams] = useState("");
+
+  const getDate = async () => {
+    const stream = await getStreams(hostId);
+    setStreams(stream[0].link);
+    console.log(stream[0].link);
+  }
+
+  useEffect(() => {
+    getDate();
+  }, []);
 
   return (
     <div className="mx-auto p-10 bg-black thermal-background">
@@ -22,7 +38,7 @@ export default function BraindanceUserStream() {
             <div className="aspect-video relative">
               <iframe
                 className="w-full h-full absolute top-0 left-0"
-                src="https://www.youtube.com/embed/VIDEO_ID?autoplay=1&mute=1"
+                src={`https://www.youtube.com/embed/${streams}?autoplay=1&mute=1`}
                 title="YouTube Live Stream"
                 allow="autoplay; encrypted-media"
                 allowFullScreen
