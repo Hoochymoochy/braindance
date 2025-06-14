@@ -7,7 +7,6 @@ export async function uploadEventImage(file: File, eventId: string): Promise<str
     const ext = file.name.split(".").pop();
     if (!ext) throw new Error("File extension missing!");
 
-    // Validate extension
     if (!["jpg", "jpeg", "png", "webp"].includes(ext.toLowerCase())) {
       throw new Error("Unsupported file type.");
     }
@@ -30,19 +29,23 @@ export async function uploadEventImage(file: File, eventId: string): Promise<str
 
     if (uploadError) throw new Error("Upload failed: " + uploadError.message);
 
-    // If bucket is public
-    const { publicUrl } = supabase.storage.from("event-photos").getPublicUrl(path);
-    return publicUrl;
+    // Correctly get the public URL
+    const { data: publicData, error: publicUrlError } = supabase.storage
+      .from("event-photos")
+      .getPublicUrl(path);
 
-    // 🔐 If bucket is private:
-    // const { data: signed } = await supabase.storage.from("event-photos").createSignedUrl(path, 3600);
-    // return signed?.signedUrl ?? "";
+    if (publicUrlError || !publicData?.publicUrl) {
+      throw new Error("Failed to get public URL");
+    }
+
+    return publicData.publicUrl;
 
   } catch (err: any) {
     console.error("🔥 Full Upload Failure:", err.message);
     throw err;
   }
 }
+
 
 export async function uploadPartyImage(file: File, eventId: string): Promise<string> {
   try {

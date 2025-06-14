@@ -39,3 +39,9 @@ export async function DELETE(id: string) {
   }
   return { success: true };
 }
+
+export async function getGlobalEvents() {
+  const { data, error } = await supabase.from("events").select("*");
+  if (error) throw new Error(error.message);
+  return data;
+}

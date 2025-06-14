@@ -5,14 +5,14 @@ import { Bookmark, Heart } from "lucide-react";
 import Link from "next/link";
 
 export type EventPosterProps = {
-  image: string;
+  image_url: string;
   title: string;
   date: string;
   location: string;
   description?: string;
   host_id: string;
   id: string;
-  live?: boolean;
+  link?: string;
   hideStuff?: {
     bookmark?: boolean;
     heart?: boolean;
@@ -24,12 +24,12 @@ function addCount() {
 }
 
 export const EventPoster: React.FC<EventPosterProps> = ({
-  image,
+  image_url,
   title,
   date,
   location,
   description,
-  live,
+  link,
   host_id,
   id,
   hideStuff = {},
@@ -44,7 +44,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
     <div className="bg-black border border-thermal-hot/30 rounded-2xl overflow-hidden shadow-lg hover:shadow-thermal hover:border-thermal-hot/70 transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto">
       <div className="relative aspect-[2/3] w-full">
         <img
-          src={image || "/placeholder.svg"}
+          src={image_url || "/placeholder.svg"}
           alt={title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -98,7 +98,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
             )}
           </div>
 
-          {live === true && (
+          {link && (
             <Link
               href={`/stream?host_id=${host_id}&id=${id}`}
               onClick={addCount}

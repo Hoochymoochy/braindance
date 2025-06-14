@@ -1,35 +1,50 @@
 "use client";
+
 import React, { useEffect } from "react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
+import { getGlobalEvents } from "@/app/lib/event";
+import { getStreams } from "@/app/lib/stream";
 
 export default function ExamplePage() {
   const [topEvents, setTopEvents] = React.useState<EventPosterProps[]>([]);
   const [liveEvents, setLiveEvents] = React.useState<EventPosterProps[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = React.useState<
-    EventPosterProps[]
-  >([]);
+  const [upcomingEvents, setUpcomingEvents] = React.useState<EventPosterProps[]>([]);
 
-  useEffect(() => {
-    fetch("http://localhost:4000/api/events/get-global-events")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setUpcomingEvents(data.upcomingEvents || []);
-        setLiveEvents(data.liveEvents || []);
-        // If you have top events in your API response, uncomment this:
-        // setTopEvents(data.topEvents || []);
+  const getEvents = async () => {
+    const events = await getGlobalEvents();
 
-        // If you want to use live events as top events when no top events exist:
-        if (!data.topEvents || data.topEvents.length === 0) {
-          setTopEvents(data.liveEvents || []);
+    const live: EventPosterProps[] = [];
+    const upcoming: EventPosterProps[] = [];
+
+    await Promise.all(
+      events.map(async (event) => {
+        const streams = await getStreams(event.id);
+        const hasLiveLink = streams?.some((s) => s.link !== null);
+
+        console.log(event.image_url)
+
+        if (hasLiveLink) {
+          const liveEvent = {
+            ...event,
+            image_url: event.image_url,
+            link: streams?.find((s) => s.link !== null)?.link,
+          }
+
+          live.push(liveEvent);
         } else {
-          setTopEvents(data.topEvents);
+          upcoming.push(event);
         }
       })
-      .catch((error) => {
-        console.error("Error fetching events:", error);
-      });
+    );
+
+    setLiveEvents(live);
+    setUpcomingEvents(upcoming);
+    // setTopEvents(events); // if needed
+  };
+
+  useEffect(() => {
+    getEvents();
   }, []);
 
   return (
