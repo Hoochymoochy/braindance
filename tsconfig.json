@@ -28,7 +28,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/lore",
-    "src/app/d"
+    "src/app/host/[hostId]/[eventId]/photo-upload"
   ],
   "exclude": ["node_modules"]
 }
