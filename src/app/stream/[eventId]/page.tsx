@@ -6,6 +6,7 @@ import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import { useParams } from "next/navigation";
 import { getStreams } from "@/app/lib/stream";
 import { topCity } from "@/app/lib/location";
+import { totalViews } from "@/app/lib/views";
 export default function BraindanceUserStream() {
     const params = useParams();
     const eventId = params?.eventId;
@@ -19,14 +20,15 @@ export default function BraindanceUserStream() {
   const [City, setTopCity] = useState<string>("");
 
   const [streams, setStreams] = useState("");
+  const [views, setViews] = useState(0);
 
   const getDate = async () => {
-    // const stream = await getStreams(eventId);
+    const stream = await getStreams(eventId);
     const city = await topCity(eventId);
+    const views = await totalViews(eventId);
     setTopCity(city);
-
-    // setStreams(stream[0].link);
-    // console.log(stream[0].link);
+    setViews(views);
+    setStreams(stream[0].link);
   }
 
   useEffect(() => {
@@ -97,7 +99,7 @@ export default function BraindanceUserStream() {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <p className="text-sm text-gray-400">Current Viewers</p>
-                <p className="text-3xl font-bold text-purple-400">0</p>
+                <p className="text-3xl font-bold text-purple-400">{views}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Top City</p>
