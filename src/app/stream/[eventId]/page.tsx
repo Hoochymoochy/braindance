@@ -5,10 +5,10 @@ import Image from "next/image";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import { useParams } from "next/navigation";
 import { getStreams } from "@/app/lib/stream";
-import { get } from "http";
+import { topCity } from "@/app/lib/location";
 export default function BraindanceUserStream() {
     const params = useParams();
-    const hostId = params?.eventId;
+    const eventId = params?.eventId;
   const [photoData, setPhotoData] = useState<
     { src: string; alt: string; user: string }[]
   >([]);
@@ -16,13 +16,17 @@ export default function BraindanceUserStream() {
   const [merchItems, setMerchItems] = useState<
     { title: string; subtitle: string }[]
   >([]);
+  const [City, setTopCity] = useState<string>("");
 
   const [streams, setStreams] = useState("");
 
   const getDate = async () => {
-    const stream = await getStreams(hostId);
-    setStreams(stream[0].link);
-    console.log(stream[0].link);
+    // const stream = await getStreams(eventId);
+    const city = await topCity(eventId);
+    setTopCity(city);
+
+    // setStreams(stream[0].link);
+    // console.log(stream[0].link);
   }
 
   useEffect(() => {
@@ -96,8 +100,8 @@ export default function BraindanceUserStream() {
                 <p className="text-3xl font-bold text-purple-400">0</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Active City</p>
-                <p className="text-3xl font-bold text-pink-400">NA</p>
+                <p className="text-sm text-gray-400">Top City</p>
+                <p className="text-3xl font-bold text-pink-400">{City}</p>
               </div>
             </div>
             <GlobeHeatmap />

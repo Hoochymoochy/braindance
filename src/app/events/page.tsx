@@ -5,6 +5,7 @@ import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getGlobalEvents } from "@/app/lib/event";
 import { getStreams } from "@/app/lib/stream";
+import { getLocation } from "@/app/lib/location";
 
 export default function ExamplePage() {
   const [topEvents, setTopEvents] = React.useState<EventPosterProps[]>([]);
@@ -36,6 +37,8 @@ export default function ExamplePage() {
           upcoming.push(event);
         }
       })
+
+      
     );
 
     setLiveEvents(live);
@@ -43,8 +46,32 @@ export default function ExamplePage() {
     // setTopEvents(events); // if needed
   };
 
+  const setLocation = async (lat: any, lng: any) => {
+    const location = await getLocation(lat, lng);
+    console.log(location);
+  }
+
   useEffect(() => {
     getEvents();
+
+    if (!navigator.geolocation) {
+    console.log("Geolocation not supported.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      setLocation(position.coords.latitude, position.coords.longitude);
+    },
+    (error) => {
+      console.error("Location error:", error);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    }
+  );
   }, []);
 
   return (

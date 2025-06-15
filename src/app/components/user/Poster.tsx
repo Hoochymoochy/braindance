@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import Link from "next/link";
+import { addCount } from "@/app/lib/location";
+
 
 export type EventPosterProps = {
   image_url: string;
@@ -18,10 +20,6 @@ export type EventPosterProps = {
     heart?: boolean;
   };
 };
-
-function addCount() {
-  // Implement your counter logic here
-}
 
 export const EventPoster: React.FC<EventPosterProps> = ({
   image_url,
@@ -39,6 +37,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
   const toggleSaved = () => setSaved((prev) => !prev);
   const toggleLiked = () => setLiked((prev) => !prev);
+  const handleClick = () => addCount(id);
 
   return (
     <div className="bg-black border border-thermal-hot/30 rounded-2xl overflow-hidden shadow-lg hover:shadow-thermal hover:border-thermal-hot/70 transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto">
@@ -101,7 +100,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
           {link && (
             <Link
               href={`/stream/${id}`}
-              onClick={addCount}
+              onClick={handleClick}
               className="bg-thermal-hot hover:bg-thermal-warm text-black px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition-colors duration-300"
             >
               Join
