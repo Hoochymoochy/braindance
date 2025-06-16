@@ -7,6 +7,10 @@ import { ArrowRight, Flame, Zap } from "lucide-react";
 import { BrainLogo } from "@/app/components/Brain-logo";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
+import { getGlobalEvents } from "@/app/lib/event";
+import { getStreams } from "@/app/lib/stream";
+
+
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -20,29 +24,39 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const eventsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetch("http://localhost:4000/api/events/get-global-events")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setUpcomingEvents(data.upcomingEvents || []);
-        setLiveEvents(data.liveEvents || []);
-        // If you have top events in your API response, uncomment this:
-        // setTopEvents(data.topEvents || []);
+const getEvents = async () => {
+  const events = await getGlobalEvents();
 
-        // If you want to use live events as top events when no top events exist:
-        if (!data.topEvents || data.topEvents.length === 0) {
-          setTopEvents(data.liveEvents || []);
-        } else {
-          setTopEvents(data.topEvents);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching events:", error);
-      });
-  }, []);
+  const live: EventPosterProps[] = [];
+  const upcoming: EventPosterProps[] = [];
+
+  await Promise.all(
+    events.map(async (event) => {
+      const streams = await getStreams(event.id);
+      const hasLiveLink = streams?.some((s) => s.link !== null);
+
+      if (hasLiveLink) {
+        const liveEvent = {
+          ...event,
+          image_url: event.image_url,
+          link: streams?.find((s) => s.link !== null)?.link,
+        };
+
+        live.push(liveEvent);
+      } else {
+        upcoming.push(event);
+      }
+    })
+  );
+
+  // ✂️ Slice only 3 upcoming for the homepage
+  setLiveEvents(live);
+  setUpcomingEvents(upcoming.slice(0, 3));
+};
+
 
   useEffect(() => {
+    getEvents();
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };

@@ -43,7 +43,6 @@ export default function ExamplePage() {
 
     setLiveEvents(live);
     setUpcomingEvents(upcoming);
-    // setTopEvents(events); // if needed
   };
 
   const setLocation = async (lat: any, lng: any) => {
