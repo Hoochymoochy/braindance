@@ -16,15 +16,29 @@ export async function getLocation(lon: any, lat: any) {
 
 export async function addCount(id: ParamValue) {
   const city = localStorage.getItem("userCity");
+  const lastViewedKey = `lastViewed_${id}`;
+  const cooldown = 10 * 60 * 1000; // 10 minutes
+
+  const lastViewed = localStorage.getItem(lastViewedKey);
+  const now = Date.now();
+
+  // Skip if within cooldown
+  if (lastViewed && now - parseInt(lastViewed) < cooldown) {
+    return NextResponse.json({ success: false, message: "Cooldown active" });
+  }
 
   if (city) {
     await supabase.rpc("increment_city_view", {
       event: id,
       cityname: city,
     });
+
+    localStorage.setItem(lastViewedKey, now.toString());
   }
+
   return NextResponse.json({ success: true });
 }
+
 
 export async function topCity(id: ParamValue) {
   const { data, error } = await supabase

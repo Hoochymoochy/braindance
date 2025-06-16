@@ -99,7 +99,7 @@ export default function BraindanceUserStream() {
             </h3>
             <div className="flex justify-between items-center mb-4">
               <div>
-                <p className="text-sm text-gray-400">Current Viewers</p>
+                <p className="text-sm text-gray-400">Total Views</p>
                 <p className="text-3xl font-bold text-purple-400">{views}</p>
               </div>
               <div>
@@ -115,7 +115,7 @@ export default function BraindanceUserStream() {
               <Globe size={18} className="text-purple-400 group-hover:text-purple-300" />
               <span className="font-medium">heatmap / 3D globe</span>
             </button> */}
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            {/* <div className="mt-4 grid grid-cols-2 gap-2">
               {[
                 { label: "PEAK VIEWERS", value: "0", color: "text-pink-300" },
                 { label: "STREAM TIME", value: "0", color: "text-purple-300" },
@@ -128,7 +128,7 @@ export default function BraindanceUserStream() {
                   <p className={`text-xl font-bold ${color}`}>{value}</p>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </main>
