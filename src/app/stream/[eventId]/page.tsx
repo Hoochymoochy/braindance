@@ -26,6 +26,7 @@ export default function BraindanceUserStream() {
     const stream = await getStreams(eventId);
     const city = await topCity(eventId);
     const views = await totalViews(eventId);
+    
     setTopCity(city);
     setViews(views);
     setStreams(stream[0].link);
@@ -106,7 +107,7 @@ export default function BraindanceUserStream() {
                 <p className="text-3xl font-bold text-pink-400">{City}</p>
               </div>
             </div>
-            <GlobeHeatmap />
+            <GlobeHeatmap id={eventId} />
 
             {/* can add button in to hide and show the heatmap */}
 

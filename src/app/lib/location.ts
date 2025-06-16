@@ -8,8 +8,8 @@ export async function getLocation(lon: any, lat: any) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (data && data[0]?.city) { 
     localStorage.setItem("userCity", data[0].city);
-    // localStorage.setItem("lon", lat);
-    // localStorage.setItem("lat", lon);
+    localStorage.setItem("lon", lat);
+    localStorage.setItem("lat", lon);
    }
   return NextResponse.json({ success: true });
 }

@@ -1,26 +1,44 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Globe from "react-globe.gl";
+import { getAllGeo } from "@/app/lib/heatmap";
+import { ParamValue } from "next/dist/server/request/params";
 
-const GlobeHeatmap: React.FC = () => {
+type GeoData = {
+  lat: number;
+  lng: number;
+  weight: number;
+};
+
+type Props = {
+  id: ParamValue;
+};
+
+const GlobeHeatmap: React.FC<Props> = ({ id }) => {
   const globeEl = useRef<any>(null);
-
-  const gData = [...Array(900).keys()].map(() => ({
-    lat: (Math.random() - 0.5) * 160,
-    lng: (Math.random() - 0.5) * 360,
-    weight: Math.random(),
-  }));
+  const [gData, setGData] = useState<GeoData[]>([]);
 
   useEffect(() => {
+    if (!id || typeof id !== "string") return; // safety check
+
+    // Set up globe controls
     if (globeEl.current) {
       const controls = globeEl.current.controls();
       controls.autoRotate = true;
       controls.autoRotateSpeed = 0.3;
-      controls.enableZoom = false; // Disable zooming
+      controls.enableZoom = false;
       controls.enablePan = false;
     }
-  }, []);
+
+    // Get data for this specific event
+    const fetchGeo = async () => {
+      const data = await getAllGeo(id); // should return array of GeoData
+      if (data) setGData(data);
+    };
+
+    fetchGeo();
+  }, [id]);
 
   return (
     <div
@@ -35,7 +53,7 @@ const GlobeHeatmap: React.FC = () => {
     >
       <Globe
         ref={globeEl}
-        width={250} // or '100%' for responsiveness
+        width={250}
         height={250}
         globeImageUrl="https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg"
         backgroundColor="rgba(0,0,0,0)"
@@ -49,7 +67,6 @@ const GlobeHeatmap: React.FC = () => {
       />
     </div>
   );
-  
 };
 
 export default GlobeHeatmap;

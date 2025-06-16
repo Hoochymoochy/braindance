@@ -47,8 +47,7 @@ export default function ExamplePage() {
   };
 
   const setLocation = async (lat: any, lng: any) => {
-    const location = await getLocation(lat, lng);
-    console.log(location);
+    await getLocation(lat, lng);
   }
 
   useEffect(() => {

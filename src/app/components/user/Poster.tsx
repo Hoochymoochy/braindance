@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import Link from "next/link";
 import { addCount } from "@/app/lib/location";
+import { addGeo } from "@/app/lib/heatmap";
 
 
 export type EventPosterProps = {
@@ -12,7 +13,6 @@ export type EventPosterProps = {
   date: string;
   location: string;
   description?: string;
-  host_id: string;
   id: string;
   link?: string;
   hideStuff?: {
@@ -28,7 +28,6 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   location,
   description,
   link,
-  host_id,
   id,
   hideStuff = {},
 }) => {
@@ -37,7 +36,11 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
   const toggleSaved = () => setSaved((prev) => !prev);
   const toggleLiked = () => setLiked((prev) => !prev);
-  const handleClick = () => addCount(id);
+  const handleClick = () => {
+    addCount(id);
+    addGeo(id);
+  }
+  
 
   return (
     <div className="bg-black border border-thermal-hot/30 rounded-2xl overflow-hidden shadow-lg hover:shadow-thermal hover:border-thermal-hot/70 transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto">
