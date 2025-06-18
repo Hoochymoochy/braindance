@@ -7,11 +7,12 @@ import { useParams } from "next/navigation";
 import { getStreams } from "@/app/lib/stream";
 import { topCity } from "@/app/lib/location";
 import { totalViews } from "@/app/lib/views";
+import { getAcceptedPhotos } from "@/app/lib/photo";
 export default function BraindanceUserStream() {
     const params = useParams();
     const eventId = params?.eventId;
   const [photoData, setPhotoData] = useState<
-    { src: string; alt: string; user: string }[]
+    { src: string; alt: string; }[]
   >([]);
   const [tags, setTags] = useState<string[]>([]);
   const [merchItems, setMerchItems] = useState<
@@ -26,10 +27,19 @@ export default function BraindanceUserStream() {
     const stream = await getStreams(eventId);
     const city = await topCity(eventId);
     const views = await totalViews(eventId);
+    const photos = await getAcceptedPhotos(eventId);
+
+    const mappedPhotos = photos.map((photo: any) => ({
+      src: photo.image_url,
+      alt: `Uploaded photo ${photo.id}`, // You can customize this later
+    }));
+
+    console.log(photos);
     
     setTopCity(city);
     setViews(views);
     setStreams(stream[0].link);
+    setPhotoData(mappedPhotos);
   }
 
   useEffect(() => {
@@ -161,7 +171,6 @@ export default function BraindanceUserStream() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end">
                   <div className="p-2 w-full">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-medium">@{photo.user}</span>
                       <Heart size={14} className="text-pink-400" />
                     </div>
                   </div>

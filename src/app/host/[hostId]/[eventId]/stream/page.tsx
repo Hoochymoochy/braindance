@@ -17,7 +17,8 @@ import VenueLinks from "@/app/components/host/VenueLinks";
 import { addStream, getStreams } from "@/app/lib/stream";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getPhotos, deletePhoto, acceptPhoto, addPhoto } from "@/app/lib/photo";
+import { getPhotos, deletePhoto, acceptPhoto, getAcceptedPhotos } from "@/app/lib/photo";
+import { ParamValue } from "next/dist/server/request/params";
 
 // Mock GlobeHeatmap component since it's not available
 const GlobeHeatmap = () => (
@@ -30,8 +31,6 @@ interface Photo {
   id: number;
   image_url: string;
   event_id: string;
-  status?: 'pending' | 'approved' | 'rejected';
-  created_at?: string;
 }
 
 export default function BraindanceMockup() {
@@ -57,17 +56,17 @@ export default function BraindanceMockup() {
   const loadPhotos = async () => {
     try {
       setIsLoading(true);
-      const photos = await getPhotos(eventId);
-      
-      // Separate photos by status - assuming you have a status field
-      // If you don't have a status field, you might need to check different tables
-      const pending = photos.filter(photo => !photo.status || photo.status === 'pending');
-      const approved = photos.filter(photo => photo.status === 'approved');
-      
+
+      // Grab pending + approved in parallel
+      const [pending, approved] = await Promise.all([
+        getPhotos(eventId as ParamValue),           // returns only pending photos
+        getAcceptedPhotos(eventId as ParamValue),   // returns only approved photos
+      ]);
+
       setPendingPhotos(pending);
       setApprovedPhotos(approved);
-      
-      // Update stats
+
+      // Update stats cleanly
       setReviewStats(prev => ({
         ...prev,
         approved: approved.length,
@@ -78,6 +77,8 @@ export default function BraindanceMockup() {
       setIsLoading(false);
     }
   };
+
+
 
   const extractVideoId = (fullUrl: string) => {
     try {
@@ -115,7 +116,8 @@ export default function BraindanceMockup() {
     
     try {
       // Move photo to approved status
-      await acceptPhoto(currentPhoto.image_url, currentPhoto.id);
+      await acceptPhoto(currentPhoto.image_url, eventId);
+      await deletePhoto(currentPhoto.id);
       
       setTimeout(() => {
         const photoToApprove = { ...currentPhoto, status: 'approved' as const };

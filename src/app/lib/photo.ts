@@ -22,7 +22,13 @@ export async function getPhotos(id: ParamValue) {
 
 
 export async function acceptPhoto(url: any, id: ParamValue) {
-  const { error } = await supabase.from("accepted_photos").update({ image_url: url }).eq("id", id);
+  const { error } = await supabase.from("accepted_photos").insert({ image_url: url, event_id: id });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
+}
+
+export async function getAcceptedPhotos(id: ParamValue) {
+  const { data, error } = await supabase.from("accepted_photos").select("*").eq("event_id", id);
+  if (error) throw new Error(error.message);
+  return data;
 }
