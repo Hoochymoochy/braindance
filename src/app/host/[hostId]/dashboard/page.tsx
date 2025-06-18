@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import StatsSection from "@/app/components/dashboard/StatsSection";
 import EventsTable from "@/app/components/dashboard/EventsTable";
 import CreateEventForm from "@/app/components/dashboard/CreateEventForm";
-import { GET, GET_ONE, POST, PATCH, DELETE } from "@/app/lib/event";
-import { uploadEventImage } from "@/app/lib/uploadImage";
+import { GET, GET_ONE, POST, PATCH, DELETE } from "@/app/lib/events/event";
+import { uploadEventImage } from "@/app/lib/photos/uploadImage";
 
 
 const defaultPosterData = { title: "", description: "", date: "", location: "", image: "https://placehold.co/600x400/1e1e1e/ffffff?text=No+Flyer+Yet" };

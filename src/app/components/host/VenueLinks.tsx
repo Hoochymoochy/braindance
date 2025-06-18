@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Plus, X, ExternalLink } from "lucide-react";
 
-import { addLink, getLinks, deleteLink } from "@/app/lib/links";
-import { addTag, getTags, deleteTag } from "@/app/lib/tags";
+import { addLink, getLinks, deleteLink } from "@/app/lib/events/links";
+import { addTag, getTags, deleteTag } from "@/app/lib/events/tags";
 import { useParams } from "next/navigation";
 import { ParamValue } from "next/dist/server/request/params";
 

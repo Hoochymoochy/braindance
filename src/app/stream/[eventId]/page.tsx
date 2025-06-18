@@ -4,14 +4,14 @@ import { Play, Users, Globe, Share, Heart, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import { useParams } from "next/navigation";
-import { getStreams } from "@/app/lib/stream";
-import { topCity } from "@/app/lib/location";
-import { totalViews } from "@/app/lib/views";
-import { getAcceptedPhotos } from "@/app/lib/photo";
-import { getLinks } from "@/app/lib/links";
+import { getStreams } from "@/app/lib/events/stream";
+import { getTopCity } from "@/app/lib/utils/location";
+import { totalViews } from "@/app/lib/events/views";
+import { getAcceptedPhotos } from "@/app/lib/photos/photo";
+import { getLinks } from "@/app/lib/events/links";
 export default function BraindanceUserStream() {
     const params = useParams();
-    const eventId = params?.eventId;
+    const eventId = params?.eventId as string;
   const [photoData, setPhotoData] = useState<
     { src: string; alt: string; }[]
   >([]);
@@ -26,9 +26,9 @@ export default function BraindanceUserStream() {
 
   const getDate = async () => {
     const stream = await getStreams(eventId);
-    const city = await topCity(eventId);
+    const city = await getTopCity(eventId);
     const views = await totalViews(eventId);
-    const photos = await getAcceptedPhotos(eventId);
+    const photos = await getAcceptedPhotos(eventId) ;
     const links = await getLinks(eventId);
 
 

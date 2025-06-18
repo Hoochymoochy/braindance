@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
-import { supabase } from "@/app/lib/supabaseClient";
+import { supabase } from "@/app/lib/utils/supabaseClient";
 
 interface Props {
   children: React.ReactNode;

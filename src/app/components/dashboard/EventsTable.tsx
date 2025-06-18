@@ -1,6 +1,6 @@
 "use client";
 
-import { GET_ONE, DELETE } from "@/app/lib/event";
+import { GET_ONE, DELETE } from "@/app/lib/events/event";
 import { ParamValue } from "next/dist/server/request/params";
 import { useRouter } from "next/navigation";
 

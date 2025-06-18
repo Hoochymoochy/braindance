@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 
 import VenueLinks from "@/app/components/host/VenueLinks";
-import { addStream, getStreams } from "@/app/lib/stream";
+import { addStream, getStreams } from "@/app/lib/events/stream";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getPhotos, deletePhoto, acceptPhoto, getAcceptedPhotos } from "@/app/lib/photo";
+import { getPhotos, deletePhoto, acceptPhoto, getAcceptedPhotos } from "@/app/lib/photos/photo";
 import { ParamValue } from "next/dist/server/request/params";
 
 // Mock GlobeHeatmap component since it's not available

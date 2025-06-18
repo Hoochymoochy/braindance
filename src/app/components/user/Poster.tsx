@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import Link from "next/link";
-import { addCount } from "@/app/lib/location";
-import { addGeo } from "@/app/lib/heatmap";
+import { addCount } from "@/app/lib/utils/location";
+import { addGeo } from "@/app/lib/events/heatmap";
 
 
 export type EventPosterProps = {

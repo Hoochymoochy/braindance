@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Globe from "react-globe.gl";
-import { getAllGeo } from "@/app/lib/heatmap";
+import { getAllGeo } from "@/app/lib/events/heatmap";
 import { ParamValue } from "next/dist/server/request/params";
 
 type GeoData = {

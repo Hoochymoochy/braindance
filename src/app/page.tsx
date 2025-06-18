@@ -7,8 +7,8 @@ import { ArrowRight, Flame, Zap } from "lucide-react";
 import { BrainLogo } from "@/app/components/Brain-logo";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
-import { getGlobalEvents } from "@/app/lib/event";
-import { getStreams } from "@/app/lib/stream";
+import { getAllEvents } from "@/app/lib/events/event";
+import { getStreams } from "@/app/lib/events/stream";
 
 
 
@@ -25,7 +25,7 @@ export default function Home() {
   const eventsRef = useRef<HTMLDivElement>(null);
 
 const getEvents = async () => {
-  const events = await getGlobalEvents();
+  const events = await getAllEvents();
 
   const live: EventPosterProps[] = [];
   const upcoming: EventPosterProps[] = [];

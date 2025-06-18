@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { uploadPartyImage } from "@/app/lib/uploadImage";
-import { addPhoto } from "@/app/lib/photo";
+import { uploadPartyImage } from "@/app/lib/photos/uploadImage";
+import { addPhoto } from "@/app/lib/photos/photo";
 import { useParams } from "next/navigation";
 
 export default function PhotoUpload() {
@@ -23,8 +23,8 @@ export default function PhotoUpload() {
 
     try {
       setStatus("uploading");
-      const url = await uploadPartyImage(file, eventId);
-      await addPhoto(url, eventId);
+      const url = await uploadPartyImage(file, eventId as string);
+      await addPhoto(url, eventId as string);
       setStatus("success");
       setFile(null); // Reset after upload
     } catch (err) {

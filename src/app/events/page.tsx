@@ -3,9 +3,9 @@
 import React, { useEffect } from "react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
-import { getGlobalEvents } from "@/app/lib/event";
-import { getStreams } from "@/app/lib/stream";
-import { getLocation } from "@/app/lib/location";
+import { getAllEvents } from "@/app/lib/events/event";
+import { getStreams } from "@/app/lib/events/stream";
+import { getNearestCity } from "@/app/lib/utils/location";
 
 export default function ExamplePage() {
   const [topEvents, setTopEvents] = React.useState<EventPosterProps[]>([]);
@@ -13,7 +13,7 @@ export default function ExamplePage() {
   const [upcomingEvents, setUpcomingEvents] = React.useState<EventPosterProps[]>([]);
 
   const getEvents = async () => {
-    const events = await getGlobalEvents();
+    const events = await getAllEvents();
 
     const live: EventPosterProps[] = [];
     const upcoming: EventPosterProps[] = [];
@@ -46,7 +46,11 @@ export default function ExamplePage() {
   };
 
   const setLocation = async (lat: any, lng: any) => {
-    await getLocation(lat, lng);
+    const data = await getNearestCity(lat, lng);
+
+    localStorage.setItem("city", data?.city);
+    localStorage.setItem("lat", lat);
+    localStorage.setItem("lon", lng);
   }
 
   useEffect(() => {
