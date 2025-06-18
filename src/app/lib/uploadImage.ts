@@ -1,4 +1,5 @@
 import { supabase } from "@/app/lib/supabaseClient";
+import { ParamValue } from "next/dist/server/request/params";
 
 export async function uploadEventImage(file: File, eventId: string): Promise<string> {
   try {
@@ -47,14 +48,13 @@ export async function uploadEventImage(file: File, eventId: string): Promise<str
 }
 
 
-export async function uploadPartyImage(file: File, eventId: string): Promise<string> {
+export async function uploadPartyImage(file: File, eventId: ParamValue): Promise<string> {
   try {
     if (!file) throw new Error("No file provided!");
 
     const ext = file.name.split(".").pop();
     if (!ext) throw new Error("File extension missing!");
 
-    // Validate extension
     if (!["jpg", "jpeg", "png", "webp"].includes(ext.toLowerCase())) {
       throw new Error("Unsupported file type.");
     }
@@ -63,30 +63,29 @@ export async function uploadPartyImage(file: File, eventId: string): Promise<str
     if (sessionError || !session) throw new Error("User not authenticated!");
 
     const userId = session.user.id;
-    const path = `${userId}/events/${eventId}.${ext}`;
+    const path = `${userId}/events/${eventId}/${Date.now()}.${ext}`; // 👈 make it unique
 
+    // ✅ UPLOAD FIRST
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("moderation-photos")
       .upload(path, file, {
         cacheControl: "3600",
-        upsert: true,
-        metadata: {
-          owner: userId,
-        },
+        metadata: { owner: userId },
       });
 
     if (uploadError) throw new Error("Upload failed: " + uploadError.message);
 
-    // If bucket is public
-    const { publicUrl } = supabase.storage.from("event-photos").getPublicUrl(path);
-    return publicUrl;
+    // ✅ THEN GET THE PUBLIC URL
+    const { data: publicData, error: publicError } = supabase.storage
+      .from("moderation-photos")
+      .getPublicUrl(path);
 
-    // 🔐 If bucket is private:
-    // const { data: signed } = await supabase.storage.from("event-photos").createSignedUrl(path, 3600);
-    // return signed?.signedUrl ?? "";
+    if (publicError) throw new Error("Could not get public URL: " + publicError.message);
+    return publicData.publicUrl;
 
   } catch (err: any) {
     console.error("🔥 Full Upload Failure:", err.message);
     throw err;
   }
 }
+

@@ -31,7 +31,7 @@ export async function getAllGeo(id: ParamValue) {
     .map((point) => ({
       lat: point.lat,
       lng: point.lon,
-      weight: 1,
+      weight: .1,
     }));
 
   return formatted;

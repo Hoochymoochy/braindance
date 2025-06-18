@@ -17,7 +17,7 @@ import VenueLinks from "@/app/components/host/VenueLinks";
 import { addStream, getStreams } from "@/app/lib/stream";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { get } from "http";
+import { getPhotos, deletePhoto, acceptPhoto, addPhoto } from "@/app/lib/photo";
 
 // Mock GlobeHeatmap component since it's not available
 const GlobeHeatmap = () => (
@@ -26,90 +26,67 @@ const GlobeHeatmap = () => (
   </div>
 );
 
+interface Photo {
+  id: number;
+  image_url: string;
+  event_id: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  created_at?: string;
+}
+
 export default function BraindanceMockup() {
   const params = useParams();
-  const eventId = params?.eventId;
-  const [pendingPhotos, setPendingPhotos] = useState([
-    {
-      id: 1,
-      src: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=300&fit=crop",
-      alt: "Concert crowd with lights",
-      reviewed: false,
-    },
-    {
-      id: 2,
-      src: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop",
-      alt: "DJ performing",
-      reviewed: false,
-    },
-    {
-      id: 3,
-      src: "https://images.unsplash.com/photo-1571266028243-d220c9efe0ab?w=400&h=300&fit=crop",
-      alt: "DJ booth setup",
-      reviewed: false,
-    },
-  ]);
-
-  const [approvedPhotos, setApprovedPhotos] = useState([
-    {
-      id: 4,
-      src: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&h=300&fit=crop",
-      alt: "Music festival lights",
-    },
-    {
-      id: 5,
-      src: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=300&h=300&fit=crop",
-      alt: "Concert stage",
-    },
-    {
-      id: 6,
-      src: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=300&h=300&fit=crop",
-      alt: "Dancing crowd",
-    },
-  ]);
-
+  const eventId = params?.eventId as string;
+  
+  const [pendingPhotos, setPendingPhotos] = useState<Photo[]>([]);
+  const [approvedPhotos, setApprovedPhotos] = useState<Photo[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [reviewStats, setReviewStats] = useState({
     reviewed: 0,
-    approved: 3,
+    approved: 0,
     rejected: 0,
   });
   const [showAnimation, setShowAnimation] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [url, setUrl] = useState("");
 
   const currentPhoto = pendingPhotos[currentPhotoIndex];
   const totalPhotos = pendingPhotos.length + approvedPhotos.length;
 
-  // Function to approve photo (placeholder for your implementation)
-  const approvePhoto = () => {
-    if (!currentPhoto) return;
-
-    setShowAnimation("approve");
-    setTimeout(() => {
-      const photoToApprove = { ...currentPhoto };
-      setApprovedPhotos((prev) => [...prev, photoToApprove]);
-      setPendingPhotos((prev) =>
-        prev.filter((photo) => photo.id !== currentPhoto.id)
-      );
-      setReviewStats((prev) => ({
+  // Load photos from backend
+  const loadPhotos = async () => {
+    try {
+      setIsLoading(true);
+      const photos = await getPhotos(eventId);
+      
+      // Separate photos by status - assuming you have a status field
+      // If you don't have a status field, you might need to check different tables
+      const pending = photos.filter(photo => !photo.status || photo.status === 'pending');
+      const approved = photos.filter(photo => photo.status === 'approved');
+      
+      setPendingPhotos(pending);
+      setApprovedPhotos(approved);
+      
+      // Update stats
+      setReviewStats(prev => ({
         ...prev,
-        reviewed: prev.reviewed + 1,
-        approved: prev.approved + 1,
+        approved: approved.length,
       }));
-      setCurrentPhotoIndex((prev) => Math.min(prev, pendingPhotos.length - 2));
-      setShowAnimation("");
-    }, 500);
+    } catch (error) {
+      console.error('Error loading photos:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-    const [url, setUrl] = useState("");
 
   const extractVideoId = (fullUrl: string) => {
     try {
       const urlObj = new URL(fullUrl);
       if (urlObj.hostname === "youtu.be") {
-        return urlObj.pathname.slice(1); // youtu.be/VIDEO_ID
+        return urlObj.pathname.slice(1);
       }
       if (urlObj.hostname.includes("youtube.com")) {
-        return urlObj.searchParams.get("v"); // youtube.com/watch?v=VIDEO_ID
+        return urlObj.searchParams.get("v");
       }
       return null;
     } catch (err) {
@@ -130,34 +107,106 @@ export default function BraindanceMockup() {
     }
   };
 
-  // Function to reject photo (placeholder for your implementation)
-  const rejectPhoto = () => {
+  // Function to approve photo
+  const approvePhoto = async () => {
+    if (!currentPhoto) return;
+
+    setShowAnimation("approve");
+    
+    try {
+      // Move photo to approved status
+      await acceptPhoto(currentPhoto.image_url, currentPhoto.id);
+      
+      setTimeout(() => {
+        const photoToApprove = { ...currentPhoto, status: 'approved' as const };
+        setApprovedPhotos(prev => [...prev, photoToApprove]);
+        setPendingPhotos(prev => prev.filter(photo => photo.id !== currentPhoto.id));
+        setReviewStats(prev => ({
+          ...prev,
+          reviewed: prev.reviewed + 1,
+          approved: prev.approved + 1,
+        }));
+        setCurrentPhotoIndex(prev => Math.min(prev, pendingPhotos.length - 2));
+        setShowAnimation("");
+      }, 500);
+    } catch (error) {
+      console.error('Error approving photo:', error);
+      setShowAnimation("");
+      alert('Error approving photo. Please try again.');
+    }
+  };
+
+  // Function to reject photo
+  const rejectPhoto = async () => {
     if (!currentPhoto) return;
 
     setShowAnimation("reject");
-    setTimeout(() => {
-      setPendingPhotos((prev) =>
-        prev.filter((photo) => photo.id !== currentPhoto.id)
-      );
-      setReviewStats((prev) => ({
-        ...prev,
-        reviewed: prev.reviewed + 1,
-        rejected: prev.rejected + 1,
-      }));
-      setCurrentPhotoIndex((prev) => Math.min(prev, pendingPhotos.length - 2));
+    
+    try {
+      // Delete photo from backend
+      await deletePhoto(currentPhoto.id);
+      
+      setTimeout(() => {
+        setPendingPhotos(prev => prev.filter(photo => photo.id !== currentPhoto.id));
+        setReviewStats(prev => ({
+          ...prev,
+          reviewed: prev.reviewed + 1,
+          rejected: prev.rejected + 1,
+        }));
+        setCurrentPhotoIndex(prev => Math.min(prev, pendingPhotos.length - 2));
+        setShowAnimation("");
+      }, 500);
+    } catch (error) {
+      console.error('Error rejecting photo:', error);
       setShowAnimation("");
-    }, 500);
+      alert('Error rejecting photo. Please try again.');
+    }
+  };
+
+  const getData = async () => {
+    try {
+      const streams = await getStreams(eventId);
+      if (streams && streams.length > 0) {
+        setUrl(streams[0].link);
+      }
+    } catch (error) {
+      console.error('Error loading streams:', error);
+    }
   };
 
   useEffect(() => {
-    getStreams(eventId).then((data) => {
-      setUrl(data[0].link);
-    })
-    
-  }, [pendingPhotos]);
+    if (eventId) {
+      getData();
+      loadPhotos();
+    }
+  }, [eventId]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (showAnimation !== "" || !currentPhoto) return;
+      
+      if (event.key.toLowerCase() === 'x') {
+        rejectPhoto();
+      } else if (event.key.toLowerCase() === 'c') {
+        approvePhoto();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPhoto, showAnimation]);
 
   const progressPercentage =
     totalPhotos > 0 ? (approvedPhotos.length / totalPhotos) * 100 : 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black p-4 md:p-10">
@@ -166,35 +215,35 @@ export default function BraindanceMockup() {
           {/* Left Column - Live Stream + Photo Review */}
           <div className="lg:col-span-2 flex flex-col gap-4">
             {/* Live Stream */}
-          <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-            <div className="aspect-video relative">
-              {url ? (
-                <iframe
-                  className="w-full h-full absolute top-0 left-0"
-                  src={`https://www.youtube.com/embed/${url}?autoplay=1&mute=1`}
-                  title="YouTube Live Stream"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-black">
-                  <form onSubmit={handleSubmit} className="flex gap-2">
-                    <input
-                      type="text"
-                      name="url"
-                      placeholder="Enter YouTube URL"
-                      className="px-4 py-2 rounded-lg bg-gray-800 text-white w-72"
-                    />
-                    <button
-                      type="submit"
-                      className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      Go Live
-                    </button>
-                  </form>
-                </div>
-              )}
-            </div>
+            <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+              <div className="aspect-video relative">
+                {url ? (
+                  <iframe
+                    className="w-full h-full absolute top-0 left-0"
+                    src={`https://www.youtube.com/embed/${url}?autoplay=1&mute=1`}
+                    title="YouTube Live Stream"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-black">
+                    <form onSubmit={handleSubmit} className="flex gap-2">
+                      <input
+                        type="text"
+                        name="url"
+                        placeholder="Enter YouTube URL"
+                        className="px-4 py-2 rounded-lg bg-gray-800 text-white w-72"
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        Go Live
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
 
               {/* Info Panel */}
               <div className="p-4">
@@ -244,8 +293,8 @@ export default function BraindanceMockup() {
                     }`}
                   >
                     <img
-                      src={currentPhoto.src}
-                      alt={currentPhoto.alt}
+                      src={currentPhoto.image_url}
+                      alt={`Photo ${currentPhoto.id}`}
                       className="w-full h-full object-cover"
                     />
                     {showAnimation === "approve" && (
@@ -263,8 +312,7 @@ export default function BraindanceMockup() {
                   {/* Photo counter */}
                   <div className="flex justify-center mb-4">
                     <span className="text-sm text-gray-400">
-                      Photo {currentPhotoIndex + 1} of {pendingPhotos.length}{" "}
-                      pending
+                      Photo {currentPhotoIndex + 1} of {pendingPhotos.length} pending
                     </span>
                   </div>
 
@@ -372,30 +420,17 @@ export default function BraindanceMockup() {
                 ></div>
               </div>
 
-              {/* Upload Area */}
-              <div className="mb-4 p-4 border-2 border-dashed border-gray-700 rounded-lg hover:border-purple-500 transition-colors">
-                <div className="text-center">
-                  <Upload className="mx-auto mb-2 text-gray-600" size={24} />
-                  <p className="text-sm text-gray-400">
-                    Drag photos here or{" "}
-                    <button className="text-purple-400 hover:text-purple-300">
-                      browse
-                    </button>
-                  </p>
-                </div>
-              </div>
-
               {/* Photo Grid */}
               {approvedPhotos.length > 0 ? (
                 <div className="grid grid-cols-3 gap-2">
-                  {approvedPhotos.map((photo, index) => (
+                  {approvedPhotos.map((photo) => (
                     <div
                       key={photo.id}
                       className="aspect-square relative rounded-sm overflow-hidden border border-green-500/30 group"
                     >
                       <img
-                        src={photo.src}
-                        alt={photo.alt}
+                        src={photo.image_url}
+                        alt={`Approved photo ${photo.id}`}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                       />
                       <div className="absolute top-1 right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
@@ -419,7 +454,7 @@ export default function BraindanceMockup() {
               )}
             </div>
           </div>
-        </main>{" "}
+        </main>
         <VenueLinks id={eventId} />
       </div>
     </div>
