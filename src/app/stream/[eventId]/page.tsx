@@ -8,6 +8,7 @@ import { getStreams } from "@/app/lib/stream";
 import { topCity } from "@/app/lib/location";
 import { totalViews } from "@/app/lib/views";
 import { getAcceptedPhotos } from "@/app/lib/photo";
+import { getLinks } from "@/app/lib/links";
 export default function BraindanceUserStream() {
     const params = useParams();
     const eventId = params?.eventId;
@@ -16,7 +17,7 @@ export default function BraindanceUserStream() {
   >([]);
   const [tags, setTags] = useState<string[]>([]);
   const [merchItems, setMerchItems] = useState<
-    { title: string; subtitle: string }[]
+    { title: string; subtitle: string, url: string }[]
   >([]);
   const [City, setTopCity] = useState<string>("");
 
@@ -28,18 +29,28 @@ export default function BraindanceUserStream() {
     const city = await topCity(eventId);
     const views = await totalViews(eventId);
     const photos = await getAcceptedPhotos(eventId);
+    const links = await getLinks(eventId);
+
 
     const mappedPhotos = photos.map((photo: any) => ({
       src: photo.image_url,
       alt: `Uploaded photo ${photo.id}`, // You can customize this later
     }));
 
-    console.log(photos);
+    const mappedLinks = links.map((link: any) => ({
+      title: link.label,
+      subtitle: link.description || "Exclusive drop – limited time only!",
+      url: link.link
+    }));
+
+
+    console.log(links);
     
     setTopCity(city);
     setViews(views);
     setStreams(stream[0].link);
     setPhotoData(mappedPhotos);
+    setMerchItems(mappedLinks);
   }
 
   useEffect(() => {
@@ -208,13 +219,16 @@ export default function BraindanceUserStream() {
         {merchItems.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {merchItems.map((item, idx) => (
-              <div
-                key={idx}
-                className="p-4 bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 rounded-md text-center hover:from-purple-800/60 hover:to-pink-800/60 cursor-pointer transition-all transform hover:scale-105"
+              <a
+                href={item.url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 rounded-md text-center hover:from-purple-800/60 hover:to-pink-800/60 cursor-pointer transition-all transform hover:scale-105 block"
               >
                 <p className="text-sm font-medium">{item.title}</p>
                 <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>
-              </div>
+              </a>
+
             ))}
           </div>
         ) : (
