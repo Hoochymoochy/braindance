@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/app/components/Button";
+import Link from "next/link";
 import { ArrowRight, Flame, Zap } from "lucide-react";
 import { BrainLogo } from "@/app/components/Brain-logo";
 import { EventsLayout } from "@/app/EventLayout";
@@ -10,265 +9,214 @@ import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
 import { getStreams } from "@/app/lib/events/stream";
 
-
-
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [topEvents, setTopEvents] = React.useState<EventPosterProps[]>([]);
-  const [liveEvents, setLiveEvents] = React.useState<EventPosterProps[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = React.useState<
-    EventPosterProps[]
-  >([]);
+  const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [joinWaitlist, setJoinWaitlist] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const eventsRef = useRef<HTMLDivElement>(null);
 
-const getEvents = async () => {
-  const events = await getAllEvents();
-
-  const live: EventPosterProps[] = [];
-  const upcoming: EventPosterProps[] = [];
-
-  await Promise.all(
-    events.map(async (event) => {
-      const streams = await getStreams(event.id);
-      const hasLiveLink = streams?.some((s) => s.link !== null);
-
-      if (hasLiveLink) {
-        const liveEvent = {
-          ...event,
-          image_url: event.image_url,
-          link: streams?.find((s) => s.link !== null)?.link,
-        };
-
-        live.push(liveEvent);
-      } else {
-        upcoming.push(event);
-      }
-    })
-  );
-
-  // ✂️ Slice only 3 upcoming for the homepage
-  setLiveEvents(live);
-  setUpcomingEvents(upcoming.slice(0, 3));
-};
-
-
   useEffect(() => {
-    getEvents();
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+    const getEvents = async () => {
+      const events = await getAllEvents();
+      const live: EventPosterProps[] = [];
+      const upcoming: EventPosterProps[] = [];
+
+      await Promise.all(
+        events.map(async (event) => {
+          const streams = await getStreams(event.id);
+          const hasLive = streams?.some((s) => s.link !== null);
+
+          if (hasLive) {
+            live.push({
+              ...event,
+              link: streams.find((s) => s.link !== null)?.link || "",
+            });
+          } else {
+            upcoming.push(event);
+          }
+        })
+      );
+
+      setLiveEvents(live);
+      setUpcomingEvents(upcoming.slice(0, 3));
     };
+
+    getEvents();
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
-  const handleJoinWaitlist = () => {};
 
   return (
-    <div className="min-h-screen bg-black thermal-background">
+    <div className="min-h-screen bg-black thermal-background text-white relative overflow-hidden">
       <div
         className="thermal-cursor"
-        style={{
-          left: `${mousePosition.x}px`,
-          top: `${mousePosition.y}px`,
-        }}
+        style={{ left: `${mousePosition.x}px`, top: `${mousePosition.y}px` }}
       />
 
-      <main>
-        {/* Hero Section */}
-        <section className="container mx-auto px-4 py-20 md:py-32">
-          <div className="max-w-3xl mx-auto text-center bg-black rounded-full p-10 border border-thermal-neutral/20">
-            <div className="inline-block p-1 mb-6 rounded-full">
-              <div className="bg-black px-4 py-1 rounded-full">
-                <span className="text-sm font-medium">
-                  Welcome to Braindance
-                </span>
-              </div>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-              Streaming the pulse of the planet
-            </h1>
-            <p className="text-lg md:text-xl mb-8">
-              Braindance connects the world through music—one stream at a time.
-              DJs broadcast energy, listeners tune in from every corner, and a
-              global rhythm is born. It's more than just music—it's movement.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <div className="w-full sm:w-auto text-black px-4 py-2 rounded-md font-semibold flex items-center justify-center">
-                Join the Ritual
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </div>
-              <button
-                onClick={() =>
-                  eventsRef.current?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="w-full sm:w-auto border border-white text-white px-4 py-2 rounded-md hover:bg-white hover:text-black transition"
-              >
-                Explore Braindance
-              </button>
-            </div>
+      {/* HERO */}
+      <section className="container mx-auto px-4 py-24 text-center">
+        <div className="max-w-3xl mx-auto border border-purple-500/30 bg-black/60 backdrop-blur-md rounded-2xl p-10 shadow-[0_0_15px_rgba(168,85,247,0.25)]">
+          <div className="text-sm text-purple-300 uppercase mb-4 tracking-wider">
+            Welcome to Braindance
           </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="container mx-auto px-4 py-20">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-black p-8 rounded-xl border border-thermal-neutral/20 hover:border-thermal-hot/50 transition-colors group">
-              <div className="w-12 h-12 bg-thermal-hot rounded-lg flex items-center justify-center mb-6 group-hover:bg-thermal-hot/80 transition-colors">
-                <Flame className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-thermal-hot mb-3">
-                Global Hype Rituals
-              </h3>
-              <p className="text-thermal-neutral">
-                Cities around the world tune in, stream together, and raise the
-                collective volume. When energy surges, exclusive drops and
-                shoutouts ignite the moment.
-              </p>
-            </div>
-
-            <div className="bg-black p-8 rounded-xl border border-thermal-neutral/20 hover:border-thermal-warm/50 transition-colors group">
-              <div className="w-12 h-12 bg-thermal-warm rounded-lg flex items-center justify-center mb-6 group-hover:bg-thermal-warm/80 transition-colors">
-                <BrainLogo withText={false} className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-thermal-warm mb-3">
-                DJ-Driven Energy
-              </h3>
-              <p className="text-thermal-neutral">
-                Each set is a live broadcast of energy. DJs stream straight to
-                the world, and every beat becomes a signal connecting you to the
-                global pulse.
-              </p>
-            </div>
-
-            <div className="bg-black p-8 rounded-xl border border-thermal-neutral/20 hover:border-thermal-neutral/50 transition-colors group">
-              <div className="w-12 h-12 bg-thermal-neutral rounded-lg flex items-center justify-center mb-6 group-hover:bg-thermal-neutral/80 transition-colors">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-thermal-neutral mb-3">
-                Real-Time Connection
-              </h3>
-              <p className="text-thermal-neutral">
-                Stream live, tune in instantly, and feel the vibe with others
-                across the planet. Wherever you are, you're never out of sync
-                with the sound.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Events Preview Section */}
-        <section ref={eventsRef} className="container mx-auto px-4 py-20">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Events</h2>
-            <Link href="/events" className="flex items-center ">
-              View all events
-              <ArrowRight className="ml-2 h-4 w-4" />
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-6">
+            Streaming the pulse of the planet
+          </h1>
+          <p className="text-base md:text-lg text-gray-300 mb-8">
+            DJs broadcast energy, listeners tune in globally, and a digital rhythm is born.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button
+              className="bg-purple-600 hover:bg-pink-600 text-white px-5 py-2 rounded-md shadow transition"
+              onClick={() => eventsRef.current?.scrollIntoView({ behavior: "smooth" })}
+            >
+              Explore Braindance
+            </button>
+            <Link
+              href="#"
+              className="border border-white text-white px-5 py-2 rounded-md hover:bg-white hover:text-black transition"
+            >
+              Join the Ritual <ArrowRight className="inline ml-2 h-4 w-4" />
             </Link>
           </div>
-          <EventsLayout
-            topEvents={upcomingEvents}
-            hideStuff={{ bookmark: true, heart: true, title: true }}
-          />
-        </section>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <section className="container mx-auto px-4 py-20">
-          <div className="relative overflow-hidden rounded-xl p-8 md:p-12 border border-thermal-neutral/20 bg-black">
-            <div className="absolute inset-0 "></div>
-            <div className="relative z-10 max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Ready to experience braindance?
-              </h2>
-              <p className="text-lg mb-8">
-                Join our community of explorers and experience the next
-                evolution of digital consciousness.
-              </p>
-              <button
-                className="border-1 border-thermal-hot px-4 py-2 rounded-md"
-                onClick={() => setJoinWaitlist(!joinWaitlist)}
-              >
-                Join waitlist
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {joinWaitlist && (
+      {/* FEATURES */}
+      <section className="container mx-auto px-4 py-20 grid md:grid-cols-3 gap-8">
+        {[
+          {
+            Icon: Flame,
+            title: "Global Hype Rituals",
+            color: "text-pink-400",
+            description:
+              "Cities raise the energy together. Exclusive drops and shoutouts ignite at peak hype.",
+          },
+          {
+            Icon: BrainLogo,
+            title: "DJ-Driven Energy",
+            color: "text-purple-400",
+            description:
+              "Live streams transmit raw energy. Every beat is a signal in the planetary network.",
+          },
+          {
+            Icon: Zap,
+            title: "Real-Time Connection",
+            color: "text-indigo-400",
+            description:
+              "No matter where you are, tune in instantly and never miss the vibe.",
+          },
+        ].map(({ Icon, title, color, description }, i) => (
           <div
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center"
-            onClick={() => {
-              setJoinWaitlist(false);
-              setSubmitted(false);
-            }}
+            key={i}
+            className="p-6 border border-purple-900/50 bg-black/60 rounded-xl shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(236,72,153,0.2)] transition"
           >
-            <div
-              className="relative w-full max-w-md bg-black border border-thermal-neutral/20 rounded-2xl p-6 text-center shadow-lg animate-fadeIn"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Exit Button */}
-              <button
-                onClick={() => {
-                  setJoinWaitlist(false);
-                  setSubmitted(false);
-                }}
-                className="absolute top-4 right-4 text-thermal-neutral hover:text-thermal-hot text-xl transition"
-              >
-                ✕
-              </button>
-
-              {/* Conditional rendering */}
-              {!submitted ? (
-                <>
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="w-12 h-12 rounded-lg flex items-center justify-center">
-                      <Flame className="h-6 w-6 text-black" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Join our waitlist</h3>
-                  <p className="mb-4">Be the first to experience Braindance.</p>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setSubmitted(true);
-                      // Optional: Send to backend here
-                    }}
-                    className="flex flex-col sm:flex-row gap-2"
-                  >
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="flex-1 px-4 py-2 bg-black border border-thermal-neutral/20 rounded-md text-white "
-                    />
-                    <button
-                      type="submit"
-                      className="px-4 py-2 border border-thermal-hot rounded-md hover:bg-white transition"
-                    >
-                      Join
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-2xl font-bold mb-2">
-                    You're on the list!
-                  </h3>
-                  <p className="">
-                    We about to bring the heat around the world!!! 🔥
-                  </p>
-                </>
-              )}
+            <div className={`w-10 h-10 mb-4 flex items-center justify-center rounded-lg bg-purple-900/40`}>
+              <Icon className={`w-5 h-5 ${color}`} />
             </div>
+            <h3 className={`text-lg font-bold mb-2 ${color}`}>{title}</h3>
+            <p className="text-sm text-gray-300">{description}</p>
           </div>
-        )}
-      </main>
+        ))}
+      </section>
+
+      {/* EVENTS */}
+      <section ref={eventsRef} className="container mx-auto px-4 py-20">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            Featured Events
+          </h2>
+          <Link href="/events" className="text-sm text-purple-400 hover:underline flex items-center">
+            View all events <ArrowRight className="ml-1 h-4 w-4" />
+          </Link>
+        </div>
+        <EventsLayout
+          topEvents={upcomingEvents}
+          hideStuff={{ bookmark: true, heart: true, title: true }}
+        />
+      </section>
+
+      {/* CALL TO ACTION */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="relative overflow-hidden rounded-xl p-10 border border-purple-900/40 bg-black/60 text-center shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+          <h2 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
+            Ready to experience Braindance?
+          </h2>
+          <p className="text-gray-300 mb-6">Join the community shaping the next evolution of global sound.</p>
+          <button
+            className="px-4 py-2 border border-pink-500 rounded-md text-pink-400 hover:bg-pink-600 hover:text-black transition"
+            onClick={() => setJoinWaitlist(true)}
+          >
+            Join Waitlist
+          </button>
+        </div>
+      </section>
+
+      {/* WAITLIST MODAL */}
+      {joinWaitlist && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center"
+          onClick={() => {
+            setJoinWaitlist(false);
+            setSubmitted(false);
+          }}
+        >
+          <div
+            className="relative w-full max-w-md bg-black border border-purple-900/40 rounded-xl p-6 shadow-[0_0_15px_rgba(168,85,247,0.25)] animate-fadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setJoinWaitlist(false);
+                setSubmitted(false);
+              }}
+              className="absolute top-3 right-4 text-gray-400 hover:text-pink-400 transition"
+            >
+              ✕
+            </button>
+            {!submitted ? (
+              <>
+                <h3 className="text-xl font-bold mb-2 text-purple-300">Join the Waitlist</h3>
+                <p className="text-sm text-gray-400 mb-4">Be first in line for global rituals & drops.</p>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setSubmitted(true);
+                  }}
+                  className="flex flex-col gap-3"
+                >
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-400"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-purple-600 hover:bg-pink-500 text-white px-4 py-2 rounded-md transition"
+                  >
+                    Submit
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-pink-400 mb-2">You’re on the list!</h3>
+                <p className="text-sm text-gray-300">We’re coming in loud. Stay tuned. 🔊</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

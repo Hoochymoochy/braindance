@@ -3,18 +3,18 @@
 import React, { useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import Link from "next/link";
-import { addCount } from "@/app/lib/utils/location";
+import { incrementCityView } from "@/app/lib/utils/location";
 import { addGeo } from "@/app/lib/events/heatmap";
-
 
 export type EventPosterProps = {
   image_url: string;
   title: string;
   date: string;
   location: string;
-  description?: string;
   id: string;
   link?: string;
+  description?: string;
+  live?: boolean;
   hideStuff?: {
     bookmark?: boolean;
     heart?: boolean;
@@ -29,6 +29,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   description,
   link,
   id,
+  live = false,
   hideStuff = {},
 }) => {
   const [saved, setSaved] = useState(false);
@@ -36,25 +37,29 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
   const toggleSaved = () => setSaved((prev) => !prev);
   const toggleLiked = () => setLiked((prev) => !prev);
+
   const handleClick = () => {
-    addCount(id);
-    addGeo(id);
-  }
-  
+    const city = localStorage.getItem("city");
+    const lat = localStorage.getItem("lat");
+    const lon = localStorage.getItem("lon");
+
+    if (city) incrementCityView(id, city);
+    if (lat && lon) addGeo(id, lat, lon);
+  };
 
   return (
-    <div className="bg-black border border-thermal-hot/30 rounded-2xl overflow-hidden shadow-lg hover:shadow-thermal hover:border-thermal-hot/70 transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto">
+    <div className="bg-black border border-thermal-hot/30 rounded-2xl overflow-hidden shadow-lg hover:shadow-thermal hover:border-thermal-hot/70 transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto group">
       <div className="relative aspect-[2/3] w-full">
         <img
           src={image_url || "/placeholder.svg"}
           alt={title}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {/* {live && (
+        {live && (
           <div className="absolute top-3 left-3 bg-thermal-hot text-black px-3 py-1 rounded-full text-xs font-semibold">
             LIVE
           </div>
-        )} */}
+        )}
       </div>
 
       <div className="p-4 sm:p-5 md:p-6 text-white">
@@ -75,25 +80,24 @@ export const EventPoster: React.FC<EventPosterProps> = ({
           <div className="flex gap-2">
             {!hideStuff.bookmark && (
               <button
-                className={`p-2 rounded-full ${
+                onClick={toggleSaved}
+                className={`p-2 rounded-full transition ${
                   saved
                     ? "text-thermal-hot bg-thermal-hot/20"
                     : "text-zinc-400 hover:text-thermal-hot"
                 }`}
-                onClick={toggleSaved}
               >
                 <Bookmark size={20} />
               </button>
             )}
-
             {!hideStuff.heart && (
               <button
-                className={`p-2 rounded-full ${
+                onClick={toggleLiked}
+                className={`p-2 rounded-full transition ${
                   liked
                     ? "text-thermal-hot bg-thermal-hot/20"
                     : "text-zinc-400 hover:text-thermal-hot"
                 }`}
-                onClick={toggleLiked}
               >
                 <Heart size={20} />
               </button>
@@ -104,7 +108,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
             <Link
               href={`/stream/${id}`}
               onClick={handleClick}
-              className="bg-thermal-hot hover:bg-thermal-warm text-black px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition-colors duration-300"
+              className="bg-thermal-hot hover:bg-thermal-warm text-black px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition"
             >
               Join
             </Link>

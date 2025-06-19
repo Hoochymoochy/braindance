@@ -7,11 +7,11 @@ type GeoPoint = {
 };
 
 // Add geo point to event
-export async function addGeo(eventId: string, point: GeoPoint) {
+export async function addGeo(eventId: string, lat: any, lon: any) {
   const { error } = await supabase.from("event_city_geo").insert({
     event_id: eventId,
-    lat: point.lat,
-    lon: point.lon,
+    lat: lat,
+    lon: lon,
   });
 
   if (error) throw new Error(`Geo insert failed: ${error.message}`);
