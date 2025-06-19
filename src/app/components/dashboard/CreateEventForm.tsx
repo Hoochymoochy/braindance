@@ -1,4 +1,5 @@
 "use client";
+
 import { EventPoster } from "@/app/components/user/Poster";
 import React, { useState, useRef } from "react";
 
@@ -24,25 +25,23 @@ export default function CreateEventForm({
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Handle files dropped or selected
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const file = files[0];
     setImageFile(file);
+
     const reader = new FileReader();
     reader.onloadend = () => {
       onChange({ target: { name: "image", value: reader.result } } as any);
     };
-    reader.readAsDataURL(file);};
+    reader.readAsDataURL(file);
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    if (e.type === "dragleave") setDragActive(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -58,34 +57,37 @@ export default function CreateEventForm({
 
   return (
     <section ref={ref}>
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Poster Preview */}
-        <div className="md:w-1/2 border border-card">
+        <div className="md:w-1/2 border border-purple-900/30 bg-black/60 backdrop-blur-md rounded-xl shadow-[0_0_12px_rgba(168,85,247,0.1)] p-4">
           <EventPoster {...data} hideStuff={{ bookmark: true, heart: true }} />
         </div>
 
-        {/* Form Area */}
-        <div className="md:w-1/2 bg-black border-card shadow-md rounded-2xl p-6 space-y-4">
+        {/* Form Panel */}
+        <div className="md:w-1/2 border border-pink-500/20 bg-black/50 backdrop-blur-md rounded-xl shadow-[0_0_12px_rgba(236,72,153,0.15)] p-6 space-y-4">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               isEditing ? onUpdate() : onCreate();
             }}
+            className="space-y-4"
           >
-            {/* Drag-and-Drop Image Upload */}
+            {/* Upload Box */}
             <div
               onDragEnter={handleDrag}
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
               onDrop={handleDrop}
               onClick={() => inputRef.current?.click()}
-              className={`mb-6 flex items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
+              className={`flex items-center justify-center text-center border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors ${
                 dragActive
-                  ? "border-thermal-hot bg-thermal-hot/10"
-                  : "border-zinc-600"
+                  ? "border-pink-500 bg-pink-500/10"
+                  : "border-zinc-600 hover:border-purple-500"
               }`}
             >
-              <p className="text-zinc-400">Drag & drop a photo here, or click to upload</p>
+              <p className="text-sm text-gray-400">
+                Drag & drop a photo here, or click to upload
+              </p>
               <input
                 ref={inputRef}
                 name="image"
@@ -96,37 +98,41 @@ export default function CreateEventForm({
               />
             </div>
 
-            {/* Standard Inputs */}
+            {/* Input Fields */}
             {["title", "date", "location"].map((field) => (
               <div key={field}>
-                <label className="block font-medium capitalize">{field}</label>
+                <label className="block text-sm font-medium text-purple-300 capitalize mb-1">
+                  {field}
+                </label>
                 <input
                   name={field}
                   type={field === "date" ? "date" : "text"}
                   value={data[field] || ""}
                   onChange={onChange}
-                  className="w-full p-2 border rounded-md"
+                  className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
                 />
               </div>
             ))}
 
             {/* Description */}
             <div>
-              <label className="block font-medium">Description</label>
+              <label className="block text-sm font-medium text-purple-300 mb-1">
+                Description
+              </label>
               <textarea
                 name="description"
                 value={data.description}
                 onChange={onChange}
-                className="w-full p-2 border rounded-md"
+                className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 min-h-[100px]"
               />
             </div>
 
-            {/* Submit Buttons */}
-            <div className="pt-4 flex gap-2">
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4">
               {isEditing && (
                 <button
                   type="button"
-                  className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                  className="px-4 py-2 border border-gray-500 text-gray-300 rounded-md hover:bg-gray-700 transition"
                   onClick={onCancel}
                 >
                   Cancel
@@ -134,7 +140,7 @@ export default function CreateEventForm({
               )}
               <button
                 type="submit"
-                className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800"
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-pink-500 transition"
               >
                 {isEditing ? "Update" : "Submit Event"}
               </button>

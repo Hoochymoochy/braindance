@@ -1,11 +1,10 @@
 "use client";
 
-import { GET_ONE, DELETE } from "@/app/lib/events/event";
-import { ParamValue } from "next/dist/server/request/params";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-
-
-import React from "react";
+import { deleteEvent } from "@/app/lib/events/event";
+import { ParamValue } from "next/dist/server/request/params";
+import { MoreVertical } from "lucide-react";
 
 export default function EventsTable({
   title,
@@ -22,73 +21,100 @@ export default function EventsTable({
   onEdit?: (id: string) => void;
   fetchEvents?: () => void;
 }) {
-    const router = useRouter();
-  const onStart = async (eventId: string) => {
+  const router = useRouter();
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  const onStart = (eventId: string) => {
     router.push(`/host/${hostId}/${eventId}/stream`);
   };
 
   const onDelete = async (id: string) => {
-    await DELETE(id);
+    await deleteEvent(id);
     fetchEvents?.();
+  };
+
+  const toggleMenu = (id: string) => {
+    setOpenMenuId(openMenuId === id ? null : id);
   };
 
   return (
     <section>
       <h2 className="text-2xl font-bold mb-6">{title}</h2>
-      <div className="overflow-x-auto bg-black border-card shadow-lg rounded-2xl">
-        <table className="min-w-full text-sm">
-          <thead className="gradient-text  uppercase text-xs">
+      <div className="overflow-x-auto border border-purple-900/30 bg-black/60 rounded-2xl shadow-[0_0_12px_rgba(168,85,247,0.1)]">
+        <table className="min-w-full text-sm text-white">
+          <thead className="uppercase text-xs text-purple-300 bg-black border-b border-purple-900/30">
             <tr>
-              <th className="py-3 px-5">Event</th>
-              <th className="py-3 px-5">Date</th>
-              <th className="py-3 px-5">{showActions ? "Interested" : "Viewed"}</th>
-              <th className="py-3 px-5">Liked</th>
-              {showActions && (
-                <th className="py-3 px-5 text-center" colSpan={3}>Actions</th>
-              )}
+              <th className="py-3 px-5 text-left">Event</th>
+              <th className="py-3 px-5 text-left">Date</th>
+              <th className="py-3 px-5 text-center">{showActions ? "Interested" : "Viewed"}</th>
+              <th className="py-3 px-5 text-center">Liked</th>
+              {showActions && <th className="py-3 px-5 text-center">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {!events?.length ? (
               <tr>
-                <td colSpan={showActions ? 7 : 4} className="py-4 px-5 text-center text-gray-400">
-                  No events found
+                <td
+                  colSpan={showActions ? 5 : 4}
+                  className="py-6 text-center text-zinc-400"
+                >
+                  No events found.
                 </td>
               </tr>
             ) : (
               events.map((event) => (
-                <tr key={event.id} className="border-t hover:bg-gray-50 transition">
-                  <td className="py-4 px-5 font-medium text-white">{event.title}</td>
-                  <td className="py-4 px-5 text-white">{event.date}</td>
+                <tr
+                  key={event.id}
+                  className="border-t border-purple-900/30 hover:bg-purple-900/10 transition"
+                >
+                  <td className="py-4 px-5 font-semibold">{event.title}</td>
+                  <td className="py-4 px-5">{event.date}</td>
                   <td className="py-4 px-5 text-center">{showActions ? event.intrested : event.viewed}</td>
                   <td className="py-4 px-5 text-center">{event.liked}</td>
+
                   {showActions && (
-                    <>
-                      <td className="py-4 px-2 text-center">
-                        <button
-                          className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
-                          onClick={() => onEdit?.(event.id)}
-                        >
-                          Edit
-                        </button>
-                      </td>
-                      <td className="py-4 px-2 text-center">
-                        <button
-                          className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600"
-                          onClick={() => onStart(event.id)}
-                        >
-                          Start
-                        </button>
-                      </td>
-                      <td className="py-4 px-2 text-center">
-                        <button
-                          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
-                          onClick={() => onDelete?.(event.id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </>
+                    <td className="py-4 px-5 text-center relative">
+                      {/* 3 Dots */}
+                      <button
+                        className="p-2 rounded hover:bg-purple-800/30 transition"
+                        onClick={() => toggleMenu(event.id)}
+                      >
+                        <MoreVertical className="h-5 w-5 text-purple-300" />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {openMenuId === event.id && (
+                        <div className="absolute right-4 mt-2 w-40 bg-black border border-purple-900/40 rounded-md shadow-xl z-10 animate-fadeIn">
+                          <button
+                            onClick={() => {
+                              onEdit?.(event.id);
+                              setOpenMenuId(null);
+                            }}
+                            className="block w-full text-left px-4 py-2 hover:bg-purple-700/30 text-sm text-white"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              onStart(event.id);
+                              setOpenMenuId(null);
+                            }}
+                            className="block w-full text-left px-4 py-2 hover:bg-purple-700/30 text-sm text-white"
+                          >
+                            🚀 Start
+                          </button>
+                          <button
+                            onClick={() => {
+                              onDelete(event.id);
+                              setOpenMenuId(null);
+                            }}
+                            className="block w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/10 text-sm"
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
                   )}
                 </tr>
               ))

@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import StatsSection from "@/app/components/dashboard/StatsSection";
 import EventsTable from "@/app/components/dashboard/EventsTable";
 import CreateEventForm from "@/app/components/dashboard/CreateEventForm";
-import { GET, GET_ONE, POST, PATCH, DELETE } from "@/app/lib/events/event";
+import { getEventsByHost, getEventById, updateEvent, deleteEvent, createEvent } from "@/app/lib/events/event";
 import { uploadEventImage } from "@/app/lib/photos/uploadImage";
 
 
-const defaultPosterData = { title: "", description: "", date: "", location: "", image: "https://placehold.co/600x400/1e1e1e/ffffff?text=No+Flyer+Yet" };
+const defaultPosterData = { title: "", description: "", date: "", location: "", image: "https://placeholder.pics/svg/300/000000/FFFFFF/Upload%20photo" };
 
 export default function Dashboard() {
   const params = useParams();
-  const hostId = params?.hostId;
+  const hostId = params?.hostId as string;
   const [posterData, setPosterData] = useState(defaultPosterData);
   const [stats, setStats] = useState({ upcomingEvents: 0, topCity: "", interested: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState([]);
@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   const fetchEvents = async () => {
     if (!hostId) return;
-    const events = await GET(hostId);
+    const events = await getEventsByHost(hostId);
     splitEventsByDate(events);
   };
 
@@ -72,7 +72,7 @@ export default function Dashboard() {
         image: imageUrl,
       };
   
-      await POST(eventPayload, hostId);
+      await createEvent(eventPayload, hostId);
       setPosterData(defaultPosterData);
       setImageFile(null);
       fetchEvents();
@@ -84,7 +84,7 @@ export default function Dashboard() {
   
   
   const handleGetEvent = async (id) => {
-    const event = await GET_ONE(id);
+    const event = await getEventById(id);
     setPosterData(event);
     setEditEvent(true);
     setEventId(id);
@@ -97,7 +97,7 @@ export default function Dashboard() {
 
   const handleUpdateEvent = async () => {
     if (!eventId) return;
-    await PATCH(eventId, posterData);
+    await updateEvent(eventId, posterData);
     cancelEdit();
     fetchEvents();
   };
