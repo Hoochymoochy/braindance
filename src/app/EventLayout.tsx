@@ -26,33 +26,32 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
-
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const renderSection = (
     title: string,
-    color: string,
+    gradient: string,
     events: EventPosterProps[],
     live = false
   ) => {
     if (events.length === 0) return null;
 
     return (
-      <section className="mt-12">
+      <section className="mt-16">
         {!hideStuff.title && (
-          <h1
-            className={`text-2xl sm:text-3xl md:text-4xl font-bold text-${color} mb-6 tracking-tight`}
+          <h2
+            className={`text-3xl md:text-4xl font-bold text-transparent bg-clip-text ${gradient} mb-8`}
           >
             {title}
-          </h1>
+          </h2>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {events.map((event, index) => (
             <div
               key={index}
-              className="transform transition-transform hover:scale-[1.02] duration-300"
+              className="group transition-transform transform hover:scale-[1.02] duration-300"
             >
               <EventPoster {...event} hideStuff={hideStuff} live={live} />
             </div>
@@ -63,7 +62,7 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   };
 
   return (
-    <div className="thermal-background min-h-screen w-full p-4 sm:p-6 md:p-8 lg:p-10 relative">
+    <div className="min-h-screen w-full px-4 py-16 md:px-10 bg-black text-white relative overflow-hidden thermal-background">
       {/* Cursor Aura */}
       <div
         className="thermal-cursor pointer-events-none fixed z-50"
@@ -73,9 +72,24 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
         }}
       />
 
-      {renderSection("Top Events", "thermal-hot", topEvents, true)}
-      {renderSection("Live Events", "thermal-warm", liveEvents, true)}
-      {renderSection("Upcoming Events", "thermal-neutral", upcomingEvents)}
+      {/* Sections */}
+      {renderSection(
+        "Top Events",
+        "bg-gradient-to-r from-purple-400 to-pink-400",
+        topEvents,
+        true
+      )}
+      {renderSection(
+        "Live Events",
+        "bg-gradient-to-r from-pink-500 to-yellow-400",
+        liveEvents,
+        true
+      )}
+      {renderSection(
+        "Upcoming Events",
+        "bg-gradient-to-r from-indigo-400 to-purple-500",
+        upcomingEvents
+      )}
     </div>
   );
 };
