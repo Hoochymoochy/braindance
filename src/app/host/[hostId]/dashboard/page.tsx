@@ -8,7 +8,7 @@ import { getEventsByHost, getEventById, updateEvent, deleteEvent, createEvent } 
 import { uploadEventImage } from "@/app/lib/photos/uploadImage";
 
 
-const defaultPosterData = { title: "", description: "", date: "", location: "", image: "https://placeholder.pics/svg/300/000000/FFFFFF/Upload%20photo" };
+const defaultPosterData = { title: "", description: "", date: "", location: "", image_url: "https://placeholder.pics/svg/300/000000/FFFFFF/Upload%20photo" };
 
 export default function Dashboard() {
   const params = useParams();
@@ -41,7 +41,7 @@ export default function Dashboard() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+    console.log(name, value);
     setPosterData(prev => ({ ...prev,  [name]: value }));
   };
 

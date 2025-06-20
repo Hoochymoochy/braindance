@@ -32,9 +32,10 @@ export default function CreateEventForm({
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      onChange({ target: { name: "image", value: reader.result } } as any);
+      onChange({ target: { name: "image_url", value: reader.result } } as any);
     };
     reader.readAsDataURL(file);
+    
   };
 
   const handleDrag = (e: React.DragEvent) => {
