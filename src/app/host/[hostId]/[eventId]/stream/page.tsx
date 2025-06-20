@@ -379,7 +379,7 @@ export default function BraindanceMockup() {
                   <p className="text-xl font-bold text-pink-400">{city}</p>
                 </div>
               </div>
-              <GlobeHeatmap />
+              <GlobeHeatmap id={eventId} />
 
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {[
