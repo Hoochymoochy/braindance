@@ -265,7 +265,7 @@ export default function BraindanceMockup() {
             </div>
 
             {/* Photo Review Tool */}
-            <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
+            <div className="rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-white">
                   Photo Review Tool
@@ -404,7 +404,7 @@ export default function BraindanceMockup() {
             </div>
 
             {/* Photo Gallery */}
-            <div className="rounded-lg border border-gray-800 bg-gray-900 p-4 flex-grow">
+            <div className="rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)] flex-grow">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-white">
                   Photos of the Night
