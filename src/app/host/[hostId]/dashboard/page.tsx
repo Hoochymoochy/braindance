@@ -57,7 +57,7 @@ export default function Dashboard() {
     inputDate.setHours(0, 0, 0, 0);
   
     if (inputDate < today)
-      return alert("Date must be today or in the future.");
+      return alert("Date must in the future.");
   
     try {
       const eventId = crypto.randomUUID();
