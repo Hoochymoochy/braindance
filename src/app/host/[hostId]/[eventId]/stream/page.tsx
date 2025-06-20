@@ -18,14 +18,10 @@ import { addStream, getStreams } from "@/app/lib/events/stream";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getPhotos, deletePhoto, acceptPhoto, getAcceptedPhotos } from "@/app/lib/photos/photo";
+import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import { ParamValue } from "next/dist/server/request/params";
-
-// Mock GlobeHeatmap component since it's not available
-const GlobeHeatmap = () => (
-  <div className="w-full h-32 bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-lg flex items-center justify-center border border-purple-500/30">
-    <Globe className="text-purple-400" size={32} />
-  </div>
-);
+import { totalViews } from "@/app/lib/events/views";
+import { getTopCity } from "@/app/lib/utils/location";
 
 interface Photo {
   id: number;
@@ -39,6 +35,8 @@ export default function BraindanceMockup() {
   
   const [pendingPhotos, setPendingPhotos] = useState<Photo[]>([]);
   const [approvedPhotos, setApprovedPhotos] = useState<Photo[]>([]);
+  const [city, setCity] = useState("");
+  const [views, setViews] = useState(0);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [reviewStats, setReviewStats] = useState({
     reviewed: 0,
@@ -171,6 +169,10 @@ export default function BraindanceMockup() {
       if (streams && streams.length > 0) {
         setUrl(streams[0].link);
       }
+      const views = await totalViews(eventId);
+      setViews(views);
+      const city = await getTopCity(eventId);
+      setCity(city);
     } catch (error) {
       console.error('Error loading streams:', error);
     }
@@ -369,12 +371,12 @@ export default function BraindanceMockup() {
               </h3>
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <p className="text-sm text-gray-400">Current Viewers</p>
-                  <p className="text-3xl font-bold text-purple-400">1,247</p>
+                <p className="text-sm text-gray-400">Total Viewers</p>
+                  <p className="text-3xl font-bold text-purple-400">{views}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Active City</p>
-                  <p className="text-xl font-bold text-pink-400">LA</p>
+                  <p className="text-sm text-gray-400">Top City</p>
+                  <p className="text-xl font-bold text-pink-400">{city}</p>
                 </div>
               </div>
               <GlobeHeatmap />
