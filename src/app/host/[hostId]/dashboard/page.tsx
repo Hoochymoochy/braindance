@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import StatsSection from "@/app/components/dashboard/StatsSection";
 import EventsTable from "@/app/components/dashboard/EventsTable";
 import CreateEventForm from "@/app/components/dashboard/CreateEventForm";
-import { getEventsByHost, getEventById, updateEvent, deleteEvent, createEvent } from "@/app/lib/events/event";
+import { getEventsByHost, getEventById, updateEvent, createEvent } from "@/app/lib/events/event";
 import { uploadEventImage } from "@/app/lib/photos/uploadImage";
 
 
@@ -72,7 +72,7 @@ export default function Dashboard() {
         image: imageUrl,
       };
   
-      await createEvent(eventPayload, hostId);
+      await createEvent(hostId, eventPayload);
       setPosterData(defaultPosterData);
       setImageFile(null);
       fetchEvents();

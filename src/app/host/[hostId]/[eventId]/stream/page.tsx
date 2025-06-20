@@ -102,7 +102,7 @@ export default function BraindanceMockup() {
     const videoId = extractVideoId(inputUrl);
     if (videoId) {
       setUrl(videoId);
-      await addStream(videoId, eventId);
+      await addStream(eventId, videoId);
     } else {
       alert("Invalid YouTube URL");
     }

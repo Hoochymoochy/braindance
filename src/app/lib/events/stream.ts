@@ -4,7 +4,7 @@ import { supabase } from "@/app/lib/utils/supabaseClient";
 export async function addStream(eventId: string, link: string) {
   const { error } = await supabase.from("streams").insert({
     event_id: eventId,
-    link,
+    link: link,
   });
 
   if (error) throw new Error(`Failed to add stream: ${error.message}`);
