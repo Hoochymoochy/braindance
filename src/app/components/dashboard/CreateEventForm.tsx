@@ -76,7 +76,13 @@ export default function CreateEventForm({
       <div className="flex flex-col md:flex-row gap-6">
         {/* Poster Preview */}
         <div className="md:w-1/2 border border-purple-900/30 bg-black/60 backdrop-blur-md rounded-xl shadow-[0_0_12px_rgba(168,85,247,0.1)] p-4">
-          <EventPoster {...data} hideStuff={{ bookmark: true, heart: true }} />
+        <EventPoster
+          {...data}
+          id="preview"
+          image_url={typeof data.image_url === "string" ? data.image_url : "/placeholder.svg"}
+          hideStuff={{ bookmark: true, heart: true }}
+        />
+
         </div>
 
         {/* Form Panel */}

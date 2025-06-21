@@ -4,7 +4,8 @@ import { X, Check, Eye, EyeOff } from "lucide-react";
 import VenueLinks from "@/app/components/host/VenueLinks";
 import { addStream, getStreams } from "@/app/lib/events/stream";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import {
   getPhotos,
   deletePhoto,
@@ -42,7 +43,7 @@ export default function BraindanceMockup() {
   const currentPhoto = pendingPhotos[currentPhotoIndex];
   const totalPhotos = pendingPhotos.length + approvedPhotos.length;
 
-  const loadPhotos = async () => {
+  const loadPhotos = useCallback(async () => {
     try {
       setIsLoading(true);
       const [pending, approved] = await Promise.all([
@@ -57,7 +58,18 @@ export default function BraindanceMockup() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [eventId]);
+
+  const getData = useCallback(async () => {
+    try {
+      const streams = await getStreams(eventId);
+      if (streams?.length > 0) setUrl(streams[0].link);
+      setViews(await totalViews(eventId));
+      setCity(await getTopCity(eventId));
+    } catch (error) {
+      console.error("Error loading streams:", error);
+    }
+  }, [eventId]);
 
   const extractVideoId = (fullUrl: string) => {
     try {
@@ -83,12 +95,12 @@ export default function BraindanceMockup() {
     }
   };
 
-  const approvePhoto = async () => {
+  const approvePhoto = useCallback(async () => {
     if (!currentPhoto) return;
     setShowAnimation("approve");
     try {
       await acceptPhoto(currentPhoto.image_url, eventId);
-      await deletePhoto(currentPhoto.id);
+      await deletePhoto(currentPhoto.id.toString());
       setTimeout(() => {
         const photoToApprove = { ...currentPhoto, status: "approved" as const };
         setApprovedPhotos((prev) => [...prev, photoToApprove]);
@@ -106,13 +118,13 @@ export default function BraindanceMockup() {
       setShowAnimation("");
       alert("Error approving photo. Please try again.");
     }
-  };
+  }, [currentPhoto, eventId, pendingPhotos.length]);
 
-  const rejectPhoto = async () => {
+  const rejectPhoto = useCallback(async () => {
     if (!currentPhoto) return;
     setShowAnimation("reject");
     try {
-      await deletePhoto(currentPhoto.id);
+      await deletePhoto(currentPhoto.id.toString());
       setTimeout(() => {
         setPendingPhotos((prev) => prev.filter((p) => p.id !== currentPhoto.id));
         setReviewStats((prev) => ({
@@ -128,25 +140,14 @@ export default function BraindanceMockup() {
       setShowAnimation("");
       alert("Error rejecting photo. Please try again.");
     }
-  };
-
-  const getData = async () => {
-    try {
-      const streams = await getStreams(eventId);
-      if (streams?.length > 0) setUrl(streams[0].link);
-      setViews(await totalViews(eventId));
-      setCity(await getTopCity(eventId));
-    } catch (error) {
-      console.error("Error loading streams:", error);
-    }
-  };
+  }, [currentPhoto, pendingPhotos.length]);
 
   useEffect(() => {
     if (eventId) {
       getData();
       loadPhotos();
     }
-  }, [eventId]);
+  }, [eventId, getData, loadPhotos]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -156,7 +157,7 @@ export default function BraindanceMockup() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPhoto, showAnimation]);
+  }, [currentPhoto, showAnimation, approvePhoto, rejectPhoto]);
 
   const progressPercentage = totalPhotos > 0 ? (approvedPhotos.length / totalPhotos) * 100 : 0;
 
@@ -251,11 +252,16 @@ export default function BraindanceMockup() {
                         : ""
                     }`}
                   >
-                    <img
+                    <Image
                       src={currentPhoto.image_url}
                       alt={`Photo ${currentPhoto.id}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover rounded-md"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      priority
                     />
+
+
                     {showAnimation === "approve" && (
                       <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
                         <Check className="text-green-400" size={64} />
@@ -365,11 +371,14 @@ export default function BraindanceMockup() {
                       key={photo.id}
                       className="aspect-square relative rounded-sm overflow-hidden border border-green-500/30 group"
                     >
-                      <img
-                        src={photo.image_url}
-                        alt={`Approved photo ${photo.id}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
-                      />
+                    <Image
+                      src={photo.image_url}
+                      alt={`Approved photo ${photo.id}`}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-200"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+
                       <div className="absolute top-1 right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                         <Check className="text-white" size={12} />
                       </div>

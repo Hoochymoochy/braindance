@@ -28,12 +28,12 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
   const [links, setLinks] = useState<Link[]>([]);
 
   const fetchLinks = useCallback(async () => {
-    const data = await getLinks(id);
+    const data = await getLinks(id as string);
     setLinks(data);
   }, [id]);
 
   const handleAddLink = async () => {
-    await addLink(id, linkInput);
+    await addLink(id as string, linkInput);
     await fetchLinks();
     setLinkInput({ label: "", description: "", link: "", id: "" });
   };

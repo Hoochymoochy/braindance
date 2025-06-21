@@ -36,7 +36,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
     const lon = localStorage.getItem("lon");
 
     if (city) incrementCityView(id, city);
-    if (lat && lon) addGeo(id, lat, lon);
+    if (lat && lon) addGeo(id, parseInt(lat), parseInt(lon));
   };
 
   return (

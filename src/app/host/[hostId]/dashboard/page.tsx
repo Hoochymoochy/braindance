@@ -22,6 +22,15 @@ const defaultPosterData = {
   image_url: "https://placeholder.pics/svg/300/000000/FFFFFF/Upload%20photo",
 };
 
+type passedEvent = {
+  id: string;
+  title: string;
+  date: string;
+  city: string;
+  photo: number;
+  view: number;
+}
+
 export default function Dashboard() {
   const params = useParams();
   const hostId = params?.hostId as string;
@@ -34,7 +43,7 @@ export default function Dashboard() {
   const eventsRef = useRef<HTMLDivElement>(null!);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const updateStats = (passedEvents) => {
+  const updateStats = (passedEvents: passedEvent[]) => {
     if (!passedEvents || passedEvents.length === 0) return;
 
     const photos = passedEvents.reduce((acc, event) => acc + (event.photo ?? 0), 0);
@@ -111,7 +120,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleGetEvent = async (id) => {
+  const handleGetEvent = async (id: string) => {
     const event = await getEventById(id);
     setPosterData(event);
     setEditEvent(true);
