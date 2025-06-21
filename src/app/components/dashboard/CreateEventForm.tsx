@@ -3,6 +3,26 @@
 import { EventPoster } from "@/app/components/user/Poster";
 import React, { useState, useRef } from "react";
 
+// 🧠 Define the expected shape of the form data
+type EventFormData = {
+  title: string;
+  date: string;
+  location: string;
+  description: string;
+  image_url?: string | ArrayBuffer | null;
+};
+
+type CreateEventFormProps = {
+  data: EventFormData;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onCreate: () => void;
+  onUpdate: () => void;
+  onCancel: () => void;
+  isEditing: boolean;
+  ref?: React.RefObject<HTMLDivElement>;
+  setImageFile: (file: File | null) => void;
+};
+
 export default function CreateEventForm({
   data,
   onChange,
@@ -12,16 +32,7 @@ export default function CreateEventForm({
   isEditing,
   ref,
   setImageFile,
-}: {
-  data: any;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onCreate: () => void;
-  onUpdate: () => void;
-  onCancel: () => void;
-  isEditing: boolean;
-  ref?: React.RefObject<HTMLDivElement>;
-  setImageFile: (file: File | null) => void;
-}) {
+}: CreateEventFormProps) {
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -32,10 +43,14 @@ export default function CreateEventForm({
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      onChange({ target: { name: "image_url", value: reader.result } } as any);
+      onChange({
+        target: {
+          name: "image_url",
+          value: reader.result as string | ArrayBuffer | null,
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
     };
     reader.readAsDataURL(file);
-    
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -69,7 +84,11 @@ export default function CreateEventForm({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              isEditing ? onUpdate() : onCreate();
+              if (isEditing) {
+                onUpdate();
+              } else {
+                onCreate();
+              }
             }}
             className="space-y-4"
           >
@@ -108,7 +127,7 @@ export default function CreateEventForm({
                 <input
                   name={field}
                   type={field === "date" ? "date" : "text"}
-                  value={data[field] || ""}
+                  value={(data as any)[field] || ""}3
                   onChange={onChange}
                   className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
                 />

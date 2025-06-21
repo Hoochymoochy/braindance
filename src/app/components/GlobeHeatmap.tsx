@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Globe from "react-globe.gl";
+import type { GlobeMethods } from "react-globe.gl";
 import { getAllGeo } from "@/app/lib/events/heatmap";
 import { ParamValue } from "next/dist/server/request/params";
 
@@ -16,7 +17,7 @@ type Props = {
 };
 
 const GlobeHeatmap: React.FC<Props> = ({ id }) => {
-  const globeEl = useRef<any>(null);
+  const globeEl = useRef<GlobeMethods | undefined>(undefined);
   const [gData, setGData] = useState<GeoData[]>([]);
 
   useEffect(() => {
