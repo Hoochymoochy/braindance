@@ -32,7 +32,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
   };
 
   const handleAddLink = async () => {
-    await addLink(linkInput, id);
+    await addLink(id, linkInput);
     fetchLinks();
     setLinkInput({ label: "", description: "", link: "", id: "" });
   };
