@@ -92,14 +92,14 @@ export default function BraindanceUserStream() {
 
             <div className="p-4">
               <h2 className="text-xl font-bold">
-                DJ Neon Pulse - Live from Club Vertex
+                DJ MATRODA - Live from Club Space
               </h2>
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
                   <span className="text-xs font-bold">DJ</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Neon Pulse</p>
+                  <p className="text-sm font-medium">MATRODA</p>
                   <p className="text-xs text-gray-400">Electronic / House</p>
                 </div>
               </div>
