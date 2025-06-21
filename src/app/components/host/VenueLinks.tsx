@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { Plus, X, ExternalLink } from "lucide-react";
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { X, ExternalLink } from "lucide-react";
 
 import { addLink, getLinks, deleteLink } from "@/app/lib/events/links";
-import { useParams } from "next/navigation";
 import { ParamValue } from "next/dist/server/request/params";
 
 type Link = {
@@ -26,25 +27,25 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
   });
   const [links, setLinks] = useState<Link[]>([]);
 
-  const fetchLinks = async () => {
+  const fetchLinks = useCallback(async () => {
     const data = await getLinks(id);
     setLinks(data);
-  };
+  }, [id]);
 
   const handleAddLink = async () => {
     await addLink(id, linkInput);
-    fetchLinks();
+    await fetchLinks();
     setLinkInput({ label: "", description: "", link: "", id: "" });
   };
 
   const handleDeleteLink = async (linkId: string) => {
     await deleteLink(linkId);
-    fetchLinks();
+    await fetchLinks();
   };
 
   useEffect(() => {
     fetchLinks();
-  }, [id]);
+  }, [fetchLinks]);
 
   return (
     <div className="mt-6 rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">

@@ -127,7 +127,6 @@ export default function CreateEventForm({
                 <input
                   name={field}
                   type={field === "date" ? "date" : "text"}
-                  value={(data as any)[field] || ""}3
                   onChange={onChange}
                   className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
                 />

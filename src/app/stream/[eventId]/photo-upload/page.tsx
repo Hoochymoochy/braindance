@@ -2,7 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { uploadPartyImage } from "@/app/lib/photos/uploadImage";
+import { uploadPartyImage } from "@/app/lib/photos/uploadImage"
+import Image from "next/image";;
 import { addPhoto } from "@/app/lib/photos/photo";
 
 export default function PhotoUpload() {
@@ -132,11 +133,14 @@ export default function PhotoUpload() {
               Preview:
             </p>
             <div className="relative group">
-              <img
-                src={URL.createObjectURL(file)}
-                alt="Preview"
-                className="w-full h-48 object-cover rounded-md border border-purple-500/30 shadow-[0_0_10px_rgba(236,72,153,0.2)] transition-transform duration-300 group-hover:scale-[1.02]"
-              />
+              <div className="relative w-full h-48 rounded-md overflow-hidden border border-purple-500/30 shadow-[0_0_10px_rgba(236,72,153,0.2)] group-hover:scale-[1.02] transition-transform duration-300">
+                <Image
+                  src={URL.createObjectURL(file)}
+                  alt="Preview"
+                  fill
+                  className="object-cover rounded-md"
+                />
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <button
                 onClick={(e) => {

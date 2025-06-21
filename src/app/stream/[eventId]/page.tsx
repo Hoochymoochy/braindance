@@ -1,14 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  Play,
-  Users,
-  Globe,
-  Share,
-  Heart,
-  MessageSquare,
-} from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
@@ -28,7 +20,6 @@ export default function BraindanceUserStream() {
   const [photoData, setPhotoData] = useState<{ src: string; alt: string }[]>(
     []
   );
-  const [tags, setTags] = useState<string[]>([]);
   const [merchItems, setMerchItems] = useState<
     { title: string; subtitle: string; url: string }[]
   >([]);
@@ -162,19 +153,6 @@ export default function BraindanceUserStream() {
 
       {/* Tags + Merch */}
       <div className="mt-6 rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-3 mb-4">
-            {tags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="px-3 py-1 bg-purple-900/40 border border-purple-500/30 rounded-full text-sm hover:bg-purple-800/60 cursor-pointer transition-colors"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
         <h3 className="text-lg font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
           MERCH & TICKETS
         </h3>

@@ -11,7 +11,6 @@ import { getStreams } from "@/app/lib/events/stream";
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [joinWaitlist, setJoinWaitlist] = useState(false);
   const [email, setEmail] = useState("");
@@ -44,7 +43,6 @@ export default function Home() {
         })
       );
 
-      setLiveEvents(live);
       setUpcomingEvents(upcoming.slice(0, 3));
     };
 

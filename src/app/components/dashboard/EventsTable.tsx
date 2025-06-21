@@ -6,9 +6,33 @@ import { deleteEvent } from "@/app/lib/events/event";
 import { ParamValue } from "next/dist/server/request/params";
 import { MoreVertical } from "lucide-react";
 
+// Define clean event types 🔥
+interface UpcomingEvent {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  intrested?: number; // keep spelling if your API uses it, else fix to 'interested'
+  viewed?: number;
+  liked?: number;
+}
+
+interface PassedEvent {
+  id: string;
+  title: string;
+  city: string;
+  view: number;
+  photo: number;
+  liked?: number;
+}
+
+// Union type for event array
+type Event = UpcomingEvent | PassedEvent;
+
 export default function EventsTable({
   title,
   events,
+  eventType = "upcoming", // 'upcoming' or 'passed'
   showActions = false,
   hostId,
   onEdit,
@@ -16,6 +40,7 @@ export default function EventsTable({
 }: {
   title: string;
   events: Event[];
+  eventType?: "upcoming" | "passed";
   showActions?: boolean;
   hostId?: ParamValue;
   onEdit?: (id: string) => void;
@@ -45,12 +70,24 @@ export default function EventsTable({
           <thead className="uppercase text-xs text-purple-300 bg-black border-b border-purple-900/30">
             <tr>
               <th className="py-3 px-5 text-left">Event</th>
-              <th className="py-3 px-5 text-left">Date</th>
-              <th className="py-3 px-5 text-center">{showActions ? "Interested" : "Viewed"}</th>
-              <th className="py-3 px-5 text-center">Liked</th>
+
+              {eventType === "upcoming" ? (
+                <>
+                  <th className="py-3 px-5 text-left">Date</th>
+                  <th className="py-3 px-5 text-left">Location</th>
+                </>
+              ) : (
+                <>
+                  <th className="py-3 px-5 text-left">Top City</th>
+                  <th className="py-3 px-5 text-center">Views</th>
+                  <th className="py-3 px-5 text-center">Photos</th>
+                </>
+              )}
+
               {showActions && <th className="py-3 px-5 text-center">Actions</th>}
             </tr>
           </thead>
+
           <tbody>
             {!events?.length ? (
               <tr>
@@ -68,13 +105,22 @@ export default function EventsTable({
                   className="border-t border-purple-900/30 hover:bg-purple-900/10 transition"
                 >
                   <td className="py-4 px-5 font-semibold">{event.title}</td>
-                  <td className="py-4 px-5">{event.date}</td>
-                  <td className="py-4 px-5 text-center">{showActions ? event.intrested : event.viewed}</td>
-                  <td className="py-4 px-5 text-center">{event.liked}</td>
+
+                  {eventType === "upcoming" ? (
+                    <>
+                      <td className="py-4 px-5">{(event as UpcomingEvent).date}</td>
+                      <td className="py-4 px-5">{(event as UpcomingEvent).location}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="py-4 px-5">{(event as PassedEvent).city}</td>
+                      <td className="py-4 px-5 text-center">{(event as PassedEvent).view}</td>
+                      <td className="py-4 px-5 text-center">{(event as PassedEvent).photo}</td>
+                    </>
+                  )}
 
                   {showActions && (
                     <td className="py-4 px-5 text-center relative">
-                      {/* 3 Dots */}
                       <button
                         className="p-2 rounded hover:bg-purple-800/30 transition"
                         onClick={() => toggleMenu(event.id)}
@@ -82,7 +128,6 @@ export default function EventsTable({
                         <MoreVertical className="h-5 w-5 text-purple-300" />
                       </button>
 
-                      {/* Dropdown Menu */}
                       {openMenuId === event.id && (
                         <div className="absolute right-4 mt-2 w-40 bg-black border border-purple-900/40 rounded-md shadow-xl z-10 animate-fadeIn">
                           <button

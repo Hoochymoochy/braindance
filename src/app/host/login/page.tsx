@@ -10,28 +10,34 @@ export default function Login() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
     if (!email || !password) {
       setError("All fields are required");
       return;
     }
-
+  
     try {
       const user = await loginHost(email, password);
-
+  
       if (user?.id) {
         router.push(`/host/${user.id}/dashboard`);
       } else {
         setError("User login successful but ID not found.");
         console.error("User object:", user);
       }
-    } catch (err: any) {
-      setError(err.message);
-      console.error("Login failed:", err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+        console.error("Login failed:", err.message);
+      } else {
+        setError("Unknown error occurred");
+        console.error("Login failed with unknown error:", err);
+      }
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-black thermal-background flex items-center justify-center">

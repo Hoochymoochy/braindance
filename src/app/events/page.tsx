@@ -8,7 +8,6 @@ import { getStreams } from "@/app/lib/events/stream";
 import { getNearestCity } from "@/app/lib/utils/location";
 
 export default function ExamplePage() {
-  const [topEvents, setTopEvents] = React.useState<EventPosterProps[]>([]);
   const [liveEvents, setLiveEvents] = React.useState<EventPosterProps[]>([]);
   const [upcomingEvents, setUpcomingEvents] = React.useState<EventPosterProps[]>([]);
 
@@ -45,12 +44,12 @@ export default function ExamplePage() {
     setUpcomingEvents(upcoming);
   };
 
-  const setLocation = async (lat: any, lng: any) => {
+  const setLocation = async (lat: number, lng: number) => {
     const data = await getNearestCity(lat, lng);
 
     localStorage.setItem("city", data?.city);
-    localStorage.setItem("lat", lat);
-    localStorage.setItem("lon", lng);
+    localStorage.setItem("lat", lat.toString());
+    localStorage.setItem("lon", lng.toString());
   }
 
   useEffect(() => {
@@ -78,7 +77,6 @@ export default function ExamplePage() {
 
   return (
     <EventsLayout
-      topEvents={topEvents}
       liveEvents={liveEvents}
       upcomingEvents={upcomingEvents}
       hideStuff={{}}

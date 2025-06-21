@@ -35,6 +35,17 @@ export async function getEventsByHost(hostId: string) {
   return data;
 }
 
+// GET ALL PASSED EVENTS
+export async function getPassedEvents(host: string) {
+  const { data, error } = await supabase
+    .from("passed_events")
+    .select("*")
+    .eq("host_id", host);
+  
+    if (error) throw new Error(error.message);
+    return data;
+}
+
 // GET SINGLE EVENT
 export async function getEventById(id: string) {
   const { data, error } = await supabase

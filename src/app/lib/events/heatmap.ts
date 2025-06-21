@@ -1,17 +1,23 @@
 import { supabase } from "@/app/lib/utils/supabaseClient";
 
-// Type for geo input
-type GeoPoint = {
+// Define proper types
+type LatLon = {
   lat: number;
   lon: number;
 };
 
+type HeatmapPoint = {
+  lat: number;
+  lng: number;
+  weight: number;
+};
+
 // Add geo point to event
-export async function addGeo(eventId: string, lat: any, lon: any) {
+export async function addGeo(eventId: string, lat: number, lon: number) {
   const { error } = await supabase.from("event_city_geo").insert({
     event_id: eventId,
-    lat: lat,
-    lon: lon,
+    lat,
+    lon,
   });
 
   if (error) throw new Error(`Geo insert failed: ${error.message}`);
@@ -19,7 +25,7 @@ export async function addGeo(eventId: string, lat: any, lon: any) {
 }
 
 // Get all geo points for an event, formatted for heatmap
-export async function getAllGeo(eventId: string) {
+export async function getAllGeo(eventId: string): Promise<HeatmapPoint[]> {
   if (!eventId) return [];
 
   const { data, error } = await supabase
@@ -31,10 +37,10 @@ export async function getAllGeo(eventId: string) {
   if (!data) return [];
 
   return data
-    .filter((point) => point.lat !== null && point.lon !== null)
-    .map((point) => ({
+    .filter((point: Partial<LatLon>) => point.lat !== null && point.lon !== null)
+    .map((point: LatLon) => ({
       lat: point.lat,
-      lng: point.lon, // transform for Globe
+      lng: point.lon,
       weight: 0.1,
     }));
 }

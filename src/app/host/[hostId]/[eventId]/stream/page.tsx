@@ -1,25 +1,17 @@
 "use client";
-import {
-  Play,
-  Users,
-  Globe,
-  X,
-  Check,
-  Share,
-  Heart,
-  MessageSquare,
-  Upload,
-  Eye,
-  EyeOff,
-} from "lucide-react";
 
+import { X, Check, Eye, EyeOff } from "lucide-react";
 import VenueLinks from "@/app/components/host/VenueLinks";
 import { addStream, getStreams } from "@/app/lib/events/stream";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getPhotos, deletePhoto, acceptPhoto, getAcceptedPhotos } from "@/app/lib/photos/photo";
+import {
+  getPhotos,
+  deletePhoto,
+  acceptPhoto,
+  getAcceptedPhotos,
+} from "@/app/lib/photos/photo";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
-import { ParamValue } from "next/dist/server/request/params";
 import { totalViews } from "@/app/lib/events/views";
 import { getTopCity } from "@/app/lib/utils/location";
 
@@ -32,7 +24,7 @@ interface Photo {
 export default function BraindanceMockup() {
   const params = useParams();
   const eventId = params?.eventId as string;
-  
+
   const [pendingPhotos, setPendingPhotos] = useState<Photo[]>([]);
   const [approvedPhotos, setApprovedPhotos] = useState<Photo[]>([]);
   const [city, setCity] = useState("");
@@ -50,45 +42,30 @@ export default function BraindanceMockup() {
   const currentPhoto = pendingPhotos[currentPhotoIndex];
   const totalPhotos = pendingPhotos.length + approvedPhotos.length;
 
-  // Load photos from backend
   const loadPhotos = async () => {
     try {
       setIsLoading(true);
-
-      // Grab pending + approved in parallel
       const [pending, approved] = await Promise.all([
-        getPhotos(eventId as ParamValue),           // returns only pending photos
-        getAcceptedPhotos(eventId as ParamValue),   // returns only approved photos
+        getPhotos(eventId),
+        getAcceptedPhotos(eventId),
       ]);
-
       setPendingPhotos(pending);
       setApprovedPhotos(approved);
-
-      // Update stats cleanly
-      setReviewStats(prev => ({
-        ...prev,
-        approved: approved.length,
-      }));
+      setReviewStats((prev) => ({ ...prev, approved: approved.length }));
     } catch (error) {
-      console.error('Error loading photos:', error);
+      console.error("Error loading photos:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-
-
   const extractVideoId = (fullUrl: string) => {
     try {
       const urlObj = new URL(fullUrl);
-      if (urlObj.hostname === "youtu.be") {
-        return urlObj.pathname.slice(1);
-      }
-      if (urlObj.hostname.includes("youtube.com")) {
-        return urlObj.searchParams.get("v");
-      }
+      if (urlObj.hostname === "youtu.be") return urlObj.pathname.slice(1);
+      if (urlObj.hostname.includes("youtube.com")) return urlObj.searchParams.get("v");
       return null;
-    } catch (err) {
+    } catch {
       return null;
     }
   };
@@ -106,75 +83,61 @@ export default function BraindanceMockup() {
     }
   };
 
-  // Function to approve photo
   const approvePhoto = async () => {
     if (!currentPhoto) return;
-
     setShowAnimation("approve");
-    
     try {
-      // Move photo to approved status
       await acceptPhoto(currentPhoto.image_url, eventId);
       await deletePhoto(currentPhoto.id);
-      
       setTimeout(() => {
-        const photoToApprove = { ...currentPhoto, status: 'approved' as const };
-        setApprovedPhotos(prev => [...prev, photoToApprove]);
-        setPendingPhotos(prev => prev.filter(photo => photo.id !== currentPhoto.id));
-        setReviewStats(prev => ({
+        const photoToApprove = { ...currentPhoto, status: "approved" as const };
+        setApprovedPhotos((prev) => [...prev, photoToApprove]);
+        setPendingPhotos((prev) => prev.filter((p) => p.id !== currentPhoto.id));
+        setReviewStats((prev) => ({
           ...prev,
           reviewed: prev.reviewed + 1,
           approved: prev.approved + 1,
         }));
-        setCurrentPhotoIndex(prev => Math.min(prev, pendingPhotos.length - 2));
+        setCurrentPhotoIndex((prev) => Math.min(prev, pendingPhotos.length - 2));
         setShowAnimation("");
       }, 500);
     } catch (error) {
-      console.error('Error approving photo:', error);
+      console.error("Error approving photo:", error);
       setShowAnimation("");
-      alert('Error approving photo. Please try again.');
+      alert("Error approving photo. Please try again.");
     }
   };
 
-  // Function to reject photo
   const rejectPhoto = async () => {
     if (!currentPhoto) return;
-
     setShowAnimation("reject");
-    
     try {
-      // Delete photo from backend
       await deletePhoto(currentPhoto.id);
-      
       setTimeout(() => {
-        setPendingPhotos(prev => prev.filter(photo => photo.id !== currentPhoto.id));
-        setReviewStats(prev => ({
+        setPendingPhotos((prev) => prev.filter((p) => p.id !== currentPhoto.id));
+        setReviewStats((prev) => ({
           ...prev,
           reviewed: prev.reviewed + 1,
           rejected: prev.rejected + 1,
         }));
-        setCurrentPhotoIndex(prev => Math.min(prev, pendingPhotos.length - 2));
+        setCurrentPhotoIndex((prev) => Math.min(prev, pendingPhotos.length - 2));
         setShowAnimation("");
       }, 500);
     } catch (error) {
-      console.error('Error rejecting photo:', error);
+      console.error("Error rejecting photo:", error);
       setShowAnimation("");
-      alert('Error rejecting photo. Please try again.');
+      alert("Error rejecting photo. Please try again.");
     }
   };
 
   const getData = async () => {
     try {
       const streams = await getStreams(eventId);
-      if (streams && streams.length > 0) {
-        setUrl(streams[0].link);
-      }
-      const views = await totalViews(eventId);
-      setViews(views);
-      const city = await getTopCity(eventId);
-      setCity(city);
+      if (streams?.length > 0) setUrl(streams[0].link);
+      setViews(await totalViews(eventId));
+      setCity(await getTopCity(eventId));
     } catch (error) {
-      console.error('Error loading streams:', error);
+      console.error("Error loading streams:", error);
     }
   };
 
@@ -185,24 +148,17 @@ export default function BraindanceMockup() {
     }
   }, [eventId]);
 
-  // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (showAnimation !== "" || !currentPhoto) return;
-      
-      if (event.key.toLowerCase() === 'x') {
-        rejectPhoto();
-      } else if (event.key.toLowerCase() === 'c') {
-        approvePhoto();
-      }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showAnimation || !currentPhoto) return;
+      if (e.key.toLowerCase() === "x") rejectPhoto();
+      if (e.key.toLowerCase() === "c") approvePhoto();
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPhoto, showAnimation]);
 
-  const progressPercentage =
-    totalPhotos > 0 ? (approvedPhotos.length / totalPhotos) * 100 : 0;
+  const progressPercentage = totalPhotos > 0 ? (approvedPhotos.length / totalPhotos) * 100 : 0;
 
   if (isLoading) {
     return (
@@ -211,7 +167,6 @@ export default function BraindanceMockup() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-black p-4 md:p-10">
       <div className="container mx-auto">
