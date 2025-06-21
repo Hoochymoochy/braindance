@@ -381,28 +381,6 @@ export default function BraindanceMockup() {
               </div>
               <GlobeHeatmap id={eventId} />
 
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {[
-                  {
-                    label: "PEAK VIEWERS",
-                    value: "2,891",
-                    color: "text-pink-300",
-                  },
-                  {
-                    label: "STREAM TIME",
-                    value: "2:34h",
-                    color: "text-purple-300",
-                  },
-                ].map(({ label, value, color }, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-md bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30"
-                  >
-                    <p className="text-xs text-gray-400">{label}</p>
-                    <p className={`text-xl font-bold ${color}`}>{value}</p>
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* Photo Gallery */}
