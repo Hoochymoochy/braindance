@@ -31,7 +31,7 @@ export async function uploadEventImage(file: File, eventId: string): Promise<str
   if (uploadError) throw new Error("Upload failed: " + uploadError.message);
 
   const { data: publicData } = supabase.storage
-    .from("moderation-photos")
+    .from("event-photos")
     .getPublicUrl(path);
 
   if (!publicData?.publicUrl) {
