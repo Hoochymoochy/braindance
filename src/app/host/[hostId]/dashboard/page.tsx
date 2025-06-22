@@ -31,15 +31,22 @@ type passedEvent = {
   view: number;
 }
 
+type upcomingEvent = {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+}
+
 export default function Dashboard() {
   const params = useParams();
   const hostId = params?.hostId as string;
   const [posterData, setPosterData] = useState(defaultPosterData);
   const [stats, setStats] = useState({ photos: 0, topCity: "", views: 0 });
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [passedEvents, setPassedEvents] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<upcomingEvent[]>([]);
+  const [passedEvents, setPassedEvents] = useState<passedEvent[]>([]);
   const [editEvent, setEditEvent] = useState(false);
-  const [eventId, setEventId] = useState(null);
+  const [eventId, setEventId] = useState<string | null>(null);
   const eventsRef = useRef<HTMLDivElement>(null!);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -49,13 +56,23 @@ export default function Dashboard() {
     const photos = passedEvents.reduce((acc, event) => acc + (event.photo ?? 0), 0);
     const views = passedEvents.reduce((acc, event) => acc + (event.view ?? 0), 0);
 
-    const cityMap = {};
+    const cityMap: Record<string, number> = {};
+
     for (const event of passedEvents) {
       if (!event.city) continue;
-      cityMap[event.city] = (cityMap[event.city] || 0) + event.view;
+
+      const city = event.city;
+      const viewCount = event.view ?? 0;
+
+      if (cityMap[city]) {
+        cityMap[city] += viewCount;
+      } else {
+        cityMap[city] = viewCount;
+      }
     }
 
-    const topCity = Object.entries(cityMap).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+    const topCity =
+      Object.entries(cityMap).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "N/A";
 
     setStats({
       photos,
@@ -63,6 +80,7 @@ export default function Dashboard() {
       topCity,
     });
   };
+
 
   const fetchEvents = useCallback(async () => {
     if (!hostId) return;
@@ -78,10 +96,11 @@ export default function Dashboard() {
     fetchEvents();
   }, [fetchEvents]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setPosterData((prev) => ({ ...prev, [name]: value }));
   };
+
 
   const handleCreateEvent = async () => {
     const { title, description, date, location } = posterData;
@@ -100,7 +119,7 @@ export default function Dashboard() {
     try {
       const eventId = crypto.randomUUID();
 
-      let imageUrl = posterData.image;
+      let imageUrl = posterData.image_url;
       if (imageFile) {
         imageUrl = await uploadEventImage(imageFile, eventId);
       }
@@ -124,7 +143,7 @@ export default function Dashboard() {
     const event = await getEventById(id);
     setPosterData(event);
     setEditEvent(true);
-    setEventId(id);
+    setEventId(id );
 
     setTimeout(() => {
       eventsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -133,7 +152,8 @@ export default function Dashboard() {
 
   const handleUpdateEvent = async () => {
     if (!eventId) return;
-    await updateEvent(eventId, posterData);
+    const updatedPosterData = { ...posterData, image: posterData.image_url };
+    await updateEvent(eventId, updatedPosterData);
     cancelEdit();
     fetchEvents();
   };

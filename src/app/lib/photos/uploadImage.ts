@@ -30,10 +30,13 @@ export async function uploadEventImage(file: File, eventId: string): Promise<str
     });
   if (uploadError) throw new Error("Upload failed: " + uploadError.message);
 
-  const { data: publicData, error: publicUrlError } = supabase.storage
-    .from("event-photos")
+  const { data: publicData } = supabase.storage
+    .from("moderation-photos")
     .getPublicUrl(path);
-  if (publicUrlError || !publicData?.publicUrl) throw new Error("Failed to get public URL");
+
+  if (!publicData?.publicUrl) {
+    throw new Error("Could not get public URL");
+  }
 
   return publicData.publicUrl;
 }
@@ -51,10 +54,13 @@ export async function uploadPartyImage(file: File, eventId: string): Promise<str
     });
   if (uploadError) throw new Error("Upload failed: " + uploadError.message);
 
-  const { data: publicData, error: publicError } = supabase.storage
+  const { data: publicData } = supabase.storage
     .from("moderation-photos")
     .getPublicUrl(path);
-  if (publicError || !publicData?.publicUrl) throw new Error("Could not get public URL");
+
+  if (!publicData?.publicUrl) {
+    throw new Error("Could not get public URL");
+  }
 
   return publicData.publicUrl;
 }

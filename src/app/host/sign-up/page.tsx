@@ -26,7 +26,7 @@ export default function SignUp() {
 
     const res = await signUpHost(email, password);
 
-    if (res.error) {
+    if ('error' in res) {
       setError(res.error);
     } else {
       router.push(`/host/${res.id}/dashboard`);
