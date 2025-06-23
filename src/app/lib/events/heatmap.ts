@@ -28,19 +28,42 @@ export async function addGeo(eventId: string, lat: number, lon: number) {
 export async function getAllGeo(eventId: string): Promise<HeatmapPoint[]> {
   if (!eventId) return [];
 
-  const { data, error } = await supabase
+  // Fetch all geo points
+  const { data: geoPoints, error: geoError } = await supabase
     .from("event_city_geo")
     .select("lat, lon")
     .eq("event_id", eventId);
 
-  if (error) throw new Error(`Failed to fetch geo: ${error.message}`);
-  if (!data) return [];
+  if (geoError) throw new Error(`Failed to fetch geo: ${geoError.message}`);
+  if (!geoPoints || geoPoints.length === 0) return [];
 
-  return data
-    .filter((point: Partial<LatLon>) => point.lat !== null && point.lon !== null)
-    .map((point: LatLon) => ({
+  // Fetch total views
+  const { data: viewData, error: viewError } = await supabase
+    .from("event_city_views")
+    .select("view_count")
+    .eq("event_id", eventId);
+
+  if (viewError) throw new Error(`Failed to fetch views: ${viewError.message}`);
+
+  const totalViews = viewData?.reduce((sum, row) => sum + (row.view_count ?? 0), 0) || 1; // avoid div/0
+
+  // Count geo occurrences
+  const pointMap: Record<string, number> = {};
+
+  geoPoints.forEach((point: LatLon) => {
+    const key = `${point.lat.toFixed(4)}_${point.lon.toFixed(4)}`; // round to cluster
+    pointMap[key] = (pointMap[key] || 0) + 1;
+  });
+
+  // Format with weights
+  return geoPoints.map((point: LatLon) => {
+    const key = `${point.lat.toFixed(4)}_${point.lon.toFixed(4)}`;
+    const weight = Math.min((pointMap[key] / totalViews) * 2, 1); // Scale and clamp
+
+    return {
       lat: point.lat,
       lng: point.lon,
-      weight: 0.1,
-    }));
+      weight: weight < 0.1 ? 0.1 : weight, // minimum visibility
+    };
+  });
 }
