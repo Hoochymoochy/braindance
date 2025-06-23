@@ -8,6 +8,7 @@ import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
 import { getStreams } from "@/app/lib/events/stream";
+import { addEmail }  from "@/app/lib/utils/email";
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -78,7 +79,7 @@ export default function Home() {
               Explore Braindance
             </button>
             <Link
-              href="#"
+              href="/events"
               className="border border-white text-white px-5 py-2 rounded-md hover:bg-white hover:text-black transition"
             >
               Join the Ritual <ArrowRight className="inline ml-2 h-4 w-4" />
@@ -187,6 +188,7 @@ export default function Home() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     setSubmitted(true);
+                    addEmail(email);               
                   }}
                   className="flex flex-col gap-3"
                 >
