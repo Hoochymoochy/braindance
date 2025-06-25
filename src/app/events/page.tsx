@@ -5,7 +5,6 @@ import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
 import { getStreams } from "@/app/lib/events/stream";
-import { getNearestCity } from "@/app/lib/utils/location";
 
 export default function ExamplePage() {
   const [liveEvents, setLiveEvents] = React.useState<EventPosterProps[]>([]);
@@ -44,35 +43,8 @@ export default function ExamplePage() {
     setUpcomingEvents(upcoming);
   };
 
-  const setLocation = async (lat: number, lng: number) => {
-    const data = await getNearestCity(lat, lng);
-
-    localStorage.setItem("city", data?.city);
-    localStorage.setItem("lat", lat.toString());
-    localStorage.setItem("lon", lng.toString());
-  }
-
   useEffect(() => {
     getEvents();
-
-    if (!navigator.geolocation) {
-    console.log("Geolocation not supported.");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      setLocation(position.coords.latitude, position.coords.longitude);
-    },
-    (error) => {
-      console.error("Location error:", error);
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
-    }
-  );
   }, []);
 
   return (
