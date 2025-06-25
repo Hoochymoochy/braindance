@@ -74,8 +74,21 @@ export default function BraindanceMockup() {
   const extractVideoId = (fullUrl: string) => {
     try {
       const urlObj = new URL(fullUrl);
+  
+      // Handles youtu.be short links
       if (urlObj.hostname === "youtu.be") return urlObj.pathname.slice(1);
-      if (urlObj.hostname.includes("youtube.com")) return urlObj.searchParams.get("v");
+  
+      // Handles youtube.com/watch?v=ID
+      if (urlObj.hostname.includes("youtube.com")) {
+        const videoId = urlObj.searchParams.get("v");
+        if (videoId) return videoId;
+  
+        // Handles youtube.com/live/ID
+        if (urlObj.pathname.startsWith("/live/")) {
+          return urlObj.pathname.split("/live/")[1];
+        }
+      }
+  
       return null;
     } catch {
       return null;
