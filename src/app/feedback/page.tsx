@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ArrowLeftCircle, MessageSquare, Send } from "lucide-react";
+import { addFeedback } from "@/app/lib/utils/feedback";
 import Link from "next/link";
 
 export default function FeedbackPage() {
@@ -17,11 +18,9 @@ export default function FeedbackPage() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // TODO: Connect this to Supabase / Discord / Email webhook / Firestore / carrier pigeon
-    console.log("🔥 FEEDBACK:", message);
+    await addFeedback(message);
     setSubmitted(true);
     setMessage("");
   };

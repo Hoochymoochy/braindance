@@ -19,19 +19,19 @@ export default function Footer() {
           {/* Links */}
           <div className="flex space-x-6">
             <Link
-              href="#"
+              href="/policy"
               className="text-sm text-gray-400 hover:text-pink-400 transition-colors"
             >
-              Privacy
+              Policy
             </Link>
             <Link
-              href="#"
+              href="/feedback"
               className="text-sm text-gray-400 hover:text-pink-400 transition-colors"
             >
-              Terms
+              Feedback
             </Link>
             <Link
-              href="#"
+              href="/contact"
               className="text-sm text-gray-400 hover:text-pink-400 transition-colors"
             >
               Contact
