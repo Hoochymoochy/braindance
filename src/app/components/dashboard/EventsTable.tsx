@@ -48,10 +48,8 @@ export default function EventsTable({
   const router = useRouter();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  const onStart = (eventId: string) => {
-    router.push(`/host/${hostId}/${eventId}/stream`);
-  };
-
+  const onStart = (eventId: string) => router.push(`/host/${hostId}/${eventId}/stream`);
+  const onJoin = (eventId: string) => router.push(`/host/${hostId}/${eventId}/live`);
   const onDelete = async (id: string) => {
     await deleteEvent(id);
     fetchEvents?.();
@@ -69,13 +67,7 @@ export default function EventsTable({
           <thead className="uppercase text-xs text-purple-300 bg-black border-b border-purple-900/30">
             <tr>
               <th className="py-3 px-5 text-left">Event</th>
-
-              {eventType === "upcoming" ? (
-                <>
-                  <th className="py-3 px-5 text-left">Date</th>
-                  <th className="py-3 px-5 text-left">Location</th>
-                </>
-              ) : eventType === "passed" ? (
+              {eventType === "passed" ? (
                 <>
                   <th className="py-3 px-5 text-left">Top City</th>
                   <th className="py-3 px-5 text-center">Views</th>
@@ -87,17 +79,19 @@ export default function EventsTable({
                   <th className="py-3 px-5 text-left">Location</th>
                 </>
               )}
-
-              {showActions && <th className="py-3 px-5 text-center">Actions</th>}
-              {eventType === "live" && <th className="py-3 px-5 text-center">Stream</th>}
+              {eventType === "live" && (
+                <th className="py-3 px-5 text-center">Stream</th>
+              )}
+              {showActions && (
+                <th className="py-3 px-5 text-center">Actions</th>
+              )}
             </tr>
           </thead>
-
           <tbody>
             {!events?.length ? (
               <tr>
                 <td
-                  colSpan={showActions || eventType === "live" ? 5 : 4}
+                  colSpan={5}
                   className="py-6 text-center text-zinc-400"
                 >
                   No events found.
@@ -128,14 +122,12 @@ export default function EventsTable({
 
                   {eventType === "live" && (
                     <td className="py-4 px-5 text-center">
-                      <a
-                        href={(event as UpcomingEvent).stream_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-400 underline hover:text-green-500"
+                      <button
+                        onClick={() => onStart(event.id)}
+                        className="bg-purple-700/30 hover:bg-purple-700/50 transition text-white text-xs font-medium px-4 py-2 rounded-xl"
                       >
                         Join Stream
-                      </a>
+                      </button>
                     </td>
                   )}
 
@@ -149,13 +141,13 @@ export default function EventsTable({
                       </button>
 
                       {openMenuId === event.id && (
-                        <div className="absolute right-4 mt-2 w-40 bg-black border border-purple-900/40 rounded-md shadow-xl z-10 animate-fadeIn">
+                        <div className="absolute right-0 mt-2 w-40 bg-black border border-purple-900/40 rounded-md shadow-xl z-10 animate-fadeIn overflow-hidden">
                           <button
                             onClick={() => {
                               onEdit?.(event.id);
                               setOpenMenuId(null);
                             }}
-                            className="block w-full text-left px-4 py-2 hover:bg-purple-700/30 text-sm text-white"
+                            className="w-full px-4 py-2 text-left hover:bg-purple-700/30 text-sm"
                           >
                             ✏️ Edit
                           </button>
@@ -164,7 +156,7 @@ export default function EventsTable({
                               onStart(event.id);
                               setOpenMenuId(null);
                             }}
-                            className="block w-full text-left px-4 py-2 hover:bg-purple-700/30 text-sm text-white"
+                            className="w-full px-4 py-2 text-left hover:bg-purple-700/30 text-sm"
                           >
                             🚀 Start
                           </button>
@@ -173,7 +165,7 @@ export default function EventsTable({
                               onDelete(event.id);
                               setOpenMenuId(null);
                             }}
-                            className="block w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/10 text-sm"
+                            className="w-full px-4 py-2 text-left text-red-400 hover:bg-red-500/10 text-sm"
                           >
                             🗑️ Delete
                           </button>
