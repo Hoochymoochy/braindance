@@ -20,9 +20,6 @@ export default function ExamplePage() {
       events.map(async (event) => {
         const streams = await getStreams(event.id);
         const hasLiveLink = streams?.some((s) => s.link !== null);
-
-        console.log(event.image_url)
-
         if (hasLiveLink) {
           const liveEvent = {
             ...event,
