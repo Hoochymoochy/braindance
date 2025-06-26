@@ -49,7 +49,6 @@ export default function EventsTable({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const onStart = (eventId: string) => router.push(`/host/${hostId}/${eventId}/stream`);
-  const onJoin = (eventId: string) => router.push(`/host/${hostId}/${eventId}/live`);
   const onDelete = async (id: string) => {
     await deleteEvent(id);
     fetchEvents?.();
@@ -62,7 +61,7 @@ export default function EventsTable({
   return (
     <section>
       <h2 className="text-2xl font-bold mb-6">{title}</h2>
-      <div className="overflow-x-auto border border-purple-900/30 bg-black/60 rounded-2xl shadow-[0_0_12px_rgba(168,85,247,0.1)]">
+      <div className="border border-purple-900/30 bg-black/60 rounded-2xl shadow-[0_0_12px_rgba(168,85,247,0.1)]">
         <table className="min-w-full text-sm text-white">
           <thead className="uppercase text-xs text-purple-300 bg-black border-b border-purple-900/30">
             <tr>
@@ -141,7 +140,7 @@ export default function EventsTable({
                       </button>
 
                       {openMenuId === event.id && (
-                        <div className="absolute right-0 mt-2 w-40 bg-black border border-purple-900/40 rounded-md shadow-xl z-10 animate-fadeIn overflow-hidden">
+                        <div className="absolute right-0 mt-2 w-40 bg-black border border-purple-900/40 rounded-md shadow-xl z-10 animate-fadeIn">
                           <button
                             onClick={() => {
                               onEdit?.(event.id);

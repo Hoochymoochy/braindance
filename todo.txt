@@ -5,8 +5,3 @@
 
 
 ✅ HOST SIDE
-    click to links
-    fix pop up for action on upcoming
-    fix placeholder photo
-    add link to share the event and photo upload
-

@@ -133,6 +133,17 @@ export default function BraindanceMockup() {
     }
   }, [currentPhoto, eventId, pendingPhotos.length]);
 
+    const handleCopy = (path: string) => {
+    const fullUrl = `https://braindance.live/${path}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      alert(`Copied: ${fullUrl}`);
+    }).catch((err) => {
+      console.error("Copy failed:", err);
+      alert("Failed to copy link.");
+    });
+  };
+
+
   const rejectPhoto = useCallback(async () => {
     if (!currentPhoto) return;
     setShowAnimation("reject");
@@ -187,6 +198,21 @@ export default function BraindanceMockup() {
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Live Stream + Photo Review */}
           <div className="lg:col-span-2 flex flex-col gap-4">
+            <div className="flex flex-wrap gap-4 items-center justify-start">
+            <button
+              onClick={() => handleCopy(`stream/${eventId}`)}
+              className="px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-600 text-white text-sm font-medium shadow-md transition-all"
+            >
+              Copy Stream Link
+            </button>
+            <button
+              onClick={() => handleCopy(`${eventId}/photo-upload`)}
+              className="px-4 py-2 rounded-md bg-pink-600 hover:bg-pink-500 text-white text-sm font-medium shadow-md transition-all"
+            >
+              Copy Photo Upload Link
+            </button>
+          </div>
+
             {/* Live Stream */}
             <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
               <div className="aspect-video relative">
