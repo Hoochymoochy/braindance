@@ -2,6 +2,3 @@
     mobile click works on count + location
     feedback page
     policy page
-
-
-✅ HOST SIDE
