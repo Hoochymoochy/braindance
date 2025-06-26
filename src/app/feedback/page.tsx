@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeftCircle, MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send } from "lucide-react";
 import { addFeedback } from "@/app/lib/utils/feedback";
-import Link from "next/link";
 
 export default function FeedbackPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -45,7 +44,7 @@ export default function FeedbackPage() {
             <div className="text-center text-pink-400">
               <MessageSquare className="w-10 h-10 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Thanks for your feedback!</h2>
-              <p className="text-gray-400">You're helping shape the movement. Respect. 🔮</p>
+              <p className="text-gray-400">You&apos;re helping shape the movement. Respect. 🔮</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">

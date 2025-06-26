@@ -36,7 +36,7 @@ export default function PolicyPage() {
             Braindance Policies
           </h1>
           <p className="text-base text-gray-300 mb-8">
-            We're not just streaming vibes—we're protecting your trust while we build the future. Here's how we keep it real.
+            We&apos;re not just streaming vibes—we&apos;re protecting your trust while we build the future. Here&apos;s how we keep it real.
           </p>
 
           <div className="space-y-10 text-sm md:text-base text-gray-300">
@@ -57,7 +57,7 @@ export default function PolicyPage() {
             <div>
               <h2 className="text-lg font-semibold text-indigo-400 mb-2">🔐 Privacy & Security</h2>
               <p>
-                Your data lives in secure vaults. We use Supabase, encrypted auth, and token-based sessions. If we ever update how we handle info, you'll know first.
+                Your data lives in secure vaults. We use Supabase, encrypted auth, and token-based sessions. If we ever update how we handle info, you&apos;ll know first.
               </p>
             </div>
 

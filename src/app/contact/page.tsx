@@ -48,8 +48,9 @@ export default function ContactPage() {
             Hit Us Up
           </h1>
           <p className="text-base text-gray-300 mb-8">
-            Whether you're a DJ, venue, dreamer, or supporter—drop a message and we’ll vibe with you soon.
+            Whether you&apos;re a DJ, venue, dreamer, or supporter—drop a message and we’ll vibe with you soon.
           </p>
+
 
           {submitted ? (
             <div className="text-center text-purple-400">
