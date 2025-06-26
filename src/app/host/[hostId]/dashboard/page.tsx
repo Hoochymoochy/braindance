@@ -13,6 +13,7 @@ import {
   getPassedEvents,
 } from "@/app/lib/events/event";
 import { uploadEventImage } from "@/app/lib/photos/uploadImage";
+import { getStreams } from "@/app/lib/events/stream";
 
 const defaultPosterData = {
   title: "",
@@ -29,14 +30,15 @@ type passedEvent = {
   city: string;
   photo: number;
   view: number;
-}
+};
 
 type upcomingEvent = {
   id: string;
   title: string;
   date: string;
   location: string;
-}
+  stream_url?: string;
+};
 
 export default function Dashboard() {
   const params = useParams();
@@ -44,6 +46,7 @@ export default function Dashboard() {
   const [posterData, setPosterData] = useState(defaultPosterData);
   const [stats, setStats] = useState({ photos: 0, topCity: "", views: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState<upcomingEvent[]>([]);
+  const [liveEvents, setLiveEvents] = useState<upcomingEvent[]>([]);
   const [passedEvents, setPassedEvents] = useState<passedEvent[]>([]);
   const [editEvent, setEditEvent] = useState(false);
   const [eventId, setEventId] = useState<string | null>(null);
@@ -71,8 +74,7 @@ export default function Dashboard() {
       }
     }
 
-    const topCity =
-      Object.entries(cityMap).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "N/A";
+    const topCity = Object.entries(cityMap).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "N/A";
 
     setStats({
       photos,
@@ -81,16 +83,39 @@ export default function Dashboard() {
     });
   };
 
-
   const fetchEvents = useCallback(async () => {
     if (!hostId) return;
+  
     const events = await getEventsByHost(hostId);
     const passed = await getPassedEvents(hostId);
-
+  
     updateStats(passed);
     setPassedEvents(passed);
-    setUpcomingEvents(events);
+  
+    const checks = await Promise.all(
+      events.map(async (event) => {
+        const streams = await getStreams(event.id);
+        const hasStream = streams.length > 0;
+        return { event, hasStream };
+      })
+    );
+    
+  
+    const live: upcomingEvent[] = [];
+    const upcoming: upcomingEvent[] = [];
+  
+    checks.forEach(({ event, hasStream }) => {
+      if (hasStream) {
+        live.push(event);
+      } else {
+        upcoming.push(event);
+      }
+    });
+  
+    setLiveEvents(live);
+    setUpcomingEvents(upcoming);
   }, [hostId]);
+  
 
   useEffect(() => {
     fetchEvents();
@@ -100,7 +125,6 @@ export default function Dashboard() {
     const { name, value } = e.target;
     setPosterData((prev) => ({ ...prev, [name]: value }));
   };
-
 
   const handleCreateEvent = async () => {
     const { title, description, date, location } = posterData;
@@ -143,7 +167,7 @@ export default function Dashboard() {
     const event = await getEventById(id);
     setPosterData(event);
     setEditEvent(true);
-    setEventId(id );
+    setEventId(id);
 
     setTimeout(() => {
       eventsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -168,6 +192,17 @@ export default function Dashboard() {
     <div className="min-h-screen thermal-background">
       <main className="max-w-6xl mx-auto p-6 space-y-8 pt-10">
         <StatsSection stats={stats} />
+
+        {liveEvents.length > 0 && (
+          <EventsTable
+            title="Live Streams"
+            events={liveEvents}
+            hostId={hostId}
+            showActions={false}
+            fetchEvents={fetchEvents}
+            eventType="live"
+          />
+        )}
 
         <EventsTable
           title="Upcoming Events"

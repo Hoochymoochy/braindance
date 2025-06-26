@@ -6,13 +6,13 @@ import { deleteEvent } from "@/app/lib/events/event";
 import { ParamValue } from "next/dist/server/request/params";
 import { MoreVertical } from "lucide-react";
 
-// Define clean event types 🔥
 interface UpcomingEvent {
   id: string;
   title: string;
   date: string;
   location: string;
-  intrested?: number; // keep spelling if your API uses it, else fix to 'interested'
+  stream_url?: string;
+  intrested?: number;
   viewed?: number;
   liked?: number;
 }
@@ -26,13 +26,12 @@ interface PassedEvent {
   liked?: number;
 }
 
-// Union type for event array
 type Event = UpcomingEvent | PassedEvent;
 
 export default function EventsTable({
   title,
   events,
-  eventType = "upcoming", // 'upcoming' or 'passed'
+  eventType = "upcoming",
   showActions = false,
   hostId,
   onEdit,
@@ -40,7 +39,7 @@ export default function EventsTable({
 }: {
   title: string;
   events: Event[];
-  eventType?: "upcoming" | "passed";
+  eventType?: "upcoming" | "passed" | "live";
   showActions?: boolean;
   hostId?: ParamValue;
   onEdit?: (id: string) => void;
@@ -76,15 +75,21 @@ export default function EventsTable({
                   <th className="py-3 px-5 text-left">Date</th>
                   <th className="py-3 px-5 text-left">Location</th>
                 </>
-              ) : (
+              ) : eventType === "passed" ? (
                 <>
                   <th className="py-3 px-5 text-left">Top City</th>
                   <th className="py-3 px-5 text-center">Views</th>
                   <th className="py-3 px-5 text-center">Photos</th>
                 </>
+              ) : (
+                <>
+                  <th className="py-3 px-5 text-left">Date</th>
+                  <th className="py-3 px-5 text-left">Location</th>
+                </>
               )}
 
               {showActions && <th className="py-3 px-5 text-center">Actions</th>}
+              {eventType === "live" && <th className="py-3 px-5 text-center">Stream</th>}
             </tr>
           </thead>
 
@@ -92,7 +97,7 @@ export default function EventsTable({
             {!events?.length ? (
               <tr>
                 <td
-                  colSpan={showActions ? 5 : 4}
+                  colSpan={showActions || eventType === "live" ? 5 : 4}
                   className="py-6 text-center text-zinc-400"
                 >
                   No events found.
@@ -106,17 +111,32 @@ export default function EventsTable({
                 >
                   <td className="py-4 px-5 font-semibold">{event.title}</td>
 
-                  {eventType === "upcoming" ? (
+                  {(eventType === "upcoming" || eventType === "live") && (
                     <>
                       <td className="py-4 px-5">{(event as UpcomingEvent).date}</td>
                       <td className="py-4 px-5">{(event as UpcomingEvent).location}</td>
                     </>
-                  ) : (
+                  )}
+
+                  {eventType === "passed" && (
                     <>
                       <td className="py-4 px-5">{(event as PassedEvent).city}</td>
                       <td className="py-4 px-5 text-center">{(event as PassedEvent).view}</td>
                       <td className="py-4 px-5 text-center">{(event as PassedEvent).photo}</td>
                     </>
+                  )}
+
+                  {eventType === "live" && (
+                    <td className="py-4 px-5 text-center">
+                      <a
+                        href={(event as UpcomingEvent).stream_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-400 underline hover:text-green-500"
+                      >
+                        Join Stream
+                      </a>
+                    </td>
                   )}
 
                   {showActions && (
