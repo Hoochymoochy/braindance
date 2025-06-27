@@ -76,13 +76,38 @@ export async function updateEvent(id: string, body: EventInput) {
 }
 
 // DELETE EVENT
-export async function deleteEvent(id: string) {
-  const { error } = await supabase
-    .from("events")
-    .delete()
-    .eq("id", id);
+export async function deleteEvent(id: string, url: string, hostId: string) {
+  // 👇 Clean the URL if it's a full public path
+  const cleanUrl = url.includes("https://")
+    ? url.split(`${hostId}/events/`)[1]
+    : url;
 
-  if (error) throw new Error(`Failed to delete event: ${error.message}`);
+  const imagePath = `${hostId}/events/${cleanUrl}`;
+  console.log("🔥 Deleting event with ID:", id);
+  console.log("📸 Attempting to delete image at path:", imagePath);
+
+  const [imageRes, eventRes] = await Promise.all([
+    supabase.storage.from("event-photos").remove([imagePath]),
+    supabase.from("events").delete().eq("id", id),
+  ]);
+
+  console.log("🧾 Storage delete response:", imageRes);
+  console.log("🧾 Event delete response:", eventRes);
+
+  const imageError = imageRes.error;
+  const eventError = eventRes.error;
+
+  if (imageError || eventError) {
+    const message = [
+      imageError && `❌ Image delete failed: ${imageError.message}`,
+      eventError && `❌ Event delete failed: ${eventError.message}`,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+    throw new Error(message);
+  }
+
+  console.log("✅ Event and image deleted successfully.");
   return { success: true };
 }
 

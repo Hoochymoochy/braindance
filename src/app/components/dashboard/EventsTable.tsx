@@ -11,6 +11,7 @@ interface UpcomingEvent {
   title: string;
   date: string;
   location: string;
+  image_url?: string;
   stream_url?: string;
   intrested?: number;
   viewed?: number;
@@ -20,6 +21,7 @@ interface UpcomingEvent {
 interface PassedEvent {
   id: string;
   title: string;
+  image_url?: string;
   city: string;
   view: number;
   photo: number;
@@ -49,8 +51,8 @@ export default function EventsTable({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const onStart = (eventId: string) => router.push(`/host/${hostId}/${eventId}/stream`);
-  const onDelete = async (id: string) => {
-    await deleteEvent(id);
+  const onDelete = async (id: string, url: string) => {
+    await deleteEvent(id, url, hostId as string);
     fetchEvents?.();
   };
 
@@ -161,7 +163,7 @@ export default function EventsTable({
                           </button>
                           <button
                             onClick={() => {
-                              onDelete(event.id);
+                              onDelete(event.id, event.image_url ?? "");
                               setOpenMenuId(null);
                             }}
                             className="w-full px-4 py-2 text-left text-red-400 hover:bg-red-500/10 text-sm"
