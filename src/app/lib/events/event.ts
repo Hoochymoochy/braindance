@@ -83,16 +83,11 @@ export async function deleteEvent(id: string, url: string, hostId: string) {
     : url;
 
   const imagePath = `${hostId}/events/${cleanUrl}`;
-  console.log("🔥 Deleting event with ID:", id);
-  console.log("📸 Attempting to delete image at path:", imagePath);
 
   const [imageRes, eventRes] = await Promise.all([
     supabase.storage.from("event-photos").remove([imagePath]),
     supabase.from("events").delete().eq("id", id),
   ]);
-
-  console.log("🧾 Storage delete response:", imageRes);
-  console.log("🧾 Event delete response:", eventRes);
 
   const imageError = imageRes.error;
   const eventError = eventRes.error;

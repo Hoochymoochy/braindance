@@ -3,7 +3,6 @@
 import { EventPoster } from "@/app/components/user/Poster";
 import React, { useState, useRef } from "react";
 
-// 🧠 Define the expected shape of the form data
 type EventFormData = {
   title: string;
   date: string;
@@ -71,18 +70,27 @@ export default function CreateEventForm({
     handleFiles(e.target.files);
   };
 
+  // 🔥 Helper to ensure clean string values
+  const getFieldValue = (field: keyof EventFormData) => {
+    const value = data[field];
+    return typeof value === "string" ? value : "";
+  };
+
   return (
     <section ref={ref}>
       <div className="flex flex-col md:flex-row gap-6">
         {/* Poster Preview */}
         <div className="md:w-1/2 border border-purple-900/30 bg-black/60 backdrop-blur-md rounded-xl shadow-[0_0_12px_rgba(168,85,247,0.1)] p-4">
-        <EventPoster
-          {...data}
-          id="preview"
-          image_url={typeof data.image_url === "string" ? data.image_url : "/placeholder.svg"}
-          hideStuff={{ bookmark: true, heart: true }}
-        />
-
+          <EventPoster
+            {...data}
+            id="preview"
+            image_url={
+              typeof data.image_url === "string"
+                ? data.image_url
+                : "/placeholder.svg"
+            }
+            hideStuff={{ bookmark: true, heart: true }}
+          />
         </div>
 
         {/* Form Panel */}
@@ -90,11 +98,7 @@ export default function CreateEventForm({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (isEditing) {
-                onUpdate();
-              } else {
-                onCreate();
-              }
+              isEditing ? onUpdate() : onCreate();
             }}
             className="space-y-4"
           >
@@ -125,7 +129,7 @@ export default function CreateEventForm({
             </div>
 
             {/* Input Fields */}
-            {["title", "date", "location"].map((field) => (
+            {(["title", "date", "location"] as const).map((field) => (
               <div key={field}>
                 <label className="block text-sm font-medium text-purple-300 capitalize mb-1">
                   {field}
@@ -133,6 +137,7 @@ export default function CreateEventForm({
                 <input
                   name={field}
                   type={field === "date" ? "date" : "text"}
+                  value={getFieldValue(field)}
                   onChange={onChange}
                   className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
                 />
@@ -146,7 +151,7 @@ export default function CreateEventForm({
               </label>
               <textarea
                 name="description"
-                value={data.description}
+                value={getFieldValue("description")}
                 onChange={onChange}
                 className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 min-h-[100px]"
               />
