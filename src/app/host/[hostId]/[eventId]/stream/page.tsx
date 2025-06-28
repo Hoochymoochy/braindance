@@ -191,7 +191,7 @@ export default function BraindanceMockup() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPhoto, showAnimation, approvePhoto, rejectPhoto]);
 
-  const maxPhotos = 25;
+  const maxPhotos = 24;
   const progressPercentage = (approvedPhotos.length / maxPhotos) * 100;
 
 
