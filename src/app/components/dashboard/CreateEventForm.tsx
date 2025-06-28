@@ -97,13 +97,17 @@ export default function CreateEventForm({
 
         {/* Form Panel */}
         <div className="md:w-1/2 border border-pink-500/20 bg-black/50 backdrop-blur-md rounded-xl shadow-[0_0_12px_rgba(236,72,153,0.15)] p-6 space-y-4">
-          <form
-            onSubmit={(e) => {
+        <form
+          onSubmit={(e) => {
               e.preventDefault();
-              isEditing ? onUpdate() : onCreate();
+              if (isEditing) {
+                onUpdate();
+              } else {
+                onCreate();
+              }
             }}
             className="space-y-4"
-          >
+        >
             {/* Upload Box */}
             <div
               onDragEnter={handleDrag}
