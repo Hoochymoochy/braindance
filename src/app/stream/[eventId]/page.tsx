@@ -9,6 +9,15 @@ import { getTopCity } from "@/app/lib/utils/location";
 import { totalViews } from "@/app/lib/events/views";
 import { getAcceptedPhotos } from "@/app/lib/photos/photo";
 import { getLinks } from "@/app/lib/events/links";
+import { getEventById } from "@/app/lib/events/event";
+
+interface Event {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  image_url: string;
+}
 
 export default function BraindanceUserStream() {
   const params = useParams();
@@ -20,6 +29,7 @@ export default function BraindanceUserStream() {
   const [photoData, setPhotoData] = useState<{ src: string; alt: string }[]>(
     []
   );
+  const [event, setEvent] = useState<Event | null>(null);
   const [merchItems, setMerchItems] = useState<
     { title: string; subtitle: string; url: string }[]
   >([]);
@@ -27,14 +37,17 @@ export default function BraindanceUserStream() {
   const fetchEventData = useCallback(async () => {
     if (!eventId) return;
 
-    const [stream, city, viewCount, photos, links] = await Promise.all([
+    const [stream, city, viewCount, photos, links, event] = await Promise.all([
       getStreams(eventId),
       getTopCity(eventId),
       totalViews(eventId),
       getAcceptedPhotos(eventId),
       getLinks(eventId),
+      getEventById(eventId),
     ]);
 
+    setEvent(event);
+    console.log(event);
     setStreams(stream?.[0]?.link || "");
     setTopCity(city || "Unknown");
     setViews(viewCount || 0);
@@ -81,20 +94,26 @@ export default function BraindanceUserStream() {
               )}
             </div>
 
-            <div className="p-4">
-              <h2 className="text-xl font-bold">
-                DJ MATRODA - Live from Club Space
-              </h2>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
-                  <span className="text-xs font-bold">DJ</span>
+            {event?.image_url && (
+              <div className="mt-4 flex items-center gap-3 px-4 py-2">
+                <div className="w-14 h-14 rounded-full overflow-hidden shrink-0">
+                  <Image
+                    src={event.image_url}
+                    alt={event.title}
+                    width={56}
+                    height={56}
+                    className="object-cover w-full h-full"
+                  />
                 </div>
-                <div>
-                  <p className="text-sm font-medium">MATRODA</p>
-                  <p className="text-xs text-gray-400">Electronic / House</p>
+                <div className="text-sm">
+                  <h2 className="text-white font-semibold leading-tight">{event.title}</h2>
+                  <p className="text-xs text-gray-400 leading-tight">
+                    {event.location} — {new Date(event.date).toLocaleDateString()}
+                  </p>
+                  <p className="text-xs text-gray-300 italic leading-tight">{event.description}</p>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

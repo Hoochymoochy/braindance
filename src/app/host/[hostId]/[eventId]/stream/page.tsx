@@ -15,11 +15,20 @@ import {
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import { totalViews } from "@/app/lib/events/views";
 import { getTopCity } from "@/app/lib/utils/location";
+import { getEventById } from "@/app/lib/events/event";
 
 interface Photo {
   id: number;
   image_url: string;
   event_id: string;
+}
+
+interface Event {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  image_url: string;
 }
 
 export default function BraindanceMockup() {
@@ -39,6 +48,7 @@ export default function BraindanceMockup() {
   const [showAnimation, setShowAnimation] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [url, setUrl] = useState("");
+  const [event, setEvent] = useState<Event | null>(null);
 
   const currentPhoto = pendingPhotos[currentPhotoIndex];
 
@@ -65,6 +75,7 @@ export default function BraindanceMockup() {
       if (streams?.length > 0) setUrl(streams[0].link);
       setViews(await totalViews(eventId));
       setCity(await getTopCity(eventId));
+      setEvent(await getEventById(eventId));
     } catch (error) {
       console.error("Error loading streams:", error);
     }
@@ -254,20 +265,26 @@ export default function BraindanceMockup() {
               </div>
 
               {/* Info Panel */}
-              <div className="p-4">
-                <h2 className="text-xl font-bold text-white">
-                  DJ Neon Pulse - Live from Club Vertex
-                </h2>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
-                    <span className="text-xs font-bold">DJ</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Neon Pulse</p>
-                    <p className="text-xs text-gray-400">Electronic / House</p>
-                  </div>
+              {event?.image_url && (
+              <div className="mt-4 flex items-center gap-3 px-4 py-2">
+                <div className="w-14 h-14 rounded-full overflow-hidden shrink-0">
+                  <Image
+                    src={event.image_url}
+                    alt={event.title}
+                    width={56}
+                    height={56}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                <div className="text-sm">
+                  <h2 className="text-white font-semibold leading-tight">{event.title}</h2>
+                  <p className="text-xs text-gray-400 leading-tight">
+                    {event.location} — {new Date(event.date).toLocaleDateString()}
+                  </p>
+                  <p className="text-xs text-gray-300 italic leading-tight">{event.description}</p>
                 </div>
               </div>
+            )}
             </div>
 
             {/* Photo Review Tool */}
