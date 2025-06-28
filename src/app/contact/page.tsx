@@ -36,13 +36,6 @@ export default function ContactPage() {
 
       <section className="container mx-auto px-4 py-24">
         <div className="max-w-3xl mx-auto border border-purple-500/30 bg-black/60 backdrop-blur-md rounded-2xl p-10 shadow-[0_0_15px_rgba(168,85,247,0.25)]">
-          <Link
-            href="/"
-            className="flex items-center text-purple-300 hover:text-pink-400 transition mb-8"
-          >
-            <ArrowLeftCircle className="mr-2 h-5 w-5" />
-            Back to Home
-          </Link>
 
           <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-6">
             Hit Us Up

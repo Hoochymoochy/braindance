@@ -19,6 +19,7 @@ type CreateEventFormProps = {
   onCancel: () => void;
   isEditing: boolean;
   ref?: React.RefObject<HTMLDivElement>;
+  creating?: boolean;
   setImageFile: (file: File | null) => void;
 };
 
@@ -30,6 +31,7 @@ export default function CreateEventForm({
   onCancel,
   isEditing,
   ref,
+  creating,
   setImageFile,
 }: CreateEventFormProps) {
   const [dragActive, setDragActive] = useState(false);
@@ -170,9 +172,10 @@ export default function CreateEventForm({
               )}
               <button
                 type="submit"
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-pink-500 transition"
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-pink-500 transition disabled:opacity-50"
+                disabled={creating}
               >
-                {isEditing ? "Update" : "Submit Event"}
+                {creating ? "Creating..." : isEditing ? "Update" : "Submit Event"}
               </button>
             </div>
           </form>

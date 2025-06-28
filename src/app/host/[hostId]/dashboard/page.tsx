@@ -52,6 +52,7 @@ export default function Dashboard() {
   const [eventId, setEventId] = useState<string | null>(null);
   const eventsRef = useRef<HTMLDivElement>(null!);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const updateStats = (passedEvents: passedEvent[]) => {
     if (!passedEvents || passedEvents.length === 0) return;
@@ -125,43 +126,53 @@ export default function Dashboard() {
     const { name, value } = e.target;
     setPosterData((prev) => ({ ...prev, [name]: value }));
   };
-
   const handleCreateEvent = async () => {
+    if (creating) return; // ✋ No spamming
+    setCreating(true);
+  
     const { title, description, date, location } = posterData;
-
-    if (!title || !description || !date || !location)
-      return alert("Fill it all out fam.");
-
+    if (!title || !description || !date || !location) {
+      alert("Fill it all out fam.");
+      setCreating(false);
+      return;
+    }
+  
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const inputDate = new Date(date);
     inputDate.setHours(0, 0, 0, 0);
-
-    if (inputDate < today)
-      return alert("Date must be in the future.");
-
+  
+    if (inputDate < today) {
+      alert("Date must be in the future.");
+      setCreating(false);
+      return;
+    }
+  
     try {
       const eventId = crypto.randomUUID();
-
+  
       let imageUrl = posterData.image_url;
       if (imageFile) {
         imageUrl = await uploadEventImage(imageFile, eventId);
       }
-
+  
       const eventPayload = {
         ...posterData,
         image: imageUrl,
       };
-
+  
       await createEvent(hostId, eventPayload);
       setPosterData(defaultPosterData);
       setImageFile(null);
-      fetchEvents();
+      await fetchEvents();
     } catch (err) {
       console.error("Error creating event:", err);
       alert("Something went wrong. Try again?");
+    } finally {
+      setCreating(false);
     }
   };
+  
 
   const handleGetEvent = async (id: string) => {
     const event = await getEventById(id);
@@ -223,6 +234,7 @@ export default function Dashboard() {
         <CreateEventForm
           ref={eventsRef}
           data={posterData}
+          creating={creating}
           onChange={handleChange}
           onCreate={handleCreateEvent}
           onUpdate={handleUpdateEvent}
