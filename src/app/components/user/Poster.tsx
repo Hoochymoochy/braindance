@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { incrementCityView } from "@/app/lib/utils/location";
 import { addGeo } from "@/app/lib/events/heatmap";
-import { useRouter } from "next/navigation";
 
 export type EventPosterProps = {
   image_url: string;
@@ -31,22 +31,44 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   id,
 }) => {
   const router = useRouter();
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const handleClick = useCallback(
     async (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
+      console.log("📍 Tracking click...");
 
       const city = localStorage.getItem("city");
       const lat = localStorage.getItem("lat");
       const lon = localStorage.getItem("lon");
 
-      if (city) await incrementCityView(id, city);
-      if (lat && lon) await addGeo(id, parseInt(lat), parseInt(lon));
+      try {
+        if (city) {
+          console.log("🏙 incrementCityView");
+          await incrementCityView(id, city);
+        }
+        if (lat && lon) {
+          console.log("🗺 addGeo");
+          await addGeo(id, parseInt(lat), parseInt(lon));
+        }
+      } catch (err) {
+        console.error("❌ Tracking error:", err);
+      }
 
-      router.push(`/stream/${id}`);
+      // 💥 Force delay so mobile finishes everything before push
+      setTimeout(() => {
+        console.log("🚀 Navigating to /stream/" + id);
+        router.push(`/stream/${id}`);
+      }, 100); // 100ms is enough to flush promises on mobile
     },
     [id, router]
   );
+
+  if (!hydrated) return null;
 
   return (
     <div className="bg-black border border-white/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-white/20 hover:border-white transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto group">
@@ -74,10 +96,10 @@ export const EventPoster: React.FC<EventPosterProps> = ({
         <div className="flex justify-end items-center mt-5">
           {link && (
             <div
-              role="button"
-              tabIndex={0}
               onClick={handleClick}
               onTouchStart={handleClick}
+              role="button"
+              tabIndex={0}
               className="bg-white text-black hover:bg-pink-500 hover:text-white px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition cursor-pointer select-none"
             >
               Join
