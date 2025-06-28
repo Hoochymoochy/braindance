@@ -193,7 +193,7 @@ export default function BraindanceMockup() {
     );
   }
   return (
-    <div className="min-h-screen bg-black p-4 md:p-10">
+    <div className="min-h-screen thermal-background p-4 md:p-10">
       <div className="container mx-auto">
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Live Stream + Photo Review */}
