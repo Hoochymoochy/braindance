@@ -110,6 +110,13 @@ export default function BraindanceMockup() {
 
   const approvePhoto = useCallback(async () => {
     if (!currentPhoto) return;
+  
+    // Check if approved photos count is already 25 or more
+    if (approvedPhotos.length >= 25) {
+      alert("🔥 Photo limit reached! Only 25 approved photos allowed.");
+      return; // Stop the approval right here, no cap breakin'
+    }
+  
     setShowAnimation("approve");
     try {
       await acceptPhoto(currentPhoto.image_url, eventId);
@@ -131,7 +138,8 @@ export default function BraindanceMockup() {
       setShowAnimation("");
       alert("Error approving photo. Please try again.");
     }
-  }, [currentPhoto, eventId, pendingPhotos.length]);
+  }, [currentPhoto, eventId, pendingPhotos.length, approvedPhotos.length]);
+  
 
     const handleCopy = (path: string) => {
     const fullUrl = `https://braindance.live/${path}`;
@@ -183,7 +191,9 @@ export default function BraindanceMockup() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPhoto, showAnimation, approvePhoto, rejectPhoto]);
 
-  const progressPercentage = totalPhotos > 0 ? (approvedPhotos.length / totalPhotos) * 100 : 0;
+  const maxPhotos = 25;
+  const progressPercentage = (approvedPhotos.length / maxPhotos) * 100;
+
 
   if (isLoading) {
     return (
@@ -334,7 +344,7 @@ export default function BraindanceMockup() {
                     </button>
                     <button
                       onClick={approvePhoto}
-                      disabled={showAnimation !== ""}
+                      disabled={showAnimation !== "" || approvedPhotos.length >= 25}
                       className="w-16 h-16 rounded-full bg-green-900/50 border-2 border-green-500 flex items-center justify-center hover:bg-green-800 hover:scale-110 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                       <Check
@@ -342,6 +352,7 @@ export default function BraindanceMockup() {
                         size={28}
                       />
                     </button>
+
                   </div>
 
                   {/* Keyboard shortcuts hint */}
@@ -390,7 +401,7 @@ export default function BraindanceMockup() {
                   Photos of the Night
                 </h3>
                 <span className="text-sm text-gray-400">
-                  {approvedPhotos.length}/{totalPhotos}
+                  {approvedPhotos.length}/{maxPhotos}
                 </span>
               </div>
 
