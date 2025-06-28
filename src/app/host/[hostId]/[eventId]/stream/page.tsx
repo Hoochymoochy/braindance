@@ -206,7 +206,7 @@ export default function BraindanceMockup() {
               Copy Stream Link
             </button>
             <button
-              onClick={() => handleCopy(`${eventId}/photo-upload`)}
+              onClick={() => handleCopy(`stream/${eventId}/photo-upload`)}
               className="px-4 py-2 rounded-md bg-pink-600 hover:bg-pink-500 text-white text-sm font-medium shadow-md transition-all"
             >
               Copy Photo Upload Link
