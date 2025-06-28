@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useCallback } from "react";
-import Link from "next/link";
-import Image from "next/image"; // ✅ Use Next.js image optimization
+import Image from "next/image";
 import { incrementCityView } from "@/app/lib/utils/location";
 import { addGeo } from "@/app/lib/events/heatmap";
-import { useRouter } from "next/navigation"; // new router for next 13+
-
+import { useRouter } from "next/navigation";
 
 export type EventPosterProps = {
   image_url: string;
@@ -36,7 +34,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
   const handleClick = useCallback(
     async (e: React.MouseEvent | React.TouchEvent) => {
-      e.preventDefault(); // ⛔ prevent default nav
+      e.preventDefault();
 
       const city = localStorage.getItem("city");
       const lat = localStorage.getItem("lat");
@@ -45,7 +43,6 @@ export const EventPoster: React.FC<EventPosterProps> = ({
       if (city) await incrementCityView(id, city);
       if (lat && lon) await addGeo(id, parseInt(lat), parseInt(lon));
 
-      // ✅ THEN navigate
       router.push(`/stream/${id}`);
     },
     [id, router]
@@ -76,13 +73,15 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
         <div className="flex justify-end items-center mt-5">
           {link && (
-            <Link
-              href={`/stream/${id}`}
+            <div
+              role="button"
+              tabIndex={0}
               onClick={handleClick}
-              className="bg-white text-black hover:bg-pink-500 hover:text-white px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition"
+              onTouchStart={handleClick}
+              className="bg-white text-black hover:bg-pink-500 hover:text-white px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition cursor-pointer select-none"
             >
               Join
-            </Link>
+            </div>
           )}
         </div>
       </div>
