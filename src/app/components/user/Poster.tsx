@@ -1,10 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image"; // ✅ Use Next.js image optimization
 import { incrementCityView } from "@/app/lib/utils/location";
 import { addGeo } from "@/app/lib/events/heatmap";
+import { useRouter } from "next/navigation"; // new router for next 13+
+
 
 export type EventPosterProps = {
   image_url: string;
@@ -30,14 +32,24 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   link,
   id,
 }) => {
-  const handleClick = () => {
-    const city = localStorage.getItem("city");
-    const lat = localStorage.getItem("lat");
-    const lon = localStorage.getItem("lon");
+  const router = useRouter();
 
-    if (city) incrementCityView(id, city);
-    if (lat && lon) addGeo(id, parseInt(lat), parseInt(lon));
-  };
+  const handleClick = useCallback(
+    async (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault(); // ⛔ prevent default nav
+
+      const city = localStorage.getItem("city");
+      const lat = localStorage.getItem("lat");
+      const lon = localStorage.getItem("lon");
+
+      if (city) await incrementCityView(id, city);
+      if (lat && lon) await addGeo(id, parseInt(lat), parseInt(lon));
+
+      // ✅ THEN navigate
+      router.push(`/stream/${id}`);
+    },
+    [id, router]
+  );
 
   return (
     <div className="bg-black border border-white/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-white/20 hover:border-white transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto group">
