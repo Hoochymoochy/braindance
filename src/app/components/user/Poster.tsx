@@ -37,36 +37,37 @@ export const EventPoster: React.FC<EventPosterProps> = ({
     setHydrated(true);
   }, []);
 
-  const handleClick = useCallback(
-    async (e: React.MouseEvent | React.TouchEvent) => {
-      e.preventDefault();
-      console.log("📍 Tracking click...");
-
-      const city = localStorage.getItem("city");
-      const lat = localStorage.getItem("lat");
-      const lon = localStorage.getItem("lon");
-
-      try {
-        if (city) {
-          console.log("🏙 incrementCityView");
-          await incrementCityView(id, city);
-        }
-        if (lat && lon) {
-          console.log("🗺 addGeo");
-          await addGeo(id, parseInt(lat), parseInt(lon));
-        }
-      } catch (err) {
-        console.error("❌ Tracking error:", err);
+  const handleClick = useCallback(async () => {
+    console.log("📲 Join click triggered");
+  
+    const city = localStorage.getItem("city");
+    const lat = localStorage.getItem("lat");
+    const lon = localStorage.getItem("lon");
+  
+    console.log("🌍 Locals:", { city, lat, lon });
+  
+    try {
+      if (city) {
+        const cityRes = await incrementCityView(id, city);
+        console.log("📈 City Tracking:", cityRes);
       }
-
-      // 💥 Force delay so mobile finishes everything before push
+  
+      if (lat && lon) {
+        const geoRes = await addGeo(id, parseInt(lat), parseInt(lon));
+        console.log("📍 Geo Tracking:", geoRes);
+      }
+  
+      // 🚨 Give mobile 300ms breathing room
       setTimeout(() => {
-        console.log("🚀 Navigating to /stream/" + id);
         router.push(`/stream/${id}`);
-      }, 100); // 100ms is enough to flush promises on mobile
-    },
-    [id, router]
-  );
+      }, 300);
+    } catch (err) {
+      console.error("❌ Click Tracking Error:", err);
+      // Still navigate, just log the failure
+      router.push(`/stream/${id}`);
+    }
+  }, [id, router]);
+  
 
   if (!hydrated) return null;
 

@@ -19,14 +19,26 @@ export async function getNearestCity(lat: number, lon: number) {
 
 // Increment city view count for an event (expects client to handle cooldown!)
 export async function incrementCityView(eventId: string, city: string) {
-  const { error } = await supabase.rpc("increment_city_view", {
-    event: eventId,
-    cityname: city,
-  });
+  try {
+    console.log("🟡 Calling increment_city_view with:", { eventId, city });
+    const { error } = await supabase.rpc("increment_city_view", {
+      event: eventId,
+      cityname: city,
+    });
 
-  if (error) throw new Error(`Failed to increment view: ${error.message}`);
-  return { success: true };
+    if (error) {
+      console.error("❌ Supabase RPC Error:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    console.log("✅ incrementCityView success!");
+    return { success: true };
+  } catch (err) {
+    console.error("💥 Unexpected Error in incrementCityView:", err);
+    return { success: false, error: (err as Error).message };
+  }
 }
+
 
 // Get the top city by views for an event
 export async function getTopCity(eventId: string) {
