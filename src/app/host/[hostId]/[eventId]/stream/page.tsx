@@ -41,7 +41,6 @@ export default function BraindanceMockup() {
   const [url, setUrl] = useState("");
 
   const currentPhoto = pendingPhotos[currentPhotoIndex];
-  const totalPhotos = pendingPhotos.length + approvedPhotos.length;
 
   const loadPhotos = useCallback(async () => {
     try {

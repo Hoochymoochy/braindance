@@ -28,7 +28,6 @@ export default function PhotoUpload() {
       try {
         const acceptedPhotos = await getAcceptedPhotos(eventId as string);
         setAcceptedCount(acceptedPhotos.length);
-        console.log(acceptedCount)
       } catch (err) {
         console.error("Failed to load accepted photos count:", err);
       }

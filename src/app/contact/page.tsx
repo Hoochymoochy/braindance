@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeftCircle, Mail, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Mail, Sparkles } from "lucide-react";
 import { addContact } from "@/app/lib/utils/contact";
 
 export default function ContactPage() {
