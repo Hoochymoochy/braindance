@@ -56,7 +56,7 @@ const StreamGuide: React.FC = () => {
 
             <li>
               <strong>Connect Your Stream</strong><br />
-              Edit your event here on the dashboard and paste your YouTube link into the Stream URL field.
+              Start your event with the action button and paste your YouTube link into the Stream URL field.
             </li>
 
             <li>
