@@ -43,7 +43,7 @@ const StreamGuide: React.FC = () => {
               Go to{" "}
               <Link href="https://studio.youtube.com/" className="underline text-blue-400" target="_blank">
                 YouTube Studio
-              </Link>, click <code>Go Live</code>, and wait 24h if it's your first time.
+              </Link>, click <code>Go Live</code>, and wait 24h if it&apos;s your first time.
             </li>
 
             <li>
