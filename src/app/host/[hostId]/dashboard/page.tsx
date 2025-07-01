@@ -14,6 +14,8 @@ import {
 } from "@/app/lib/events/event";
 import { uploadEventImage } from "@/app/lib/photos/uploadImage";
 import { getStreams } from "@/app/lib/events/stream";
+import StreamGuide from "@/app/components/dashboard/StreamGuide";
+
 
 const defaultPosterData = {
   title: "",
@@ -203,7 +205,7 @@ export default function Dashboard() {
     <div className="min-h-screen thermal-background">
       <main className="max-w-6xl mx-auto p-6 space-y-8 pt-10">
         <StatsSection stats={stats} />
-
+        <StreamGuide />
         {liveEvents.length > 0 && (
           <EventsTable
             title="Live Streams"
