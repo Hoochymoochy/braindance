@@ -49,8 +49,54 @@ export default function BraindanceMockup() {
   const [isLoading, setIsLoading] = useState(true);
   const [url, setUrl] = useState("");
   const [event, setEvent] = useState<Event | null>(null);
+  const [platform, setPlatform] = useState("");
 
   const currentPhoto = pendingPhotos[currentPhotoIndex];
+
+  const extractVideoInfo = (fullUrl: string) => {
+    try {
+      const urlObj = new URL(fullUrl);
+      const hostname = urlObj.hostname.replace("www.", "");
+
+      if (hostname === "youtu.be") {
+        setPlatform("youtube");
+        return urlObj.pathname.slice(1);
+      }
+
+      if (hostname.includes("youtube.com")) {
+        const videoId = urlObj.searchParams.get("v");
+        setPlatform("youtube");
+        if (videoId) return videoId;
+        if (urlObj.pathname.startsWith("/live/")) {
+          return urlObj.pathname.split("/live/")[1];
+        }
+      }
+
+      if (hostname.includes("twitch.tv")) {
+        const pathParts = urlObj.pathname.split("/").filter(Boolean);
+        setPlatform("twitch");
+        if (pathParts[0] === "videos" && pathParts[1]) return pathParts[1];
+        if (pathParts.length === 1) return pathParts[0];
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const inputUrl = formData.get("url") as string;
+    const videoId = extractVideoInfo(inputUrl);
+    if (videoId && platform) {
+      setUrl(videoId);
+      await addStream(eventId, videoId, platform);
+    } else {
+      alert("Invalid YouTube or Twitch URL");
+    }
+  };
 
   const loadPhotos = useCallback(async () => {
     try {
@@ -72,7 +118,10 @@ export default function BraindanceMockup() {
   const getData = useCallback(async () => {
     try {
       const streams = await getStreams(eventId);
-      if (streams?.length > 0) setUrl(streams[0].link);
+      if (streams?.length > 0) {
+        setUrl(streams[0].link);
+        setPlatform(streams[0].platform || "youtube");
+      }
       setViews(await totalViews(eventId));
       setCity(await getTopCity(eventId));
       setEvent(await getEventById(eventId));
@@ -81,66 +130,31 @@ export default function BraindanceMockup() {
     }
   }, [eventId]);
 
-  const extractVideoId = (fullUrl: string) => {
-    try {
-      const urlObj = new URL(fullUrl);
-  
-      // Handles youtu.be short links
-      if (urlObj.hostname === "youtu.be") return urlObj.pathname.slice(1);
-  
-      // Handles youtube.com/watch?v=ID
-      if (urlObj.hostname.includes("youtube.com")) {
-        const videoId = urlObj.searchParams.get("v");
-        if (videoId) return videoId;
-  
-        // Handles youtube.com/live/ID
-        if (urlObj.pathname.startsWith("/live/")) {
-          return urlObj.pathname.split("/live/")[1];
-        }
-      }
-  
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const inputUrl = formData.get("url") as string;
-    const videoId = extractVideoId(inputUrl);
-    if (videoId) {
-      setUrl(videoId);
-      await addStream(eventId, videoId);
-    } else {
-      alert("Invalid YouTube URL");
-    }
-  };
-
   const approvePhoto = useCallback(async () => {
     if (!currentPhoto) return;
-  
-    // Check if approved photos count is already 25 or more
     if (approvedPhotos.length >= 25) {
       alert("🔥 Photo limit reached! Only 25 approved photos allowed.");
-      return; // Stop the approval right here, no cap breakin'
+      return;
     }
-  
+
     setShowAnimation("approve");
     try {
       await acceptPhoto(currentPhoto.image_url, eventId);
       await deletePhoto(currentPhoto.id.toString());
       setTimeout(() => {
-        const photoToApprove = { ...currentPhoto, status: "approved" as const };
+        const photoToApprove = { ...currentPhoto };
         setApprovedPhotos((prev) => [...prev, photoToApprove]);
-        setPendingPhotos((prev) => prev.filter((p) => p.id !== currentPhoto.id));
+        setPendingPhotos((prev) =>
+          prev.filter((p) => p.id !== currentPhoto.id)
+        );
         setReviewStats((prev) => ({
           ...prev,
           reviewed: prev.reviewed + 1,
           approved: prev.approved + 1,
         }));
-        setCurrentPhotoIndex((prev) => Math.min(prev, pendingPhotos.length - 2));
+        setCurrentPhotoIndex((prev) =>
+          Math.min(prev, pendingPhotos.length - 2)
+        );
         setShowAnimation("");
       }, 500);
     } catch (error) {
@@ -149,18 +163,6 @@ export default function BraindanceMockup() {
       alert("Error approving photo. Please try again.");
     }
   }, [currentPhoto, eventId, pendingPhotos.length, approvedPhotos.length]);
-  
-
-    const handleCopy = (path: string) => {
-    const fullUrl = `https://braindance.live/${path}`;
-    navigator.clipboard.writeText(fullUrl).then(() => {
-      alert(`Copied: ${fullUrl}`);
-    }).catch((err) => {
-      console.error("Copy failed:", err);
-      alert("Failed to copy link.");
-    });
-  };
-
 
   const rejectPhoto = useCallback(async () => {
     if (!currentPhoto) return;
@@ -168,13 +170,17 @@ export default function BraindanceMockup() {
     try {
       await deletePhoto(currentPhoto.id.toString());
       setTimeout(() => {
-        setPendingPhotos((prev) => prev.filter((p) => p.id !== currentPhoto.id));
+        setPendingPhotos((prev) =>
+          prev.filter((p) => p.id !== currentPhoto.id)
+        );
         setReviewStats((prev) => ({
           ...prev,
           reviewed: prev.reviewed + 1,
           rejected: prev.rejected + 1,
         }));
-        setCurrentPhotoIndex((prev) => Math.min(prev, pendingPhotos.length - 2));
+        setCurrentPhotoIndex((prev) =>
+          Math.min(prev, pendingPhotos.length - 2)
+        );
         setShowAnimation("");
       }, 500);
     } catch (error) {
@@ -183,6 +189,16 @@ export default function BraindanceMockup() {
       alert("Error rejecting photo. Please try again.");
     }
   }, [currentPhoto, pendingPhotos.length]);
+
+  const handleCopy = (path: string) => {
+    const fullUrl = `https://braindance.live/${path}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      alert(`Copied: ${fullUrl}`);
+    }).catch((err) => {
+      console.error("Copy failed:", err);
+      alert("Failed to copy link.");
+    });
+  };
 
   useEffect(() => {
     if (eventId) {
@@ -203,6 +219,14 @@ export default function BraindanceMockup() {
 
   const maxPhotos = 24;
   const progressPercentage = (approvedPhotos.length / maxPhotos) * 100;
+
+  const getEmbedUrl = () => {
+    if (!url) return "";
+    if (platform === "twitch") {
+      return `https://player.twitch.tv/?channel=${url}&parent=braindance.live`;
+    }
+    return `https://www.youtube.com/embed/${url}?autoplay=1&mute=1`;
+  };
 
 
   if (isLoading) {
@@ -239,8 +263,7 @@ export default function BraindanceMockup() {
                 {url ? (
                   <iframe
                     className="w-full h-full absolute top-0 left-0"
-                    src={`https://www.youtube.com/embed/${url}?autoplay=1&mute=1`}
-                    title="YouTube Live Stream"
+                    src={getEmbedUrl()}
                     allow="autoplay; encrypted-media"
                     allowFullScreen
                   />

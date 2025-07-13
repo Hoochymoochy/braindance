@@ -21,4 +21,7 @@ export const metadata = {
   icons: {
     icon: "/brain.svg",
   },
+  other: {
+    "color-scheme": "dark",
+  },
 };

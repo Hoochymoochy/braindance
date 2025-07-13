@@ -23,7 +23,7 @@ export default function BraindanceUserStream() {
   const params = useParams();
   const eventId = params?.eventId as string;
 
-  const [streams, setStreams] = useState<string>("");
+  const [stream, setStreams] = useState<string>("");
   const [views, setViews] = useState(0);
   const [topCity, setTopCity] = useState("");
   const [photoData, setPhotoData] = useState<{ src: string; alt: string }[]>(
@@ -33,6 +33,8 @@ export default function BraindanceUserStream() {
   const [merchItems, setMerchItems] = useState<
     { title: string; subtitle: string; url: string }[]
   >([]);
+  const [url, setUrl] = useState("");
+  const [platform, setPlatform] = useState("");
 
   const fetchEventData = useCallback(async () => {
     if (!eventId) return;
@@ -47,8 +49,11 @@ export default function BraindanceUserStream() {
     ]);
 
     setEvent(event);
-    console.log(event);
-    setStreams(stream?.[0]?.link || "");
+    if (stream?.length > 0) {
+      setStreams(stream[0].link);
+      setUrl(stream[0].link);
+      setPlatform(stream[0].platform || "youtube");
+    }
     setTopCity(city || "Unknown");
     setViews(viewCount || 0);
 
@@ -68,6 +73,14 @@ export default function BraindanceUserStream() {
     );
   }, [eventId]);
 
+  const getEmbedUrl = () => {
+    if (!url) return "";
+    if (platform === "twitch") {
+      return `https://player.twitch.tv/?channel=${url}&parent=braindance.live`;
+    }
+    return `https://www.youtube.com/embed/${url}?autoplay=1&mute=1`;
+  };
+
   useEffect(() => {
     fetchEventData();
   }, [fetchEventData]);
@@ -79,11 +92,10 @@ export default function BraindanceUserStream() {
         <div className="lg:col-span-2">
           <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
             <div className="aspect-video relative">
-              {streams ? (
+              {stream ? (
                 <iframe
                   className="w-full h-full absolute top-0 left-0"
-                  src={`https://www.youtube.com/embed/${streams}?autoplay=1&mute=1`}
-                  title="YouTube Live Stream"
+                  src={getEmbedUrl()}
                   allow="autoplay; encrypted-media"
                   allowFullScreen
                 />
