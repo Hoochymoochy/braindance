@@ -1,9 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'https',
@@ -16,6 +15,25 @@ const nextConfig: NextConfig = {
         pathname: '**',
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)', // apply to all pages
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: `
+              default-src 'self';
+              frame-src https://player.twitch.tv https://www.youtube.com;
+              frame-ancestors 'self';
+              object-src 'none';
+              base-uri 'self';
+            `.replace(/\s{2,}/g, ' ').trim(),
+          },
+        ],
+      },
+    ];
   },
 };
 
