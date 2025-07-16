@@ -58,7 +58,6 @@ export default function BraindanceMockup() {
     const formData = new FormData(e.currentTarget);
     const inputUrl = formData.get("url") as string;
   
-    let localPlatform = "";
     const extractVideoInfo = (fullUrl: string) => {
       try {
         const urlObj = new URL(fullUrl);
