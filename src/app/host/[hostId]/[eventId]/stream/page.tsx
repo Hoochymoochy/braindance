@@ -53,50 +53,66 @@ export default function BraindanceMockup() {
 
   const currentPhoto = pendingPhotos[currentPhotoIndex];
 
-  const extractVideoInfo = (fullUrl: string) => {
-    try {
-      const urlObj = new URL(fullUrl);
-      const hostname = urlObj.hostname.replace("www.", "");
-
-      if (hostname === "youtu.be") {
-        setPlatform("youtube");
-        return urlObj.pathname.slice(1);
-      }
-
-      if (hostname.includes("youtube.com")) {
-        const videoId = urlObj.searchParams.get("v");
-        setPlatform("youtube");
-        if (videoId) return videoId;
-        if (urlObj.pathname.startsWith("/live/")) {
-          return urlObj.pathname.split("/live/")[1];
-        }
-      }
-
-      if (hostname.includes("twitch.tv")) {
-        const pathParts = urlObj.pathname.split("/").filter(Boolean);
-        setPlatform("twitch");
-        if (pathParts[0] === "videos" && pathParts[1]) return pathParts[1];
-        if (pathParts.length === 1) return pathParts[0];
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const inputUrl = formData.get("url") as string;
-    const videoId = extractVideoInfo(inputUrl);
-    if (videoId && platform) {
+  
+    let localPlatform = "";
+    const extractVideoInfo = (fullUrl: string) => {
+      try {
+        const urlObj = new URL(fullUrl);
+        const hostname = urlObj.hostname.replace("www.", "");
+    
+        // youtube short link
+        if (hostname === "youtu.be") {
+          return { id: urlObj.pathname.slice(1), platform: "youtube" };
+        }
+    
+        // regular youtube
+        if (hostname.includes("youtube.com")) {
+          const videoId = urlObj.searchParams.get("v");
+          if (videoId) return { id: videoId, platform: "youtube" };
+          if (urlObj.pathname.startsWith("/live/")) {
+            return { id: urlObj.pathname.split("/live/")[1], platform: "youtube" };
+          }
+        }
+    
+        // youtube studio
+        if (hostname === "studio.youtube.com") {
+          const match = urlObj.pathname.match(/\/video\/([^/]+)/);
+          if (match && match[1]) {
+            return { id: match[1], platform: "youtube" };
+          }
+        }
+    
+        // twitch
+        if (hostname.includes("twitch.tv")) {
+          const pathParts = urlObj.pathname.split("/").filter(Boolean);
+          if (pathParts[0] === "videos" && pathParts[1]) {
+            return { id: pathParts[1], platform: "twitch" };
+          }
+          if (pathParts.length === 1) {
+            return { id: pathParts[0], platform: "twitch" };
+          }
+        }
+    
+        return { id: null, platform: null };
+      } catch {
+        return { id: null, platform: null };
+      }
+    };
+  
+    const { id: videoId, platform: platformName } = extractVideoInfo(inputUrl);
+    if (videoId && platformName) {
+      setPlatform(platformName);
       setUrl(videoId);
-      await addStream(eventId, videoId, platform);
+      await addStream(eventId, videoId, platformName);
     } else {
       alert("Invalid YouTube or Twitch URL");
     }
   };
+  
 
   const loadPhotos = useCallback(async () => {
     try {
