@@ -1,9 +1,12 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   images: {
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    contentSecurityPolicy: `
+      default-src 'self';
+      script-src 'self';
+      frame-src https://player.twitch.tv https://www.youtube.com;
+      sandbox allow-scripts allow-same-origin allow-popups;
+    `,
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,5 +21,4 @@ const nextConfig: NextConfig = {
     ],
   },
 };
-
 export default nextConfig;
