@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, SlidersHorizontal } from "lucide-react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
@@ -36,109 +36,50 @@ function formatViews(count: number): string {
   return count.toString();
 }
 
+/* =========================
+   STREAM CARD (unchanged vibe)
+========================= */
 function StreamCard({ set, index }: { set: DjSet; index: number }) {
   return (
     <Link
-      key={set.video_id}
       href={`/stream/${set.video_id}`}
-      className="group relative flex flex-col rounded-2xl overflow-hidden no-underline text-white"
-      style={{
-        background: "rgba(0,0,0,0.55)",
-        border: "1px solid rgba(168,85,247,0.15)",
-        animation: `fs-card-in 0.45s ${index * 60}ms both`,
-        transition: "transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
-        (e.currentTarget as HTMLElement).style.borderColor = "rgba(244,114,182,0.35)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLElement).style.borderColor = "rgba(168,85,247,0.15)";
-      }}
+      className="group relative flex flex-col rounded-2xl overflow-hidden text-white bg-black/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1"
+      style={{ animation: `fs-card-in 0.45s ${index * 60}ms both` }}
     >
-      {/* Thumbnail */}
-      <div
-        className="relative w-full overflow-hidden"
-        style={{ aspectRatio: "16/9", background: "#0d0010" }}
-      >
+      <div className="relative w-full aspect-video overflow-hidden bg-black">
         {set.thumbnail ? (
           <Image
             src={set.thumbnail}
             alt={set.title}
             width={640}
             height={360}
-            className="w-full h-full object-cover"
-            style={{
-              transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1), filter 0.3s",
-              filter: "brightness(0.88) saturate(1.1)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(1.04)";
-              (e.currentTarget as HTMLElement).style.filter = "brightness(0.7) saturate(1.2)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "scale(1)";
-              (e.currentTarget as HTMLElement).style.filter = "brightness(0.88) saturate(1.1)";
-            }}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div
-            className="w-full h-full"
-            style={{ background: "linear-gradient(135deg,#1a0033 0%,#0d001a 100%)" }}
-          />
+          <div className="w-full h-full bg-gradient-to-br from-purple-900/40 to-black" />
         )}
-        {/* Gradient bleed */}
-        <div
-          className="absolute bottom-0 left-0 right-0 pointer-events-none"
-          style={{
-            height: "40%",
-            background: "linear-gradient(to bottom,transparent,rgba(0,0,0,0.6))",
-          }}
-        />
+
+        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
       </div>
 
-      {/* Body */}
-      <div className="flex flex-col gap-2 px-5 py-4">
-        <p
-          className="text-[0.88rem] font-semibold leading-snug m-0"
-          style={{
-            color: "#f0e6ff",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
+      <div className="flex flex-col gap-2 px-4 py-3">
+        <p className="text-sm font-semibold line-clamp-2 text-purple-100">
           {set.title}
         </p>
-        <div
-          className="flex items-center gap-1.5 text-[0.74rem]"
-          style={{ color: "rgba(167,139,250,0.65)" }}
-        >
-          <span style={{ color: "rgba(196,181,253,0.7)", fontWeight: 500 }}>
-            {set.channel}
-          </span>
-          <span
-            className="rounded-full flex-shrink-0"
-            style={{ width: 3, height: 3, background: "rgba(167,139,250,0.35)" }}
-          />
+
+        <div className="flex items-center gap-2 text-xs text-purple-300/70">
+          <span>{set.channel}</span>
+          <span className="w-1 h-1 bg-purple-400/40 rounded-full" />
           <span>{formatViews(set.view_count ?? 0)} views</span>
         </div>
       </div>
-
-      {/* Inner glow on hover */}
-      <div
-        className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100"
-        style={{
-          boxShadow: "0 0 28px rgba(244,114,182,0.18) inset",
-          transition: "opacity 0.3s",
-        }}
-      />
     </Link>
   );
 }
 
+/* =========================
+   HEADER
+========================= */
 function SectionHeader({
   eyebrow,
   title,
@@ -147,14 +88,14 @@ function SectionHeader({
   title: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 mb-7">
+    <div className="flex flex-col gap-1 mb-5">
       {eyebrow && (
-        <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium tracking-widest uppercase text-purple-400/80">
+        <span className="flex items-center gap-1 text-xs uppercase tracking-wider text-purple-400/80">
           <TrendingUp className="w-3 h-3" />
           {eyebrow}
         </span>
       )}
-      <h2 className="text-[clamp(1.4rem,2.5vw,2rem)] font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 m-0">
+      <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
         {title}
       </h2>
     </div>
@@ -162,12 +103,18 @@ function SectionHeader({
 }
 
 export default function ExamplePage() {
-  const [liveEvents, setLiveEvents] = React.useState<EventPosterProps[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = React.useState<EventPosterProps[]>([]);
-  const [currentDjSets, setCurrentDjSets] = React.useState<DjSet[]>([]);
-  const [featuredWeekly, setFeaturedWeekly] = React.useState<DjSet[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
+  const [currentDjSets, setCurrentDjSets] = useState<DjSet[]>([]);
+  const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [filter, setFilter] = useState({ genre: "", energy: "" });
+
+  useEffect(() => {
+    getEvents();
+    getDjSets();
+  }, []);
 
   const getEvents = async () => {
     const events = await getAllEvents();
@@ -178,10 +125,10 @@ export default function ExamplePage() {
       events.map(async (event) => {
         const streams = await getStreams(event.id);
         const hasLiveLink = streams?.some((s) => s.link !== null);
+
         if (hasLiveLink) {
           live.push({
             ...event,
-            image_url: event.image_url,
             link: streams?.find((s) => s.link !== null)?.link,
           });
         } else {
@@ -196,9 +143,9 @@ export default function ExamplePage() {
 
   const getDjSets = async () => {
     try {
-      const response = await fetch("/api/dj-sets", { cache: "no-store" });
-      if (!response.ok) return;
-      const data = (await response.json()) as DjSetsResponse;
+      const res = await fetch("/api/dj-sets", { cache: "no-store" });
+      const data: DjSetsResponse = await res.json();
+
       setCurrentDjSets(data.currentSets.slice(0, 9));
       setFeaturedWeekly(data.featured.weekly);
     } catch {
@@ -209,105 +156,101 @@ export default function ExamplePage() {
     }
   };
 
-  useEffect(() => {
-    getEvents();
-    getDjSets();
-  }, []);
-
   const filteredDjSets = currentDjSets.filter((set) => {
-    const matchesGenre = filter.genre ? set.genres?.includes(filter.genre) : true;
-    const matchesEnergy = filter.energy ? set.energy === filter.energy : true;
-    return matchesGenre && matchesEnergy;
+    return (
+      (!filter.genre || set.genres?.includes(filter.genre)) &&
+      (!filter.energy || set.energy === filter.energy)
+    );
   });
 
   const skeletons = (n: number) =>
     Array.from({ length: n }).map((_, i) => (
       <div
         key={i}
-        className="rounded-2xl"
-        style={{
-          height: 220,
-          background:
-            "linear-gradient(110deg,rgba(168,85,247,0.06) 25%,rgba(168,85,247,0.12) 50%,rgba(168,85,247,0.06) 75%)",
-          backgroundSize: "200% 100%",
-          animation: "fs-shimmer 1.4s infinite",
-        }}
+        className="h-52 rounded-2xl bg-purple-500/10 animate-pulse"
       />
     ));
 
   return (
-    <div className="min-h-screen bg-black thermal-background text-white">
-      <section className="container mx-auto px-4 pt-12 pb-4">
+    <div className="min-h-screen flex flex-col text-white">
+      {/* MAIN */}
+      <main className="flex-1">
+        <section className="max-w-7xl mx-auto px-4 py-10">
 
-        {/* Page title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-10">
-          DJ Sets
-        </h1>
+          {/* TITLE + FILTER BAR */}
+          <div className="flex flex-col gap-6 mb-10">
 
-        {/* Filter Section */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-purple-400">Genre</label>
-          <select
-            className="block w-full mt-1 rounded-md bg-black border border-purple-400 text-white"
-            value={filter.genre}
-            onChange={(e) => setFilter({ ...filter, genre: e.target.value })}
-          >
-            <option value="">All</option>
-            <option value="techno">Techno</option>
-            <option value="house">House</option>
-            <option value="hardstyle">Hardstyle</option>
-          </select>
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              DJ Sets
+            </h1>
 
-          <label className="block text-sm font-medium text-purple-400 mt-4">Energy</label>
-          <select
-            className="block w-full mt-1 rounded-md bg-black border border-purple-400 text-white"
-            value={filter.energy}
-            onChange={(e) => setFilter({ ...filter, energy: e.target.value })}
-          >
-            <option value="">All</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-        </div>
+            {/* 🔥 FILTER BAR */}
+            <div className="flex flex-wrap items-center gap-3 p-3 rounded-xl border border-purple-500/20 bg-black/60 backdrop-blur-md">
+              <div className="flex items-center gap-2 text-purple-300 text-sm">
+                <SlidersHorizontal className="w-4 h-4" />
+                Filters
+              </div>
 
-        {/* Featured This Week */}
-        <div className="mb-14">
-          <SectionHeader eyebrow="Top weekly views" title="Featured This Week" />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading && skeletons(3)}
-            {!loading && featuredWeekly.length === 0 && (
-              <p className="text-sm text-purple-400/45 col-span-full py-6">
-                No featured sets this week yet.
-              </p>
-            )}
-            {!loading &&
-              featuredWeekly.map((set, i) => (
-                <StreamCard key={set.video_id} set={set} index={i} />
-              ))}
+              <select
+                value={filter.genre}
+                onChange={(e) => setFilter({ ...filter, genre: e.target.value })}
+                className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm"
+              >
+                <option value="">All Genres</option>
+                <option value="techno">Techno</option>
+                <option value="house">House</option>
+                <option value="hardstyle">Hardstyle</option>
+              </select>
+
+              <select
+                value={filter.energy}
+                onChange={(e) => setFilter({ ...filter, energy: e.target.value })}
+                className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm"
+              >
+                <option value="">All Energy</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+
+              {(filter.genre || filter.energy) && (
+                <button
+                  onClick={() => setFilter({ genre: "", energy: "" })}
+                  className="ml-auto text-xs text-pink-400 hover:underline"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Current DJ Sets */}
-        <div className="mb-16">
-          <div className="flex items-end justify-between mb-7">
+          {/* FEATURED */}
+          <div className="mb-12">
+            <SectionHeader eyebrow="Top weekly views" title="Featured This Week" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading && skeletons(3)}
+              {!loading &&
+                featuredWeekly.map((set, i) => (
+                  <StreamCard key={set.video_id} set={set} index={i} />
+                ))}
+            </div>
+          </div>
+
+          {/* CURRENT */}
+          <div>
             <SectionHeader title="Current DJ Sets" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading && skeletons(6)}
+              {!loading &&
+                filteredDjSets.map((set, i) => (
+                  <StreamCard key={set.video_id} set={set} index={i} />
+                ))}
+            </div>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading && skeletons(6)}
-            {!loading && filteredDjSets.length === 0 && (
-              <p className="text-sm text-purple-400/45 col-span-full py-6">
-                No sets available right now.
-              </p>
-            )}
-            {!loading &&
-              filteredDjSets.map((set, i) => (
-                <StreamCard key={set.video_id} set={set} index={i} />
-              ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
+      {/* EVENTS (no dead space now) */}
       <EventsLayout
         liveEvents={liveEvents}
         upcomingEvents={upcomingEvents}
@@ -315,13 +258,9 @@ export default function ExamplePage() {
       />
 
       <style>{`
-        @keyframes fs-shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
         @keyframes fs-card-in {
           from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
