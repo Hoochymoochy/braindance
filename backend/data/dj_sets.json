@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-25T04:36:35.430860Z",
+  "updated_at": "2026-03-25T04:42:03.499183Z",
   "count": 20,
   "items": [
     {
@@ -8,11 +8,15 @@
       "channel": "Ti\u00ebsto",
       "published_at": "2026-03-10T14:43:55Z",
       "thumbnail": "https://i.ytimg.com/vi/2EQGqEvLAuE/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=2EQGqEvLAuE",
-      "fetched_at": "2026-03-25T04:36:35.049157Z",
-      "view_count": 383406,
+      "url": "https://youtube.com/watch?v=2EQGqEvLAuE",
+      "fetched_at": "2026-03-25T04:42:03.032436Z",
+      "view_count": 383426,
       "duration_seconds": 7601,
-      "score": 270664.5
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 270678.5
     },
     {
       "video_id": "HvkAfj1QnK8",
@@ -20,11 +24,18 @@
       "channel": "KOROLOVA",
       "published_at": "2026-02-26T18:00:07Z",
       "thumbnail": "https://i.ytimg.com/vi/HvkAfj1QnK8/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=HvkAfj1QnK8",
-      "fetched_at": "2026-03-25T04:36:35.049195Z",
-      "view_count": 343341,
+      "url": "https://youtube.com/watch?v=HvkAfj1QnK8",
+      "fetched_at": "2026-03-25T04:42:03.032473Z",
+      "view_count": 343356,
       "duration_seconds": 3575,
-      "score": 241411.19999999998
+      "genres": [
+        "techno",
+        "house"
+      ],
+      "contexts": [],
+      "energy": "low",
+      "location": null,
+      "score": 265563.87
     },
     {
       "video_id": "bW-eKk3JVIY",
@@ -32,23 +43,18 @@
       "channel": "adriatique",
       "published_at": "2026-03-05T17:00:59Z",
       "thumbnail": "https://i.ytimg.com/vi/bW-eKk3JVIY/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=bW-eKk3JVIY",
-      "fetched_at": "2026-03-25T04:36:35.049201Z",
-      "view_count": 315757,
+      "url": "https://youtube.com/watch?v=bW-eKk3JVIY",
+      "fetched_at": "2026-03-25T04:42:03.032480Z",
+      "view_count": 315776,
       "duration_seconds": 10195,
-      "score": 224088.4
-    },
-    {
-      "video_id": "gqZJUN1273A",
-      "title": "Carl Cox - DJ Set - We Belong Here - Brooklyn, New York",
-      "channel": "Carl Cox",
-      "published_at": "2026-03-06T17:47:06Z",
-      "thumbnail": "https://i.ytimg.com/vi/gqZJUN1273A/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=gqZJUN1273A",
-      "fetched_at": "2026-03-25T04:36:35.049206Z",
-      "view_count": 300889,
-      "duration_seconds": 7517,
-      "score": 212877.4
+      "genres": [
+        "techno",
+        "house"
+      ],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 246511.87
     },
     {
       "video_id": "Ub-JrGE289s",
@@ -56,11 +62,33 @@
       "channel": "James Hype",
       "published_at": "2026-02-27T19:00:07Z",
       "thumbnail": "https://i.ytimg.com/vi/Ub-JrGE289s/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=Ub-JrGE289s",
-      "fetched_at": "2026-03-25T04:36:35.049210Z",
-      "view_count": 253776,
+      "url": "https://youtube.com/watch?v=Ub-JrGE289s",
+      "fetched_at": "2026-03-25T04:42:03.032498Z",
+      "view_count": 253783,
       "duration_seconds": 5074,
-      "score": 179165.4
+      "genres": [],
+      "contexts": [
+        "festival"
+      ],
+      "energy": "medium",
+      "location": null,
+      "score": 215004.36
+    },
+    {
+      "video_id": "gqZJUN1273A",
+      "title": "Carl Cox - DJ Set - We Belong Here - Brooklyn, New York",
+      "channel": "Carl Cox",
+      "published_at": "2026-03-06T17:47:06Z",
+      "thumbnail": "https://i.ytimg.com/vi/gqZJUN1273A/hqdefault.jpg",
+      "url": "https://youtube.com/watch?v=gqZJUN1273A",
+      "fetched_at": "2026-03-25T04:42:03.032486Z",
+      "view_count": 300899,
+      "duration_seconds": 7517,
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 212884.4
     },
     {
       "video_id": "iDPKkcZB-HE",
@@ -68,11 +96,18 @@
       "channel": "DJ Mag",
       "published_at": "2026-03-13T17:00:06Z",
       "thumbnail": "https://i.ytimg.com/vi/iDPKkcZB-HE/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=iDPKkcZB-HE",
-      "fetched_at": "2026-03-25T04:36:35.049215Z",
-      "view_count": 182929,
+      "url": "https://youtube.com/watch?v=iDPKkcZB-HE",
+      "fetched_at": "2026-03-25T04:42:03.032503Z",
+      "view_count": 182952,
       "duration_seconds": 4867,
-      "score": 129510.4
+      "genres": [
+        "techno",
+        "house"
+      ],
+      "contexts": [],
+      "energy": "low",
+      "location": "ibiza",
+      "score": 142479.15000000002
     },
     {
       "video_id": "eUyXqh8GrPc",
@@ -80,23 +115,18 @@
       "channel": "Hard Wind Frequencies",
       "published_at": "2026-02-27T15:01:14Z",
       "thumbnail": "https://i.ytimg.com/vi/eUyXqh8GrPc/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=eUyXqh8GrPc",
-      "fetched_at": "2026-03-25T04:36:35.049219Z",
-      "view_count": 177724,
+      "url": "https://youtube.com/watch?v=eUyXqh8GrPc",
+      "fetched_at": "2026-03-25T04:42:03.032508Z",
+      "view_count": 177740,
       "duration_seconds": 2105,
-      "score": 125038.29999999999
-    },
-    {
-      "video_id": "0RxbxQZEcco",
-      "title": "Elderbrook DJ Set at MAJA  - Kitzbuhel, Austria",
-      "channel": "Elderbrook",
-      "published_at": "2026-03-01T17:00:01Z",
-      "thumbnail": "https://i.ytimg.com/vi/0RxbxQZEcco/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=0RxbxQZEcco",
-      "fetched_at": "2026-03-25T04:36:35.049224Z",
-      "view_count": 165298,
-      "duration_seconds": 5590,
-      "score": 117385.59999999999
+      "genres": [
+        "techno",
+        "hardstyle"
+      ],
+      "contexts": [],
+      "energy": "high",
+      "location": null,
+      "score": 137554.44999999998
     },
     {
       "video_id": "UJPn_1KXTCs",
@@ -104,11 +134,34 @@
       "channel": "Andrea Botez",
       "published_at": "2026-02-26T16:22:02Z",
       "thumbnail": "https://i.ytimg.com/vi/UJPn_1KXTCs/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=UJPn_1KXTCs",
-      "fetched_at": "2026-03-25T04:36:35.049229Z",
-      "view_count": 160515,
+      "url": "https://youtube.com/watch?v=UJPn_1KXTCs",
+      "fetched_at": "2026-03-25T04:42:03.032517Z",
+      "view_count": 160524,
       "duration_seconds": 5152,
-      "score": 113906.1
+      "genres": [
+        "techno",
+        "hardstyle"
+      ],
+      "contexts": [],
+      "energy": "high",
+      "location": null,
+      "score": 125303.64
+    },
+    {
+      "video_id": "0RxbxQZEcco",
+      "title": "Elderbrook DJ Set at MAJA  - Kitzbuhel, Austria",
+      "channel": "Elderbrook",
+      "published_at": "2026-03-01T17:00:01Z",
+      "thumbnail": "https://i.ytimg.com/vi/0RxbxQZEcco/hqdefault.jpg",
+      "url": "https://youtube.com/watch?v=0RxbxQZEcco",
+      "fetched_at": "2026-03-25T04:42:03.032513Z",
+      "view_count": 165306,
+      "duration_seconds": 5590,
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 117391.2
     },
     {
       "video_id": "yQXb-bD8w1c",
@@ -116,11 +169,15 @@
       "channel": "Joris Voorn",
       "published_at": "2026-02-26T17:00:07Z",
       "thumbnail": "https://i.ytimg.com/vi/yQXb-bD8w1c/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=yQXb-bD8w1c",
-      "fetched_at": "2026-03-25T04:36:35.049234Z",
-      "view_count": 133468,
+      "url": "https://youtube.com/watch?v=yQXb-bD8w1c",
+      "fetched_at": "2026-03-25T04:42:03.032523Z",
+      "view_count": 133469,
       "duration_seconds": 6642,
-      "score": 95420.2
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 95420.9
     },
     {
       "video_id": "QHnDP4CiaEU",
@@ -128,11 +185,18 @@
       "channel": "Arabic Deep House & Oriental Techno",
       "published_at": "2026-02-25T19:00:22Z",
       "thumbnail": "https://i.ytimg.com/vi/QHnDP4CiaEU/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=QHnDP4CiaEU",
-      "fetched_at": "2026-03-25T04:36:35.049238Z",
-      "view_count": 109401,
+      "url": "https://youtube.com/watch?v=QHnDP4CiaEU",
+      "fetched_at": "2026-03-25T04:42:03.032527Z",
+      "view_count": 109414,
       "duration_seconds": 9980,
-      "score": 79574.7
+      "genres": [
+        "techno",
+        "house"
+      ],
+      "contexts": [],
+      "energy": "low",
+      "location": null,
+      "score": 87542.18
     },
     {
       "video_id": "ObiAocVMTyo",
@@ -140,11 +204,15 @@
       "channel": "Seismic Dance Event",
       "published_at": "2026-02-26T18:59:15Z",
       "thumbnail": "https://i.ytimg.com/vi/ObiAocVMTyo/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=ObiAocVMTyo",
-      "fetched_at": "2026-03-25T04:36:35.049242Z",
-      "view_count": 108337,
+      "url": "https://youtube.com/watch?v=ObiAocVMTyo",
+      "fetched_at": "2026-03-25T04:42:03.032531Z",
+      "view_count": 108345,
       "duration_seconds": 5325,
-      "score": 77433.4
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 77439.0
     },
     {
       "video_id": "TzEakAN3-p8",
@@ -152,11 +220,17 @@
       "channel": "SECTION.",
       "published_at": "2026-03-03T18:00:25Z",
       "thumbnail": "https://i.ytimg.com/vi/TzEakAN3-p8/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=TzEakAN3-p8",
-      "fetched_at": "2026-03-25T04:36:35.049247Z",
-      "view_count": 92616,
+      "url": "https://youtube.com/watch?v=TzEakAN3-p8",
+      "fetched_at": "2026-03-25T04:42:03.032535Z",
+      "view_count": 92620,
       "duration_seconds": 3551,
-      "score": 65896.5
+      "genres": [
+        "techno"
+      ],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 72489.23
     },
     {
       "video_id": "fhIZ2NKiSAk",
@@ -164,11 +238,15 @@
       "channel": "Paul van Dyk",
       "published_at": "2026-03-03T19:00:04Z",
       "thumbnail": "https://i.ytimg.com/vi/fhIZ2NKiSAk/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=fhIZ2NKiSAk",
-      "fetched_at": "2026-03-25T04:36:35.049251Z",
-      "view_count": 86455,
+      "url": "https://youtube.com/watch?v=fhIZ2NKiSAk",
+      "fetched_at": "2026-03-25T04:42:03.032539Z",
+      "view_count": 86459,
       "duration_seconds": 8172,
-      "score": 62970.09999999999
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 62972.899999999994
     },
     {
       "video_id": "j_pmNoPmaxA",
@@ -176,35 +254,15 @@
       "channel": "DJ Indiana",
       "published_at": "2026-03-01T09:30:07Z",
       "thumbnail": "https://i.ytimg.com/vi/j_pmNoPmaxA/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=j_pmNoPmaxA",
-      "fetched_at": "2026-03-25T04:36:35.049255Z",
+      "url": "https://youtube.com/watch?v=j_pmNoPmaxA",
+      "fetched_at": "2026-03-25T04:42:03.032543Z",
       "view_count": 83367,
       "duration_seconds": 8245,
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
       "score": 60830.399999999994
-    },
-    {
-      "video_id": "t8rXIVVrMSM",
-      "title": "Padre Guilherme - Lebanon - Beirut - Electronic Music - FULL SET VIDEO (10.01.2026)",
-      "channel": "Padre Guilherme",
-      "published_at": "2026-02-24T09:19:00Z",
-      "thumbnail": "https://i.ytimg.com/vi/t8rXIVVrMSM/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=t8rXIVVrMSM",
-      "fetched_at": "2026-03-25T04:36:35.049264Z",
-      "view_count": 67324,
-      "duration_seconds": 7127,
-      "score": 49264.899999999994
-    },
-    {
-      "video_id": "2tVL-GRQnq8",
-      "title": "MAXI MERAKI Live at ARCANA Argentina | Full DJ Set | House Music Mix",
-      "channel": "MAXI MERAKI",
-      "published_at": "2026-03-04T20:25:44Z",
-      "thumbnail": "https://i.ytimg.com/vi/2tVL-GRQnq8/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=2tVL-GRQnq8",
-      "fetched_at": "2026-03-25T04:36:35.049275Z",
-      "view_count": 65741,
-      "duration_seconds": 7242,
-      "score": 48191.299999999996
     },
     {
       "video_id": "7kNZMf_VYmQ",
@@ -212,11 +270,54 @@
       "channel": "ASTER MUSIC",
       "published_at": "2026-03-10T09:12:06Z",
       "thumbnail": "https://i.ytimg.com/vi/7kNZMf_VYmQ/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=7kNZMf_VYmQ",
-      "fetched_at": "2026-03-25T04:36:35.049270Z",
-      "view_count": 66915,
+      "url": "https://youtube.com/watch?v=7kNZMf_VYmQ",
+      "fetched_at": "2026-03-25T04:42:03.032550Z",
+      "view_count": 66931,
       "duration_seconds": 3023,
-      "score": 47747.4
+      "genres": [
+        "techno",
+        "house"
+      ],
+      "contexts": [
+        "club"
+      ],
+      "energy": "medium",
+      "location": null,
+      "score": 52534.46
+    },
+    {
+      "video_id": "t8rXIVVrMSM",
+      "title": "Padre Guilherme - Lebanon - Beirut - Electronic Music - FULL SET VIDEO (10.01.2026)",
+      "channel": "Padre Guilherme",
+      "published_at": "2026-02-24T09:19:00Z",
+      "thumbnail": "https://i.ytimg.com/vi/t8rXIVVrMSM/hqdefault.jpg",
+      "url": "https://youtube.com/watch?v=t8rXIVVrMSM",
+      "fetched_at": "2026-03-25T04:42:03.032546Z",
+      "view_count": 67330,
+      "duration_seconds": 7127,
+      "genres": [],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 49269.1
+    },
+    {
+      "video_id": "2tVL-GRQnq8",
+      "title": "MAXI MERAKI Live at ARCANA Argentina | Full DJ Set | House Music Mix",
+      "channel": "MAXI MERAKI",
+      "published_at": "2026-03-04T20:25:44Z",
+      "thumbnail": "https://i.ytimg.com/vi/2tVL-GRQnq8/hqdefault.jpg",
+      "url": "https://youtube.com/watch?v=2tVL-GRQnq8",
+      "fetched_at": "2026-03-25T04:42:03.032554Z",
+      "view_count": 65743,
+      "duration_seconds": 7242,
+      "genres": [
+        "house"
+      ],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
+      "score": 48192.7
     },
     {
       "video_id": "Bwfa0cPBKiE",
@@ -224,10 +325,16 @@
       "channel": "Raphael Reyes",
       "published_at": "2026-02-28T08:32:02Z",
       "thumbnail": "https://i.ytimg.com/vi/Bwfa0cPBKiE/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=Bwfa0cPBKiE",
-      "fetched_at": "2026-03-25T04:36:35.049280Z",
+      "url": "https://youtube.com/watch?v=Bwfa0cPBKiE",
+      "fetched_at": "2026-03-25T04:42:03.032557Z",
       "view_count": 61087,
       "duration_seconds": 2633,
+      "genres": [
+        "house"
+      ],
+      "contexts": [],
+      "energy": "medium",
+      "location": null,
       "score": 43550.799999999996
     },
     {
@@ -236,11 +343,17 @@
       "channel": "XENIA DIA",
       "published_at": "2026-03-18T18:36:25Z",
       "thumbnail": "https://i.ytimg.com/vi/pGsmzJU6otw/hqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=pGsmzJU6otw",
-      "fetched_at": "2026-03-25T04:36:35.049284Z",
-      "view_count": 50431,
+      "url": "https://youtube.com/watch?v=pGsmzJU6otw",
+      "fetched_at": "2026-03-25T04:42:03.032561Z",
+      "view_count": 50438,
       "duration_seconds": 3897,
-      "score": 36470.799999999996
+      "genres": [
+        "techno"
+      ],
+      "contexts": [],
+      "energy": "low",
+      "location": null,
+      "score": 40123.27
     }
   ]
 }

@@ -25,27 +25,19 @@ YOUTUBE_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
 
 DEFAULT_STORE_PATH = Path(__file__).resolve().parent / "data" / "dj_sets.json"
 
-# 🔥 Filters
+# 🔥 CORE FILTERS
 MIN_DURATION_SECONDS = 30 * 60
 MIN_VIEWS = 50000
 
+# 🔥 KEYWORDS
 GOOD_KEYWORDS = [
-    "live",
-    "mix",
-    "set",
-    "festival",
-    "dj set",
-    "boiler room",
-    "cercle",
+    "live", "mix", "set", "festival", "dj set",
+    "boiler room", "cercle"
 ]
 
 BAD_KEYWORDS = [
-    "clip",
-    "short",
-    "interview",
-    "reaction",
-    "tutorial",
-    "preview",
+    "clip", "short", "interview",
+    "reaction", "tutorial", "preview"
 ]
 
 QUERIES = [
@@ -64,35 +56,55 @@ TRUSTED_CHANNELS = [
     "defected",
 ]
 
+# 🧠 TAGGING SYSTEM
+GENRE_TAGS = {
+    "techno": ["techno", "acid", "warehouse"],
+    "house": ["house", "deep house", "afro house"],
+    "hardstyle": ["hardstyle", "hard techno", "hard dance"],
+    "edm": ["festival", "big room", "edm"],
+    "dnb": ["dnb", "drum and bass"],
+}
 
-def utc_now() -> datetime:
+CONTEXT_TAGS = {
+    "festival": ["tomorrowland", "ultra", "edc"],
+    "boiler_room": ["boiler room"],
+    "cercle": ["cercle"],
+    "club": ["club", "live set"],
+}
+
+LOCATION_KEYWORDS = {
+    "ibiza": ["ibiza"],
+    "brazil": ["sao paulo", "rio"],
+    "berlin": ["berlin"],
+}
+
+
+# ---------------- UTIL ----------------
+
+def utc_now():
     return datetime.now(timezone.utc)
 
 
-def to_iso(dt: datetime) -> str:
+def to_iso(dt):
     return dt.isoformat().replace("+00:00", "Z")
 
 
-def parse_iso(iso_string: str) -> datetime:
-    return datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
-
-
-def build_ssl_context() -> ssl.SSLContext:
+def build_ssl_context():
     if certifi:
         return ssl.create_default_context(cafile=certifi.where())
     return ssl.create_default_context()
 
 
-def fetch_json(url: str) -> Dict[str, Any]:
+def fetch_json(url: str):
     try:
-        with urlopen(url, context=build_ssl_context(), timeout=20) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except URLError as exc:
-        raise RuntimeError("Failed to reach YouTube API") from exc
+        with urlopen(url, context=build_ssl_context(), timeout=20) as res:
+            return json.loads(res.read().decode("utf-8"))
+    except URLError as e:
+        raise RuntimeError("YouTube API failed") from e
 
 
-def parse_iso8601_duration_to_seconds(duration: str) -> int:
-    pattern = re.compile(r"^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$")
+def parse_duration(duration: str):
+    pattern = re.compile(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?")
     match = pattern.match(duration or "")
     if not match:
         return 0
@@ -102,158 +114,205 @@ def parse_iso8601_duration_to_seconds(duration: str) -> int:
     return h * 3600 + m * 60 + s
 
 
-def fetch_dj_sets(api_key: str, max_results: int, lookback_days: int):
+# ---------------- FETCH ----------------
+
+def fetch_sets(api_key, max_results, lookback_days):
     query = random.choice(QUERIES)
 
     params = {
         "part": "snippet",
         "q": query,
         "type": "video",
-        "order": "viewCount",  # 🔥 QUALITY SORT
+        "order": "viewCount",
         "maxResults": max_results,
         "publishedAfter": to_iso(utc_now() - timedelta(days=lookback_days)),
         "key": api_key,
     }
 
     url = f"{YOUTUBE_SEARCH_URL}?{urlencode(params)}"
-    payload = fetch_json(url)
+    data = fetch_json(url)
 
     results = []
-
-    for item in payload.get("items", []):
-        video_id = item.get("id", {}).get("videoId")
-        snippet = item.get("snippet", {})
-        if not video_id:
+    for item in data.get("items", []):
+        vid = item["id"].get("videoId")
+        snip = item.get("snippet", {})
+        if not vid:
             continue
 
         results.append({
-            "video_id": video_id,
-            "title": snippet.get("title", ""),
-            "channel": snippet.get("channelTitle", ""),
-            "published_at": snippet.get("publishedAt"),
-            "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url"),
-            "url": f"https://www.youtube.com/watch?v={video_id}",
-            "fetched_at": to_iso(utc_now()),
+            "video_id": vid,
+            "title": snip.get("title", ""),
+            "channel": snip.get("channelTitle", ""),
+            "published_at": snip.get("publishedAt"),
+            "thumbnail": snip.get("thumbnails", {}).get("high", {}).get("url"),
+            "url": f"https://youtube.com/watch?v={vid}",
+            "fetched_at": to_iso(utc_now())
         })
 
     return results
 
 
-def fetch_video_details(api_key: str, video_ids: List[str]):
-    chunks = [video_ids[i:i+50] for i in range(0, len(video_ids), 50)]
-    details = {}
+def fetch_details(api_key, ids):
+    chunks = [ids[i:i+50] for i in range(0, len(ids), 50)]
+    out = {}
 
     for chunk in chunks:
         params = {
             "part": "statistics,contentDetails",
             "id": ",".join(chunk),
-            "key": api_key,
+            "key": api_key
         }
 
         url = f"{YOUTUBE_VIDEOS_URL}?{urlencode(params)}"
-        payload = fetch_json(url)
+        data = fetch_json(url)
 
-        for item in payload.get("items", []):
+        for item in data.get("items", []):
             vid = item["id"]
             views = int(item.get("statistics", {}).get("viewCount", 0))
-            duration = parse_iso8601_duration_to_seconds(
-                item.get("contentDetails", {}).get("duration", "")
-            )
+            duration = parse_duration(item.get("contentDetails", {}).get("duration", ""))
 
-            details[vid] = {
+            out[vid] = {
                 "view_count": views,
-                "duration_seconds": duration,
+                "duration_seconds": duration
             }
 
-    return details
+    return out
 
 
-def is_clean(title: str) -> bool:
-    title = title.lower()
-    return not any(b in title for b in BAD_KEYWORDS)
+# ---------------- TAGGING ----------------
+
+def extract_tags(title, channel):
+    text = f"{title} {channel}".lower()
+
+    genres = [
+        g for g, keys in GENRE_TAGS.items()
+        if any(k in text for k in keys)
+    ]
+
+    contexts = [
+        c for c, keys in CONTEXT_TAGS.items()
+        if any(k in text for k in keys)
+    ]
+
+    return genres, contexts
 
 
-def looks_like_set(title: str) -> bool:
-    title = title.lower()
-    return any(k in title for k in GOOD_KEYWORDS)
+def estimate_energy(title):
+    t = title.lower()
+    if any(k in t for k in ["hard", "industrial", "fast"]):
+        return "high"
+    elif any(k in t for k in ["deep", "chill", "melodic"]):
+        return "low"
+    return "medium"
 
 
-def is_trusted_channel(channel: str) -> bool:
-    channel = channel.lower()
-    return any(c in channel for c in TRUSTED_CHANNELS)
+def extract_location(title):
+    t = title.lower()
+    for loc, keys in LOCATION_KEYWORDS.items():
+        if any(k in t for k in keys):
+            return loc
+    return None
 
 
-def score_video(item):
-    return (
-        item.get("view_count", 0) * 0.7 +
-        item.get("duration_seconds", 0) * 0.3
-    )
+# ---------------- FILTER + SCORE ----------------
+
+def is_clean(title):
+    t = title.lower()
+    return not any(b in t for b in BAD_KEYWORDS)
 
 
-def filter_and_rank(incoming, details_map):
-    output = []
+def looks_like_set(title):
+    t = title.lower()
+    return any(g in t for g in GOOD_KEYWORDS)
+
+
+def is_trusted(channel):
+    c = channel.lower()
+    return any(tc in c for tc in TRUSTED_CHANNELS)
+
+
+def score(item):
+    base = item["view_count"] * 0.7 + item["duration_seconds"] * 0.3
+
+    if "festival" in item["contexts"]:
+        base *= 1.2
+
+    if "techno" in item["genres"]:
+        base *= 1.1
+
+    if is_trusted(item["channel"]):
+        base *= 1.5
+
+    return base
+
+
+def process(incoming, details):
+    out = []
 
     for item in incoming:
-        details = details_map.get(item["video_id"], {})
-        item.update(details)
+        d = details.get(item["video_id"], {})
+        item.update(d)
 
         title = item["title"]
         channel = item["channel"]
 
-        if (
-            item["duration_seconds"] >= MIN_DURATION_SECONDS
-            and item["view_count"] >= MIN_VIEWS
-            and looks_like_set(title)
-            and is_clean(title)
+        if not (
+            item["duration_seconds"] >= MIN_DURATION_SECONDS and
+            item["view_count"] >= MIN_VIEWS and
+            looks_like_set(title) and
+            is_clean(title)
         ):
-            # boost trusted channels
-            item["score"] = score_video(item)
-            if is_trusted_channel(channel):
-                item["score"] *= 1.5
+            continue
 
-            output.append(item)
+        genres, contexts = extract_tags(title, channel)
 
-    output.sort(key=lambda x: x["score"], reverse=True)
-    return output
+        item["genres"] = genres
+        item["contexts"] = contexts
+        item["energy"] = estimate_energy(title)
+        item["location"] = extract_location(title)
+
+        item["score"] = score(item)
+
+        out.append(item)
+
+    out.sort(key=lambda x: x["score"], reverse=True)
+    return out
 
 
-def read_store(path: Path):
+# ---------------- STORAGE ----------------
+
+def read_store(path):
     if not path.exists():
         return []
     return json.loads(path.read_text()).get("items", [])
 
 
-def write_store(path: Path, items):
+def write_store(path, items):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({
         "updated_at": to_iso(utc_now()),
         "count": len(items),
-        "items": items,
+        "items": items
     }, indent=2))
 
 
-def run_job(args, api_key):
+# ---------------- RUN ----------------
+
+def run(args, api_key):
     existing = read_store(Path(args.store_path))
 
-    incoming = fetch_dj_sets(
-        api_key,
-        args.fetch_limit,
-        args.lookback_days
-    )
+    incoming = fetch_sets(api_key, args.fetch_limit, args.lookback_days)
 
-    details = fetch_video_details(
-        api_key,
-        [x["video_id"] for x in incoming]
-    )
+    details = fetch_details(api_key, [x["video_id"] for x in incoming])
 
-    filtered = filter_and_rank(incoming, details)
+    processed = process(incoming, details)
 
-    combined = {x["video_id"]: x for x in existing}
-    for item in filtered:
-        combined[item["video_id"]] = item
+    merged = {x["video_id"]: x for x in existing}
+    for item in processed:
+        merged[item["video_id"]] = item
 
     final = sorted(
-        combined.values(),
+        merged.values(),
         key=lambda x: x.get("score", 0),
         reverse=True
     )[:args.max_items]
@@ -262,18 +321,18 @@ def run_job(args, api_key):
 
     return {
         "fetched": len(incoming),
-        "filtered": len(filtered),
-        "stored": len(final),
+        "processed": len(processed),
+        "stored": len(final)
     }
 
 
 def build_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--store-path", default=str(DEFAULT_STORE_PATH))
-    parser.add_argument("--fetch-limit", type=int, default=50)
-    parser.add_argument("--lookback-days", type=int, default=30)
-    parser.add_argument("--max-items", type=int, default=120)
-    return parser
+    p = argparse.ArgumentParser()
+    p.add_argument("--store-path", default=str(DEFAULT_STORE_PATH))
+    p.add_argument("--fetch-limit", type=int, default=50)
+    p.add_argument("--lookback-days", type=int, default=30)
+    p.add_argument("--max-items", type=int, default=120)
+    return p
 
 
 def main():
@@ -283,11 +342,11 @@ def main():
     if not api_key:
         raise RuntimeError("Missing YOUTUBE_API_KEY")
 
-    stats = run_job(args, api_key)
+    stats = run(args, api_key)
 
-    print("🔥 DJ SET SYNC COMPLETE")
+    print("🔥 DJ INTEL PIPELINE COMPLETE")
     print(json.dumps(stats, indent=2))
 
 
 if __name__ == "__main__":
-    main() 
+    main()
