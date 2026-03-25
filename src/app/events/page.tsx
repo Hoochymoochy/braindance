@@ -369,7 +369,7 @@ export default function EventsPage() {
                 ))}
             </div>
             {!loading && hasMore && (
-              <div className="flex justify-center mt-10">
+              <div className="flex justify-center mt-16 mb-8">
                 <button
                   type="button"
                   onClick={loadMore}

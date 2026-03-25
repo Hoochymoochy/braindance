@@ -39,10 +39,10 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
     if (events.length === 0) return null;
 
     return (
-      <section className="mt-16">
+      <section className="mt-20 pt-8 border-t border-purple-900/40">
         {!hideStuff.title && (
           <h2
-            className={`text-3xl md:text-4xl font-bold text-transparent bg-clip-text ${gradient} mb-8`}
+            className={`text-3xl md:text-4xl font-bold text-transparent bg-clip-text ${gradient} mb-10 leading-tight`}
           >
             {title}
           </h2>
@@ -62,7 +62,7 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   };
 
   return (
-    <div >
+    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
       {/* Cursor Aura */}
       <div
         className="thermal-cursor pointer-events-none fixed z-50"
