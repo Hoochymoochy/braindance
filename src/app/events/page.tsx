@@ -46,7 +46,7 @@ function StreamCard({ set, index }: { set: DjSet; index: number }) {
   return (
     <Link
       href={`/stream/${set.video_id}`}
-      className="group relative flex flex-col rounded-2xl overflow-hidden text-white bg-black/50 backdrop-blur-sm border border-purple-900/40 transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/30 hover:shadow-[0_0_24px_rgba(236,72,153,0.12)]"
+      className="group relative flex flex-col rounded-2xl overflow-hidden text-white bg-black/50 backdrop-blur-sm border border-purple-900/40 transition-all duration-300 hover:-translate-y-1 hover:border-pink-500/30 hover:shadow-[0_0_24px_rgba(236,72,153,0.12)] cursor-pointer"
       style={{ animation: `fs-card-in 0.45s ${index * 60}ms both` }}
     >
       <div className="relative w-full aspect-video overflow-hidden bg-black">
@@ -114,7 +114,7 @@ export default function EventsPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState({ genre: "", energy: "" });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
+  const [isFiltering, setIsFiltering] = useState(false);
 
   useEffect(() => {
     getEvents();
@@ -203,23 +203,53 @@ export default function EventsPage() {
     router.push(`/stream/${pick.video_id}`);
   };
 
-    useEffect(() => {
-      const handleMouseMove = (e: MouseEvent) => {
-        setMousePosition({ x: e.clientX, y: e.clientY });
-      };
+  const handleFilterChange = (newFilter: typeof filter) => {
+    setIsFiltering(true);
+    setFilter(newFilter);
+    setTimeout(() => setIsFiltering(false), 300);
+  };
 
-      window.addEventListener("mousemove", handleMouseMove);
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-      };
-    }, []);
+  const handleResetFilters = () => {
+    setIsFiltering(true);
+    setFilter({ genre: "", energy: "" });
+    setTimeout(() => setIsFiltering(false), 300);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   const skeletons = (n: number) =>
     Array.from({ length: n }).map((_, i) => (
       <div
         key={i}
-        className="h-52 rounded-2xl bg-purple-500/10 border border-purple-900/30 animate-pulse"
-      />
+        className="group relative flex flex-col rounded-2xl overflow-hidden text-white bg-black/50 backdrop-blur-sm border border-purple-900/40"
+        style={{ animation: `fs-card-in 0.45s ${i * 60}ms both` }}
+      >
+        <div className="relative w-full aspect-video overflow-hidden bg-gradient-to-br from-purple-900/20 to-black">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+        </div>
+
+        <div className="flex flex-col gap-2 px-4 py-3">
+          <div className="space-y-3 w-full">
+            <div className="h-4 bg-purple-900/30 rounded-lg w-3/4 animate-shimmer-slow" />
+            <div className="h-4 bg-purple-900/30 rounded-lg w-1/2 animate-shimmer-slow" />
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <div className="h-3 bg-purple-900/25 rounded w-24 animate-shimmer-slow" />
+            <div className="w-1 h-1 shrink-0 bg-purple-400/20 rounded-full" />
+            <div className="h-3 bg-purple-900/25 rounded w-16 animate-shimmer-slow" />
+          </div>
+        </div>
+      </div>
     ));
 
   return (
@@ -236,7 +266,12 @@ export default function EventsPage() {
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-purple-500/25 bg-black/60 backdrop-blur-md mb-10 shadow-[0_0_20px_rgba(168,85,247,0.08)]">
+          <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-purple-500/25 bg-black/60 backdrop-blur-md mb-10 shadow-[0_0_20px_rgba(168,85,247,0.08)] transition-all duration-300 ease-out"
+            style={{
+              transform: isFiltering ? "scale(0.995)" : "scale(1)",
+              opacity: isFiltering ? 0.95 : 1,
+            }}
+          >
             <div className="flex items-center gap-2 text-purple-300 text-sm shrink-0">
               <SlidersHorizontal className="w-4 h-4" />
               Filters
@@ -246,7 +281,7 @@ export default function EventsPage() {
               type="button"
               onClick={goRandomSet}
               disabled={loading || allDjSets.length === 0}
-              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600/85 to-purple-600/85 border border-pink-500/35 text-sm font-medium hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 disabled:pointer-events-none transition gap-2"
+              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600/85 to-purple-600/85 border border-pink-500/35 text-sm font-medium hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 gap-2 cursor-pointer active:scale-95 hover:scale-105 active:shadow-[0_0_12px_rgba(236,72,153,0.4)]"
             >
               <Shuffle className="w-3.5 h-3.5" />
               Random set
@@ -254,8 +289,8 @@ export default function EventsPage() {
 
             <select
               value={filter.genre}
-              onChange={(e) => setFilter({ ...filter, genre: e.target.value })}
-              className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm min-w-[140px]"
+              onChange={(e) => handleFilterChange({ ...filter, genre: e.target.value })}
+              className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm min-w-[140px] cursor-pointer transition-all duration-200 hover:border-purple-400/60 focus:border-pink-500/60 focus:outline-none focus:ring-1 focus:ring-pink-500/30"
             >
               <option value="">All Genres</option>
               {genreOptions.map((g) => (
@@ -275,9 +310,9 @@ export default function EventsPage() {
             <select
               value={filter.energy}
               onChange={(e) =>
-                setFilter({ ...filter, energy: e.target.value })
+                handleFilterChange({ ...filter, energy: e.target.value })
               }
-              className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm min-w-[140px]"
+              className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm min-w-[140px] cursor-pointer transition-all duration-200 hover:border-purple-400/60 focus:border-pink-500/60 focus:outline-none focus:ring-1 focus:ring-pink-500/30"
             >
               <option value="">All Energy</option>
               <option value="low">Low</option>
@@ -288,8 +323,8 @@ export default function EventsPage() {
             {(filter.genre || filter.energy) && (
               <button
                 type="button"
-                onClick={() => setFilter({ genre: "", energy: "" })}
-                className="ml-auto text-xs text-pink-400 hover:underline"
+                onClick={handleResetFilters}
+                className="ml-auto text-xs text-pink-400 hover:text-pink-300 hover:underline transition-colors duration-200 cursor-pointer"
               >
                 Reset
               </button>
@@ -303,7 +338,7 @@ export default function EventsPage() {
                 title="Featured This Week"
               />
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300 ${isFiltering ? "opacity-75" : "opacity-100"}`}>
               {loading && skeletons(3)}
               {!loading &&
                 featuredWeekly.map((set, i) => (
@@ -326,7 +361,7 @@ export default function EventsPage() {
                 </p>
               )}
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300 ${isFiltering ? "opacity-75" : "opacity-100"}`}>
               {loading && skeletons(6)}
               {!loading &&
                 visibleDjSets.map((set, i) => (
@@ -338,7 +373,7 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-purple-500/40 bg-black/50 text-purple-200 text-sm font-medium hover:border-pink-500/45 hover:bg-purple-950/35 transition"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-purple-500/40 bg-black/50 text-purple-200 text-sm font-medium hover:border-pink-500/45 hover:bg-purple-950/35 transition-all duration-200 cursor-pointer active:scale-95 hover:scale-105 active:shadow-[0_0_12px_rgba(236,72,153,0.4)]"
                 >
                   Load more
                   <ChevronDown className="w-4 h-4" />
@@ -351,7 +386,7 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={goRandomSet}
-                  className="text-pink-400 hover:underline"
+                  className="text-pink-400 hover:text-pink-300 hover:underline transition-colors duration-200 cursor-pointer"
                 >
                   Random set
                 </button>
@@ -372,6 +407,32 @@ export default function EventsPage() {
         @keyframes fs-card-in {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+
+        @keyframes shimmer-slow {
+          0%, 100% {
+            opacity: 0.4;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+
+        .animate-shimmer {
+          animation: shimmer 2.5s infinite;
+        }
+
+        .animate-shimmer-slow {
+          animation: shimmer-slow 1.8s ease-in-out infinite;
         }
       `}</style>
     </div>
