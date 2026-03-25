@@ -90,7 +90,7 @@ function SectionHeader({
   return (
     <div className="flex flex-col gap-1">
       {eyebrow && (
-        <span className="flex items-center gap-1 text-xs uppercase tracking-wider text-purple-400/80">
+        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-purple-400/80">
           <TrendingUp className="w-3 h-3" />
           {eyebrow}
         </span>
@@ -234,12 +234,6 @@ export default function EventsPage() {
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               DJ Sets
             </h1>
-            <Link
-              href="/"
-              className="text-sm text-purple-400/80 hover:text-pink-300 transition w-fit"
-            >
-              ← Back home
-            </Link>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-purple-500/25 bg-black/60 backdrop-blur-md mb-10 shadow-[0_0_20px_rgba(168,85,247,0.08)]">
@@ -252,7 +246,7 @@ export default function EventsPage() {
               type="button"
               onClick={goRandomSet}
               disabled={loading || allDjSets.length === 0}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600/85 to-purple-600/85 border border-pink-500/35 text-sm font-medium hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 disabled:pointer-events-none transition"
+              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600/85 to-purple-600/85 border border-pink-500/35 text-sm font-medium hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 disabled:pointer-events-none transition gap-2"
             >
               <Shuffle className="w-3.5 h-3.5" />
               Random set
