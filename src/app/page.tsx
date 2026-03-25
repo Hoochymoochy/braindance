@@ -4,12 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
-import { BrainLogo } from "@/app/components/Brain-logo";
-import { EventsLayout } from "@/app/EventLayout";
-import { EventPosterProps } from "@/app/components/user/Poster";
-import { getAllEvents } from "@/app/lib/events/event";
-import { getStreams } from "@/app/lib/events/stream";
-import { addEmail } from "@/app/lib/utils/email";
 
 type DjSet = {
   video_id: string;
@@ -20,8 +14,9 @@ type DjSet = {
 };
 
 type DjSetsResponse = {
-  featured: {
-    weekly: DjSet[];
+  currentSets?: DjSet[];
+  featured?: {
+    weekly?: DjSet[];
   };
 };
 
@@ -33,11 +28,7 @@ function formatViews(count: number): string {
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
-  const [joinWaitlist, setJoinWaitlist] = useState(false);
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [streamsLoading, setStreamsLoading] = useState(true);
   const eventsRef = useRef<HTMLDivElement>(null);
 
@@ -46,36 +37,19 @@ export default function Home() {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
-    const getEvents = async () => {
-      const events = await getAllEvents();
-      const live: EventPosterProps[] = [];
-      const upcoming: EventPosterProps[] = [];
-
-      await Promise.all(
-        events.map(async (event) => {
-          const streams = await getStreams(event.id);
-          const hasLive = streams?.some((s) => s.link !== null);
-
-          if (hasLive) {
-            live.push({
-              ...event,
-              link: streams.find((s) => s.link !== null)?.link || "",
-            });
-          } else {
-            upcoming.push(event);
-          }
-        })
-      );
-
-      setUpcomingEvents(upcoming.slice(0, 3));
-    };
-
     const getFeaturedStreams = async () => {
       try {
         const response = await fetch("/api/dj-sets", { cache: "no-store" });
         if (!response.ok) return;
         const data = (await response.json()) as DjSetsResponse;
-        setFeaturedStreams(data.featured.weekly.slice(0, 3));
+        const weekly = data.featured?.weekly;
+        let list = Array.isArray(weekly) ? weekly : [];
+        if (list.length === 0 && Array.isArray(data.currentSets) && data.currentSets.length > 0) {
+          list = [...data.currentSets].sort(
+            (a, b) => (b.view_count ?? 0) - (a.view_count ?? 0)
+          );
+        }
+        setFeaturedStreams(list.slice(0, 3));
       } catch {
         setFeaturedStreams([]);
       } finally {
@@ -83,7 +57,6 @@ export default function Home() {
       }
     };
 
-    getEvents();
     getFeaturedStreams();
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, SlidersHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { TrendingUp, SlidersHorizontal, Shuffle, ChevronDown } from "lucide-react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
@@ -102,12 +103,16 @@ function SectionHeader({
   );
 }
 
+const PAGE_SIZE = 9;
+
 export default function ExamplePage() {
+  const router = useRouter();
   const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
-  const [currentDjSets, setCurrentDjSets] = useState<DjSet[]>([]);
+  const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const [filter, setFilter] = useState({ genre: "", energy: "" });
 
@@ -146,22 +151,54 @@ export default function ExamplePage() {
       const res = await fetch("/api/dj-sets", { cache: "no-store" });
       const data: DjSetsResponse = await res.json();
 
-      setCurrentDjSets(data.currentSets.slice(0, 9));
-      setFeaturedWeekly(data.featured.weekly);
+      setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
+      setFeaturedWeekly(data.featured?.weekly ?? []);
     } catch {
-      setCurrentDjSets([]);
+      setAllDjSets([]);
       setFeaturedWeekly([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredDjSets = currentDjSets.filter((set) => {
-    return (
-      (!filter.genre || set.genres?.includes(filter.genre)) &&
-      (!filter.energy || set.energy === filter.energy)
-    );
-  });
+  const genreOptions = useMemo(() => {
+    const s = new Set<string>();
+    allDjSets.forEach((set) => set.genres?.forEach((g) => s.add(g)));
+    return Array.from(s).sort();
+  }, [allDjSets]);
+
+  const filteredDjSets = useMemo(
+    () =>
+      allDjSets.filter((set) => {
+        return (
+          (!filter.genre || set.genres?.includes(filter.genre)) &&
+          (!filter.energy || set.energy === filter.energy)
+        );
+      }),
+    [allDjSets, filter.genre, filter.energy]
+  );
+
+  const visibleDjSets = useMemo(
+    () => filteredDjSets.slice(0, visibleCount),
+    [filteredDjSets, visibleCount]
+  );
+
+  const hasMore = visibleCount < filteredDjSets.length;
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [filter.genre, filter.energy]);
+
+  const loadMore = () => {
+    setVisibleCount((c) => c + PAGE_SIZE);
+  };
+
+  const goRandomSet = () => {
+    const pool = filteredDjSets.length > 0 ? filteredDjSets : allDjSets;
+    if (pool.length === 0) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    router.push(`/stream/${pick.video_id}`);
+  };
 
   const skeletons = (n: number) =>
     Array.from({ length: n }).map((_, i) => (
@@ -172,7 +209,7 @@ export default function ExamplePage() {
     ));
 
   return (
-    <div className="min-h-screen flex flex-col text-white">
+    <div className="min-h-screen flex flex-col text-white bg-black thermal-background">
       {/* MAIN */}
       <main className="flex-1">
         <section className="max-w-7xl mx-auto px-4 py-10">
@@ -191,15 +228,34 @@ export default function ExamplePage() {
                 Filters
               </div>
 
+              <button
+                type="button"
+                onClick={goRandomSet}
+                disabled={loading || allDjSets.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600/80 to-purple-600/80 border border-pink-500/40 text-sm font-medium hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 disabled:pointer-events-none transition"
+              >
+                <Shuffle className="w-3.5 h-3.5" />
+                Random set
+              </button>
+
               <select
                 value={filter.genre}
                 onChange={(e) => setFilter({ ...filter, genre: e.target.value })}
                 className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm"
               >
                 <option value="">All Genres</option>
-                <option value="techno">Techno</option>
-                <option value="house">House</option>
-                <option value="hardstyle">Hardstyle</option>
+                {genreOptions.map((g) => (
+                  <option key={g} value={g}>
+                    {g.charAt(0).toUpperCase() + g.slice(1)}
+                  </option>
+                ))}
+                {genreOptions.length === 0 && (
+                  <>
+                    <option value="techno">Techno</option>
+                    <option value="house">House</option>
+                    <option value="hardstyle">Hardstyle</option>
+                  </>
+                )}
               </select>
 
               <select
@@ -238,14 +294,38 @@ export default function ExamplePage() {
 
           {/* CURRENT */}
           <div>
-            <SectionHeader title="Current DJ Sets" />
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-5">
+              <SectionHeader title="Current DJ Sets" />
+              {!loading && filteredDjSets.length > 0 && (
+                <p className="text-xs text-purple-400/60 tabular-nums pb-1">
+                  Showing {visibleDjSets.length} of {filteredDjSets.length}
+                </p>
+              )}
+            </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {loading && skeletons(6)}
               {!loading &&
-                filteredDjSets.map((set, i) => (
+                visibleDjSets.map((set, i) => (
                   <StreamCard key={set.video_id} set={set} index={i} />
                 ))}
             </div>
+            {!loading && hasMore && (
+              <div className="flex justify-center mt-10">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-purple-500/40 bg-black/50 text-purple-200 text-sm font-medium hover:border-pink-500/50 hover:bg-purple-950/40 transition"
+                >
+                  Load more
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {!loading && filteredDjSets.length === 0 && allDjSets.length > 0 && (
+              <p className="text-sm text-purple-400/55 py-8 text-center">
+                No sets match these filters. Try resetting filters or pick Random set.
+              </p>
+            )}
           </div>
         </section>
       </main>
