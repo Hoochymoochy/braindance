@@ -3,7 +3,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
+import { ArrowRight, Radio, Waves, Globe2, Play, TrendingUp } from "lucide-react";
+import { BrainLogo } from "@/app/components/Brain-logo";
+import { EventsLayout } from "@/app/EventLayout";
+import { EventPosterProps } from "@/app/components/user/Poster";
+import { getAllEvents } from "@/app/lib/events/event";
+import { getStreams } from "@/app/lib/events/stream";
+import { addEmail } from "@/app/lib/utils/email";
 
 type DjSet = {
   video_id: string;
@@ -14,9 +20,8 @@ type DjSet = {
 };
 
 type DjSetsResponse = {
-  currentSets?: DjSet[];
-  featured?: {
-    weekly?: DjSet[];
+  featured: {
+    weekly: DjSet[];
   };
 };
 
@@ -28,7 +33,11 @@ function formatViews(count: number): string {
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
+  const [joinWaitlist, setJoinWaitlist] = useState(false);
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
   const [streamsLoading, setStreamsLoading] = useState(true);
   const eventsRef = useRef<HTMLDivElement>(null);
 
@@ -37,19 +46,36 @@ export default function Home() {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
+    const getEvents = async () => {
+      const events = await getAllEvents();
+      const live: EventPosterProps[] = [];
+      const upcoming: EventPosterProps[] = [];
+
+      await Promise.all(
+        events.map(async (event) => {
+          const streams = await getStreams(event.id);
+          const hasLive = streams?.some((s) => s.link !== null);
+
+          if (hasLive) {
+            live.push({
+              ...event,
+              link: streams.find((s) => s.link !== null)?.link || "",
+            });
+          } else {
+            upcoming.push(event);
+          }
+        })
+      );
+
+      setUpcomingEvents(upcoming.slice(0, 3));
+    };
+
     const getFeaturedStreams = async () => {
       try {
         const response = await fetch("/api/dj-sets", { cache: "no-store" });
         if (!response.ok) return;
         const data = (await response.json()) as DjSetsResponse;
-        const weekly = data.featured?.weekly;
-        let list = Array.isArray(weekly) ? weekly : [];
-        if (list.length === 0 && Array.isArray(data.currentSets) && data.currentSets.length > 0) {
-          list = [...data.currentSets].sort(
-            (a, b) => (b.view_count ?? 0) - (a.view_count ?? 0)
-          );
-        }
-        setFeaturedStreams(list.slice(0, 3));
+        setFeaturedStreams(data.featured.weekly.slice(0, 3));
       } catch {
         setFeaturedStreams([]);
       } finally {
@@ -57,6 +83,7 @@ export default function Home() {
       }
     };
 
+    getEvents();
     getFeaturedStreams();
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
@@ -179,7 +206,7 @@ export default function Home() {
         </div>
 
         {/* Cards grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {/* Skeletons while loading */}
           {streamsLoading &&
             [0, 1, 2].map((i) => (
@@ -266,6 +293,29 @@ export default function Home() {
                     />
                   )}
 
+                  {/* Play button overlay */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100"
+                    style={{ transition: "opacity 0.25s" }}
+                  >
+                    <div
+                      className="flex items-center justify-center w-11 h-11 rounded-full"
+                      style={{
+                        background: "rgba(244,114,182,0.92)",
+                        backdropFilter: "blur(4px)",
+                        transform: "scale(0.85)",
+                        transition:
+                          "transform 0.25s cubic-bezier(0.22,1,0.36,1)",
+                      }}
+                      /* scale on card hover via group — handled in parent group-hover */
+                    >
+                      <Play
+                        className="w-4 h-4 text-white ml-0.5"
+                        fill="currentColor"
+                      />
+                    </div>
+                  </div>
+
                   {/* Gradient bleed */}
                   <div
                     className="absolute bottom-0 left-0 right-0 pointer-events-none"
@@ -278,7 +328,7 @@ export default function Home() {
                 </div>
 
                 {/* Body */}
-                <div className="flex flex-col gap-2 px-5 py-4">
+                <div className="flex flex-col gap-1.5 px-4 py-3">
                   <p
                     className="text-[0.88rem] font-semibold leading-snug m-0"
                     style={{
