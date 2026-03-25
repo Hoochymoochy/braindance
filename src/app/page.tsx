@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Flame, Zap, Radio, Waves, Globe2 } from "lucide-react";
+import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
 import { BrainLogo } from "@/app/components/Brain-logo";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
 import { getStreams } from "@/app/lib/events/stream";
-import { addEmail }  from "@/app/lib/utils/email";
+import { addEmail } from "@/app/lib/utils/email";
 
 type DjSet = {
   video_id: string;
@@ -25,6 +25,12 @@ type DjSetsResponse = {
   };
 };
 
+function formatViews(count: number): string {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(0)}K`;
+  return count.toString();
+}
+
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
@@ -32,6 +38,7 @@ export default function Home() {
   const [joinWaitlist, setJoinWaitlist] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [streamsLoading, setStreamsLoading] = useState(true);
   const eventsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,6 +78,8 @@ export default function Home() {
         setFeaturedStreams(data.featured.weekly.slice(0, 3));
       } catch {
         setFeaturedStreams([]);
+      } finally {
+        setStreamsLoading(false);
       }
     };
 
@@ -97,12 +106,15 @@ export default function Home() {
             Streaming the pulse of the planet
           </h1>
           <p className="text-base md:text-lg text-gray-300 mb-8">
-            Braindance helps EDM culture move faster by making DJ sets easier to stream, discover, and celebrate across generations.
+            Braindance helps EDM culture move faster by making DJ sets easier to
+            stream, discover, and celebrate across generations.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button
               className="bg-purple-600 hover:bg-pink-600 text-white px-5 py-2 rounded-md shadow transition"
-              onClick={() => eventsRef.current?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() =>
+                eventsRef.current?.scrollIntoView({ behavior: "smooth" })
+              }
             >
               Explore Braindance
             </button>
@@ -171,47 +183,184 @@ export default function Home() {
         ))}
       </section>
 
-      {/* FEATURED STREAMS */}
+      {/* ── FEATURED STREAMS ─────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
-            Featured Streams
-          </h2>
-          <Link href="/events" className="text-sm text-purple-400 hover:underline">
-            Based on top weekly views
+        {/* Header */}
+        <div className="flex justify-between items-end mb-7">
+          <div className="flex flex-col gap-1">
+            <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium tracking-widest uppercase text-purple-400/80">
+              <TrendingUp className="w-3 h-3" />
+              Top weekly views
+            </span>
+            <h2 className="text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 m-0">
+              Featured Streams
+            </h2>
+          </div>
+          <Link
+            href="/events"
+            className="group inline-flex items-center gap-1.5 text-[0.8rem] text-purple-400/70 hover:text-purple-300 transition-colors no-underline"
+          >
+            View all
+            <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredStreams.map((set) => (
-            <Link
-              key={set.video_id}
-              href={`/stream/${set.video_id}`}
-              className="border border-purple-900/50 bg-black/60 rounded-xl overflow-hidden hover:shadow-[0_0_20px_rgba(236,72,153,0.2)] transition"
-            >
-              {set.thumbnail && (
-                <Image
-                  src={set.thumbnail}
-                  alt={set.title}
-                  width={640}
-                  height={360}
-                  className="w-full h-40 object-cover"
-                />
-              )}
-              <div className="p-4">
-                <p className="font-medium text-sm mb-2 line-clamp-2">{set.title}</p>
-                <p className="text-xs text-gray-400">
-                  {set.channel} • {(set.view_count ?? 0).toLocaleString()} views
-                </p>
-              </div>
-            </Link>
-          ))}
-          {featuredStreams.length === 0 && (
-            <p className="text-sm text-gray-400">
+
+        {/* Cards grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Skeletons while loading */}
+          {streamsLoading &&
+            [0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="rounded-2xl h-64"
+                style={{
+                  background:
+                    "linear-gradient(110deg,rgba(168,85,247,0.06) 25%,rgba(168,85,247,0.12) 50%,rgba(168,85,247,0.06) 75%)",
+                  backgroundSize: "200% 100%",
+                  animation: "fs-shimmer 1.4s infinite",
+                }}
+              />
+            ))}
+
+          {/* Empty state */}
+          {!streamsLoading && featuredStreams.length === 0 && (
+            <p className="text-sm text-purple-400/45 col-span-full py-8">
               Featured streams will appear after DJ feed refresh.
             </p>
           )}
+
+          {/* Stream cards */}
+          {!streamsLoading &&
+            featuredStreams.map((set, i) => (
+              <Link
+                key={set.video_id}
+                href={`/stream/${set.video_id}`}
+                className="group relative flex flex-col rounded-2xl overflow-hidden no-underline text-white"
+                style={{
+                  background: "rgba(0,0,0,0.55)",
+                  border: "1px solid rgba(168,85,247,0.15)",
+                  animation: `fs-card-in 0.45s ${i * 80}ms both`,
+                  transition:
+                    "transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform =
+                    "translateY(-4px)";
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    "rgba(244,114,182,0.35)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform =
+                    "translateY(0)";
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    "rgba(168,85,247,0.15)";
+                }}
+              >
+                {/* Thumbnail */}
+                <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/9", background: "#0d0010" }}>
+                  {set.thumbnail ? (
+                    <Image
+                      src={set.thumbnail}
+                      alt={set.title}
+                      width={640}
+                      height={360}
+                      className="w-full h-full object-cover"
+                      style={{
+                        transition:
+                          "transform 0.5s cubic-bezier(0.22,1,0.36,1), filter 0.3s",
+                        filter: "brightness(0.88) saturate(1.1)",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.transform =
+                          "scale(1.04)";
+                        (e.currentTarget as HTMLElement).style.filter =
+                          "brightness(0.7) saturate(1.2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.transform =
+                          "scale(1)";
+                        (e.currentTarget as HTMLElement).style.filter =
+                          "brightness(0.88) saturate(1.1)";
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full"
+                      style={{
+                        background:
+                          "linear-gradient(135deg,#1a0033 0%,#0d001a 100%)",
+                      }}
+                    />
+                  )}
+
+                  {/* Gradient bleed */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                    style={{
+                      height: "40%",
+                      background:
+                        "linear-gradient(to bottom,transparent,rgba(0,0,0,0.6))",
+                    }}
+                  />
+                </div>
+
+                {/* Body */}
+                <div className="flex flex-col gap-2 px-5 py-4">
+                  <p
+                    className="text-[0.88rem] font-semibold leading-snug m-0"
+                    style={{
+                      color: "#f0e6ff",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {set.title}
+                  </p>
+                  <div
+                    className="flex items-center gap-1.5 text-[0.74rem]"
+                    style={{ color: "rgba(167,139,250,0.65)" }}
+                  >
+                    <span style={{ color: "rgba(196,181,253,0.7)", fontWeight: 500 }}>
+                      {set.channel}
+                    </span>
+                    <span
+                      className="rounded-full flex-shrink-0"
+                      style={{
+                        width: 3,
+                        height: 3,
+                        background: "rgba(167,139,250,0.35)",
+                      }}
+                    />
+                    <span>{formatViews(set.view_count ?? 0)} views</span>
+                  </div>
+                </div>
+
+                {/* Inner glow on hover */}
+                <div
+                  className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100"
+                  style={{
+                    boxShadow: "0 0 28px rgba(244,114,182,0.18) inset",
+                    transition: "opacity 0.3s",
+                  }}
+                />
+              </Link>
+            ))}
         </div>
       </section>
+
+      {/* Shimmer + card-in keyframes */}
+      <style>{`
+        @keyframes fs-shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        @keyframes fs-card-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
