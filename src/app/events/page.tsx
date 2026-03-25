@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TrendingUp } from "lucide-react";
@@ -18,6 +18,8 @@ type DjSet = {
   url: string;
   view_count?: number;
   duration_seconds?: number;
+  genres?: string[];
+  energy?: string;
 };
 
 type DjSetsResponse = {
@@ -165,6 +167,7 @@ export default function ExamplePage() {
   const [currentDjSets, setCurrentDjSets] = React.useState<DjSet[]>([]);
   const [featuredWeekly, setFeaturedWeekly] = React.useState<DjSet[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [filter, setFilter] = useState({ genre: "", energy: "" });
 
   const getEvents = async () => {
     const events = await getAllEvents();
@@ -211,6 +214,12 @@ export default function ExamplePage() {
     getDjSets();
   }, []);
 
+  const filteredDjSets = currentDjSets.filter((set) => {
+    const matchesGenre = filter.genre ? set.genres?.includes(filter.genre) : true;
+    const matchesEnergy = filter.energy ? set.energy === filter.energy : true;
+    return matchesGenre && matchesEnergy;
+  });
+
   const skeletons = (n: number) =>
     Array.from({ length: n }).map((_, i) => (
       <div
@@ -234,6 +243,33 @@ export default function ExamplePage() {
         <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-10">
           DJ Sets
         </h1>
+
+        {/* Filter Section */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-purple-400">Genre</label>
+          <select
+            className="block w-full mt-1 rounded-md bg-black border border-purple-400 text-white"
+            value={filter.genre}
+            onChange={(e) => setFilter({ ...filter, genre: e.target.value })}
+          >
+            <option value="">All</option>
+            <option value="techno">Techno</option>
+            <option value="house">House</option>
+            <option value="hardstyle">Hardstyle</option>
+          </select>
+
+          <label className="block text-sm font-medium text-purple-400 mt-4">Energy</label>
+          <select
+            className="block w-full mt-1 rounded-md bg-black border border-purple-400 text-white"
+            value={filter.energy}
+            onChange={(e) => setFilter({ ...filter, energy: e.target.value })}
+          >
+            <option value="">All</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
 
         {/* Featured This Week */}
         <div className="mb-14">
@@ -259,13 +295,13 @@ export default function ExamplePage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading && skeletons(6)}
-            {!loading && currentDjSets.length === 0 && (
+            {!loading && filteredDjSets.length === 0 && (
               <p className="text-sm text-purple-400/45 col-span-full py-6">
                 No sets available right now.
               </p>
             )}
             {!loading &&
-              currentDjSets.map((set, i) => (
+              filteredDjSets.map((set, i) => (
                 <StreamCard key={set.video_id} set={set} index={i} />
               ))}
           </div>
