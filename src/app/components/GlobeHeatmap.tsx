@@ -16,12 +16,18 @@ type Props = {
   id: ParamValue;
 };
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 const GlobeHeatmap: React.FC<Props> = ({ id }) => {
   const globeEl = useRef<GlobeMethods | undefined>(undefined);
   const [gData, setGData] = useState<GeoData[]>([]);
 
   useEffect(() => {
-    if (!id || typeof id !== "string") return; // safety check
+    if (!id || typeof id !== "string" || !UUID_REGEX.test(id)) {
+      setGData([]);
+      return;
+    }
 
     // Set up globe controls
     if (globeEl.current) {
@@ -34,8 +40,12 @@ const GlobeHeatmap: React.FC<Props> = ({ id }) => {
 
     // Get data for this specific event
     const fetchGeo = async () => {
-      const data = await getAllGeo(id); // should return array of GeoData
-      if (data) setGData(data);
+      try {
+        const data = await getAllGeo(id);
+        if (data) setGData(data);
+      } catch {
+        setGData([]);
+      }
     };
 
     fetchGeo();

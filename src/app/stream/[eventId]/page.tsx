@@ -7,7 +7,6 @@ import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import { getStreams } from "@/app/lib/events/stream";
 import { getTopCity } from "@/app/lib/utils/location";
 import { totalViews } from "@/app/lib/events/views";
-import { getAcceptedPhotos } from "@/app/lib/photos/photo";
 import { getLinks } from "@/app/lib/events/links";
 import { getEventById } from "@/app/lib/events/event";
 
@@ -19,6 +18,17 @@ interface Event {
   image_url: string;
 }
 
+interface DjSetItem {
+  video_id: string;
+  title: string;
+  channel: string;
+  published_at: string;
+  thumbnail?: string;
+  url: string;
+  view_count?: number;
+  duration_seconds?: number;
+}
+
 export default function BraindanceUserStream() {
   const params = useParams();
   const eventId = params?.eventId as string;
@@ -26,51 +36,92 @@ export default function BraindanceUserStream() {
   const [stream, setStreams] = useState<string>("");
   const [views, setViews] = useState(0);
   const [topCity, setTopCity] = useState("");
-  const [photoData, setPhotoData] = useState<{ src: string; alt: string }[]>(
-    []
-  );
   const [event, setEvent] = useState<Event | null>(null);
   const [merchItems, setMerchItems] = useState<
     { title: string; subtitle: string; url: string }[]
   >([]);
+  const [djSet, setDjSet] = useState<DjSetItem | null>(null);
+  const [isDbEvent, setIsDbEvent] = useState<boolean>(false);
   const [url, setUrl] = useState("");
   const [platform, setPlatform] = useState("");
+
+  const isUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value
+    );
 
   const fetchEventData = useCallback(async () => {
     if (!eventId) return;
 
-    const [stream, city, viewCount, photos, links, event] = await Promise.all([
-      getStreams(eventId),
-      getTopCity(eventId),
-      totalViews(eventId),
-      getAcceptedPhotos(eventId),
-      getLinks(eventId),
-      getEventById(eventId),
-    ]);
+    try {
+      const [streamData, links, eventData] = await Promise.all([
+        getStreams(eventId),
+        getLinks(eventId),
+        getEventById(eventId),
+      ]);
 
-    setEvent(event);
-    if (stream?.length > 0) {
-      setStreams(stream[0].link);
-      setUrl(stream[0].link);
-      setPlatform(stream[0].platform || "youtube");
+      let city: string | null = "Unknown";
+      let viewCount = 0;
+      if (isUuid(eventId)) {
+        [city, viewCount] = await Promise.all([
+          getTopCity(eventId),
+          totalViews(eventId),
+        ]);
+      }
+
+      setEvent(eventData);
+      if (streamData?.length > 0) {
+        setStreams(streamData[0].link);
+        setUrl(streamData[0].link);
+        setPlatform(streamData[0].platform || "youtube");
+      }
+      setTopCity(city || "Unknown");
+      setViews(viewCount || 0);
+
+      setMerchItems(
+        links.map((link) => ({
+          title: link.label,
+          subtitle: link.description || "Exclusive drop – limited time only!",
+          url: link.link,
+        }))
+      );
+
+      if (!eventData && (!streamData || streamData.length === 0)) {
+        throw new Error("Not a DB-backed event stream");
+      }
+      setIsDbEvent(Boolean(eventData) && isUuid(eventId));
+    } catch {
+      // Fallback: eventId can be a DJ set video id routed internally.
+      const response = await fetch("/api/dj-sets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId: eventId }),
+      });
+      const payload = (await response.json()) as { item: DjSetItem | null };
+      if (payload.item) {
+        setIsDbEvent(false);
+        setDjSet(payload.item);
+        setStreams(payload.item.video_id);
+        setUrl(payload.item.video_id);
+        setPlatform("youtube");
+        setViews(payload.item.view_count ?? 0);
+        setTopCity("Global");
+        setMerchItems([
+          {
+            title: "Watch on YouTube",
+            subtitle: "Open the source video on YouTube",
+            url: payload.item.url,
+          },
+          {
+            title: "More From Channel",
+            subtitle: payload.item.channel,
+            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(
+              payload.item.channel
+            )}`,
+          },
+        ]);
+      }
     }
-    setTopCity(city || "Unknown");
-    setViews(viewCount || 0);
-
-    setPhotoData(
-      photos.map((photo) => ({
-        src: photo.image_url,
-        alt: `Uploaded photo ${photo.id}`,
-      }))
-    );
-
-    setMerchItems(
-      links.map((link) => ({
-        title: link.label,
-        subtitle: link.description || "Exclusive drop – limited time only!",
-        url: link.link,
-      }))
-    );
   }, [eventId]);
 
   const getEmbedUrl = () => {
@@ -106,23 +157,28 @@ export default function BraindanceUserStream() {
               )}
             </div>
 
-            {event?.image_url && (
+            {(event?.image_url || djSet?.thumbnail) && (
               <div className="mt-4 flex items-center gap-3 px-4 py-2">
                 <div className="w-14 h-14 rounded-full overflow-hidden shrink-0">
                   <Image
-                    src={event.image_url}
-                    alt={event.title}
+                    src={event?.image_url || djSet?.thumbnail || ""}
+                    alt={event?.title || djSet?.title || "DJ Set"}
                     width={56}
                     height={56}
                     className="object-cover w-full h-full"
                   />
                 </div>
                 <div className="text-sm">
-                  <h2 className="text-white font-semibold leading-tight">{event.title}</h2>
+                  <h2 className="text-white font-semibold leading-tight">
+                    {event?.title || djSet?.title || "Live DJ Set"}
+                  </h2>
                   <p className="text-xs text-gray-400 leading-tight">
-                    {event.location} — {new Date(event.date).toLocaleDateString()}
+                    {event?.location || djSet?.channel || "Global"} —{" "}
+                    {new Date(event?.date || djSet?.published_at || Date.now()).toLocaleDateString()}
                   </p>
-                  <p className="text-xs text-gray-300 italic leading-tight">{event.description}</p>
+                  <p className="text-xs text-gray-300 italic leading-tight">
+                    {event?.description || "Curated DJ set inside Braindance stream player."}
+                  </p>
                 </div>
               </div>
             )}
@@ -145,42 +201,10 @@ export default function BraindanceUserStream() {
                 <p className="text-3xl font-bold text-pink-400">{topCity}</p>
               </div>
             </div>
-            <GlobeHeatmap id={eventId} />
+            {isDbEvent && <GlobeHeatmap id={eventId} />}
           </div>
         </div>
       </main>
-
-      {/* Photos */}
-      <div className="mt-6 rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-            Photos of the Night
-          </h3>
-          <span className="text-sm text-gray-400">{photoData.length} photos</span>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {photoData.length > 0 ? (
-            photoData.map((photo, i) => (
-              <div
-                key={i}
-                className="aspect-square relative rounded-md overflow-hidden border border-pink-500/30 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
-              >
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  layout="fill"
-                  className="object-cover hover:scale-110 transition-transform duration-500"
-                />
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500 col-span-full text-center">
-              No photos yet.
-            </p>
-          )}
-        </div>
-      </div>
 
       {/* Tags + Merch */}
       <div className="mt-6 rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">

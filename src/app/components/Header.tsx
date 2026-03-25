@@ -29,12 +29,6 @@ export default function Header() {
           >
             Events
           </Link>
-          <Link
-            href="/about"
-            className="text-white hover:text-pink-400 transition duration-200"
-          >
-            About
-          </Link>
         </nav>
       </div>
     </header>

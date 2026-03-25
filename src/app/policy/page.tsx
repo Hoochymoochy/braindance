@@ -36,7 +36,7 @@ export default function PolicyPage() {
             Braindance Policies
           </h1>
           <p className="text-base text-gray-300 mb-8">
-            We&apos;re not just streaming vibes—we&apos;re protecting your trust while we build the future. Here&apos;s how we keep it real.
+            We keep Braindance clear and trustworthy while building a better home for EDM streaming and set discovery.
           </p>
 
           <div className="space-y-10 text-sm md:text-base text-gray-300">
@@ -62,16 +62,16 @@ export default function PolicyPage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-purple-400 mb-2">📸 Photo Upload Rules</h2>
+              <h2 className="text-lg font-semibold text-purple-400 mb-2">🎚️ Content Standards</h2>
               <p>
-                Keep it respectful, hype, and event-related. Hosts approve photos before they hit the feed. Anything harmful or off-theme gets the boot.
+                We focus on authentic DJ culture. Content should be respectful, music-first, and connected to real sets, artists, and events.
               </p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-pink-300 mb-2">🚀 Beta Terms</h2>
+              <h2 className="text-lg font-semibold text-pink-300 mb-2">🌍 Platform Direction</h2>
               <p>
-                During the beta, features may shift fast. We’re stress-testing in real-time. Feedback is love, and bugs are expected—report ’em and ride with us.
+                Our mission is simple: make it easier to stream DJ sets and highlight both new talent and older iconic sets in one ecosystem.
               </p>
             </div>
 

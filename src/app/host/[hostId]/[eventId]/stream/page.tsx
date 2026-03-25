@@ -238,7 +238,7 @@ export default function BraindanceMockup() {
   const getEmbedUrl = () => {
     if (!url) return "";
     if (platform === "twitch") {
-      return `https://player.twitch.tv/?channel=${url}&parent=braindance.live`;
+      return `https://player.twitch.tv/?channel=${url}&parent=localhost:3000`;
     }
     return `https://www.youtube.com/embed/${url}?autoplay=1&mute=1`;
   };

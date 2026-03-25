@@ -42,4 +42,4 @@ next-env.d.ts
 
 # chat dont leak this
 .env*
-
+/backend.env*
