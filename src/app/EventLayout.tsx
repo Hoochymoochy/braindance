@@ -62,7 +62,7 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full px-4 py-16 md:px-10 bg-black text-white relative overflow-hidden thermal-background">
+    <div >
       {/* Cursor Aura */}
       <div
         className="thermal-cursor pointer-events-none fixed z-50"

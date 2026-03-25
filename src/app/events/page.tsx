@@ -113,6 +113,8 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState({ genre: "", energy: "" });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
 
   useEffect(() => {
     getEvents();
@@ -201,6 +203,17 @@ export default function EventsPage() {
     router.push(`/stream/${pick.video_id}`);
   };
 
+    useEffect(() => {
+      const handleMouseMove = (e: MouseEvent) => {
+        setMousePosition({ x: e.clientX, y: e.clientY });
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+      };
+    }, []);
+
   const skeletons = (n: number) =>
     Array.from({ length: n }).map((_, i) => (
       <div
@@ -211,6 +224,10 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen flex flex-col text-white bg-black thermal-background relative overflow-hidden">
+      <div
+        className="thermal-cursor"
+        style={{ left: `${mousePosition.x}px`, top: `${mousePosition.y}px` }}
+      />
       <main className="flex-1">
         <section className="max-w-7xl mx-auto px-4 py-10 pb-16">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-10">
