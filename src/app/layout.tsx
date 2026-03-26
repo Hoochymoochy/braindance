@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import LocationGate from "@/app/components/LocationGate";
+import { Analytics } from "@vercel/analytics/next";
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
@@ -11,6 +12,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
