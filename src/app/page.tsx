@@ -155,11 +155,11 @@ export default function Home() {
       </section>
 
       {/* ── FEATURED STREAMS ─────────────────────────────────────── */}
-      <section className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-end mb-7">
           <div className="flex flex-col gap-1">
-            <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium tracking-widest uppercase text-purple-400/80">
+            <span className="inline-flex items-center gap-2 text-[0.7rem] font-medium tracking-widest uppercase text-purple-400/80 space-y-2">
               <TrendingUp className="w-3 h-3" />
               Top weekly views
             </span>

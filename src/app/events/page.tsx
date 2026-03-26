@@ -43,7 +43,7 @@ function SectionHeader({
   title: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 mt-4">
       {eyebrow && (
         <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-purple-400/80">
           <TrendingUp className="w-3 h-3" />
@@ -296,10 +296,10 @@ export default function EventsPage() {
           </div>
 
           <div>
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-5">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
               <SectionHeader title="Current DJ Sets" />
               {!loading && filteredDjSets.length > 0 && (
-                <p className="text-xs text-purple-400/60 tabular-nums">
+                <p className="text-xs text-purple-400/60 tabular-nums ">
                   Showing {visibleDjSets.length} of {filteredDjSets.length}
                 </p>
               )}

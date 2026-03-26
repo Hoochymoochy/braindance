@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-03-25T23:09:47.745810Z",
+  "updated_at": "2026-03-26T00:23:41.081341Z",
   "count": 23,
   "items": [
     {
@@ -44,8 +44,8 @@
       "published_at": "2026-03-05T17:00:59Z",
       "thumbnail": "https://i.ytimg.com/vi/bW-eKk3JVIY/hqdefault.jpg",
       "url": "https://youtube.com/watch?v=bW-eKk3JVIY",
-      "fetched_at": "2026-03-25T23:09:47.384472Z",
-      "view_count": 321379,
+      "fetched_at": "2026-03-26T00:23:40.797513Z",
+      "view_count": 321829,
       "duration_seconds": 10195,
       "genres": [
         "techno",
@@ -54,7 +54,7 @@
       "contexts": [],
       "energy": "medium",
       "location": null,
-      "score": 250826.18
+      "score": 251172.68
     },
     {
       "video_id": "Ub-JrGE289s",
@@ -172,14 +172,14 @@
       "published_at": "2026-03-01T17:00:01Z",
       "thumbnail": "https://i.ytimg.com/vi/0RxbxQZEcco/hqdefault.jpg",
       "url": "https://youtube.com/watch?v=0RxbxQZEcco",
-      "fetched_at": "2026-03-25T23:09:47.384485Z",
-      "view_count": 168529,
+      "fetched_at": "2026-03-26T00:23:40.797581Z",
+      "view_count": 168703,
       "duration_seconds": 5590,
       "genres": [],
       "contexts": [],
       "energy": "medium",
       "location": null,
-      "score": 119647.29999999999
+      "score": 119769.09999999999
     },
     {
       "video_id": "yQXb-bD8w1c",
