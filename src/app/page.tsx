@@ -2,14 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, Radio, Waves, Globe2, Play, TrendingUp } from "lucide-react";
-import { BrainLogo } from "@/app/components/Brain-logo";
-import { EventsLayout } from "@/app/EventLayout";
-import { EventPosterProps } from "@/app/components/user/Poster";
-import { getAllEvents } from "@/app/lib/events/event";
-import { getStreams } from "@/app/lib/events/stream";
-import { addEmail } from "@/app/lib/utils/email";
+import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
+import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 
 type DjSet = {
   video_id: string;
@@ -20,24 +14,15 @@ type DjSet = {
 };
 
 type DjSetsResponse = {
-  featured: {
-    weekly: DjSet[];
+  currentSets?: DjSet[];
+  featured?: {
+    weekly?: DjSet[];
   };
 };
 
-function formatViews(count: number): string {
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
-  if (count >= 1_000) return `${(count / 1_000).toFixed(0)}K`;
-  return count.toString();
-}
-
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
-  const [joinWaitlist, setJoinWaitlist] = useState(false);
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [streamsLoading, setStreamsLoading] = useState(true);
   const eventsRef = useRef<HTMLDivElement>(null);
 
@@ -46,36 +31,23 @@ export default function Home() {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
-    const getEvents = async () => {
-      const events = await getAllEvents();
-      const live: EventPosterProps[] = [];
-      const upcoming: EventPosterProps[] = [];
-
-      await Promise.all(
-        events.map(async (event) => {
-          const streams = await getStreams(event.id);
-          const hasLive = streams?.some((s) => s.link !== null);
-
-          if (hasLive) {
-            live.push({
-              ...event,
-              link: streams.find((s) => s.link !== null)?.link || "",
-            });
-          } else {
-            upcoming.push(event);
-          }
-        })
-      );
-
-      setUpcomingEvents(upcoming.slice(0, 3));
-    };
-
     const getFeaturedStreams = async () => {
       try {
         const response = await fetch("/api/dj-sets", { cache: "no-store" });
         if (!response.ok) return;
         const data = (await response.json()) as DjSetsResponse;
-        setFeaturedStreams(data.featured.weekly.slice(0, 3));
+        const weekly = data.featured?.weekly;
+        let list = Array.isArray(weekly) ? weekly : [];
+        if (
+          list.length === 0 &&
+          Array.isArray(data.currentSets) &&
+          data.currentSets.length > 0
+        ) {
+          list = [...data.currentSets].sort(
+            (a, b) => (b.view_count ?? 0) - (a.view_count ?? 0)
+          );
+        }
+        setFeaturedStreams(list.slice(0, 3));
       } catch {
         setFeaturedStreams([]);
       } finally {
@@ -83,7 +55,6 @@ export default function Home() {
       }
     };
 
-    getEvents();
     getFeaturedStreams();
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
@@ -206,7 +177,7 @@ export default function Home() {
         </div>
 
         {/* Cards grid */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {/* Skeletons while loading */}
           {streamsLoading &&
             [0, 1, 2].map((i) => (
@@ -229,146 +200,10 @@ export default function Home() {
             </p>
           )}
 
-          {/* Stream cards */}
+          {/* Stream cards — same component as /events */}
           {!streamsLoading &&
             featuredStreams.map((set, i) => (
-              <Link
-                key={set.video_id}
-                href={`/stream/${set.video_id}`}
-                className="group relative flex flex-col rounded-2xl overflow-hidden no-underline text-white"
-                style={{
-                  background: "rgba(0,0,0,0.55)",
-                  border: "1px solid rgba(168,85,247,0.15)",
-                  animation: `fs-card-in 0.45s ${i * 80}ms both`,
-                  transition:
-                    "transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.transform =
-                    "translateY(-4px)";
-                  (e.currentTarget as HTMLElement).style.borderColor =
-                    "rgba(244,114,182,0.35)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.transform =
-                    "translateY(0)";
-                  (e.currentTarget as HTMLElement).style.borderColor =
-                    "rgba(168,85,247,0.15)";
-                }}
-              >
-                {/* Thumbnail */}
-                <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/9", background: "#0d0010" }}>
-                  {set.thumbnail ? (
-                    <Image
-                      src={set.thumbnail}
-                      alt={set.title}
-                      width={640}
-                      height={360}
-                      className="w-full h-full object-cover"
-                      style={{
-                        transition:
-                          "transform 0.5s cubic-bezier(0.22,1,0.36,1), filter 0.3s",
-                        filter: "brightness(0.88) saturate(1.1)",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform =
-                          "scale(1.04)";
-                        (e.currentTarget as HTMLElement).style.filter =
-                          "brightness(0.7) saturate(1.2)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform =
-                          "scale(1)";
-                        (e.currentTarget as HTMLElement).style.filter =
-                          "brightness(0.88) saturate(1.1)";
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className="w-full h-full"
-                      style={{
-                        background:
-                          "linear-gradient(135deg,#1a0033 0%,#0d001a 100%)",
-                      }}
-                    />
-                  )}
-
-                  {/* Play button overlay */}
-                  <div
-                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100"
-                    style={{ transition: "opacity 0.25s" }}
-                  >
-                    <div
-                      className="flex items-center justify-center w-11 h-11 rounded-full"
-                      style={{
-                        background: "rgba(244,114,182,0.92)",
-                        backdropFilter: "blur(4px)",
-                        transform: "scale(0.85)",
-                        transition:
-                          "transform 0.25s cubic-bezier(0.22,1,0.36,1)",
-                      }}
-                      /* scale on card hover via group — handled in parent group-hover */
-                    >
-                      <Play
-                        className="w-4 h-4 text-white ml-0.5"
-                        fill="currentColor"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Gradient bleed */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 pointer-events-none"
-                    style={{
-                      height: "40%",
-                      background:
-                        "linear-gradient(to bottom,transparent,rgba(0,0,0,0.6))",
-                    }}
-                  />
-                </div>
-
-                {/* Body */}
-                <div className="flex flex-col gap-1.5 px-4 py-3">
-                  <p
-                    className="text-[0.88rem] font-semibold leading-snug m-0"
-                    style={{
-                      color: "#f0e6ff",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {set.title}
-                  </p>
-                  <div
-                    className="flex items-center gap-1.5 text-[0.74rem]"
-                    style={{ color: "rgba(167,139,250,0.65)" }}
-                  >
-                    <span style={{ color: "rgba(196,181,253,0.7)", fontWeight: 500 }}>
-                      {set.channel}
-                    </span>
-                    <span
-                      className="rounded-full flex-shrink-0"
-                      style={{
-                        width: 3,
-                        height: 3,
-                        background: "rgba(167,139,250,0.35)",
-                      }}
-                    />
-                    <span>{formatViews(set.view_count ?? 0)} views</span>
-                  </div>
-                </div>
-
-                {/* Inner glow on hover */}
-                <div
-                  className="absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100"
-                  style={{
-                    boxShadow: "0 0 28px rgba(244,114,182,0.18) inset",
-                    transition: "opacity 0.3s",
-                  }}
-                />
-              </Link>
+              <StreamCard key={set.video_id} set={set} index={i} />
             ))}
         </div>
       </section>
