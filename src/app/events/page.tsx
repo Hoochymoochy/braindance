@@ -185,26 +185,14 @@ export default function EventsPage() {
     Array.from({ length: n }).map((_, i) => (
       <div
         key={i}
-        className="group relative flex flex-col rounded-2xl overflow-hidden text-white bg-black/50 backdrop-blur-sm border border-purple-900/40"
-        style={{ animation: `fs-card-in 0.45s ${i * 60}ms both` }}
-      >
-        <div className="relative w-full aspect-video overflow-hidden bg-gradient-to-br from-purple-900/20 to-black">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
-        </div>
-
-        <div className="flex flex-col gap-2 px-4 py-3">
-          <div className="space-y-3 w-full">
-            <div className="h-4 bg-purple-900/30 rounded-lg w-3/4 animate-shimmer-slow" />
-            <div className="h-4 bg-purple-900/30 rounded-lg w-1/2 animate-shimmer-slow" />
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
-            <div className="h-3 bg-purple-900/25 rounded w-24 animate-shimmer-slow" />
-            <div className="w-1 h-1 shrink-0 bg-purple-400/20 rounded-full" />
-            <div className="h-3 bg-purple-900/25 rounded w-16 animate-shimmer-slow" />
-          </div>
-        </div>
-      </div>
+        className="rounded-2xl h-64"
+        style={{
+          background:
+            "linear-gradient(110deg,rgba(168,85,247,0.06) 25%,rgba(168,85,247,0.12) 50%,rgba(168,85,247,0.06) 75%)",
+          backgroundSize: "200% 100%",
+          animation: "fs-shimmer 1.4s infinite",
+        }}
+      />
     ));
 
   return (
@@ -359,35 +347,9 @@ export default function EventsPage() {
       />
 
       <style>{`
-        @keyframes fs-card-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        @keyframes shimmer-slow {
-          0%, 100% {
-            opacity: 0.4;
-          }
-          50% {
-            opacity: 0.7;
-          }
-        }
-
-        .animate-shimmer {
-          animation: shimmer 2.5s infinite;
-        }
-
-        .animate-shimmer-slow {
-          animation: shimmer-slow 1.8s ease-in-out infinite;
+        @keyframes fs-shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
         }
       `}</style>
     </div>
