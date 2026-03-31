@@ -18,12 +18,6 @@ type DjSet = {
   duration_seconds?: number;
 };
 
-type StoredDjSets = {
-  updated_at?: string;
-  count?: number;
-  items?: DjSet[];
-};
-
 /** Shape returned by GET ${BACKEND_URL}/dj-sets */
 type BackendDjSetsListResponse =
   | DjSet[]
@@ -136,7 +130,7 @@ async function fetchJsonWithTimeout(url: string, timeoutMs: number) {
     const nodeUrl = new URL(url);
     const isHttps = nodeUrl.protocol === 'https:';
     
-    let fetchOptions: any = {
+    const fetchOptions: RequestInit = {
       method: "GET",
       headers: { "content-type": "application/json" },
       cache: "no-store",
