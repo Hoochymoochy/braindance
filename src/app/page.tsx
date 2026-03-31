@@ -33,7 +33,7 @@ export default function Home() {
 
     const getFeaturedStreams = async () => {
       try {
-        const response = await fetch("/api/dj-sets", { cache: "no-store" });
+        const response = await fetch("/dj-sets", { cache: "no-store" });
         if (!response.ok) return;
         const data = (await response.json()) as DjSetsResponse;
         const weekly = data.featured?.weekly;
