@@ -63,27 +63,163 @@ function topViewed(items: DjSet[], days: number, limit = 6): DjSet[] {
   return sortByViewsDesc(scoped).slice(0, limit);
 }
 
-function getBackendUrl(): string {
-  const raw = process.env.BACKEND_URL;
-  if (!raw) {
-    throw new BackendConfigError("Missing BACKEND_URL env var");
-  }
+/** Normalize env base URL to origin (optional trailing /dj-sets stripped). */
+function normalizeBackendBase(raw: string | undefined): string | null {
+  if (!raw?.trim()) return null;
   let base = raw.trim().replace(/\/+$/, "");
-  // Allow BACKEND_URL=https://host/dj-sets — this route adds /dj-sets again
   if (base.endsWith("/dj-sets")) {
     base = base.slice(0, -"/dj-sets".length);
   }
   base = base.replace(/\/+$/, "");
   try {
     const parsed = new URL(base);
-    if (!parsed.protocol || !parsed.host) {
-      throw new Error("BACKEND_URL must include protocol and host");
-    }
+    if (!parsed.protocol || !parsed.host) return null;
     return parsed.origin;
   } catch {
+    return null;
+  }
+}
+
+function getPrimaryBackendUrl(): string {
+  const base = normalizeBackendBase(process.env.BACKEND_URL);
+  if (!base) {
     throw new BackendConfigError(
-      "Invalid BACKEND_URL. Expected format: https://example.com"
+      "Missing or invalid BACKEND_URL env var (expected https://host)"
     );
+  }
+  return base;
+}
+
+function getBackupBackendUrl(): string | null {
+  const raw = process.env.BACKEND_URL_BACKUP;
+  if (!raw?.trim()) return null;
+  const base = normalizeBackendBase(raw);
+  if (!base) {
+    routeLog("api/dj-sets", "BACKEND_URL_BACKUP ignored (invalid URL)", {
+      preview: raw.slice(0, 120),
+    });
+    return null;
+  }
+  return base;
+}
+
+function extractItemsFromListPayload(
+  backendPayload: BackendDjSetsListResponse
+): DjSet[] {
+  return Array.isArray(backendPayload)
+    ? backendPayload
+    : (backendPayload.items ?? backendPayload.currentSets ?? []);
+}
+
+async function fetchDjSetsListWithFallback(timeoutMs: number): Promise<{
+  backendPayload: BackendDjSetsListResponse;
+  source: "primary" | "backup";
+}> {
+  const primary = getPrimaryBackendUrl();
+  const backup = getBackupBackendUrl();
+
+  const tryList = async (base: string) => {
+    const upstream = `${base}/dj-sets`;
+    const backendPayload = (await fetchJsonWithTimeout(
+      upstream,
+      timeoutMs
+    )) as BackendDjSetsListResponse;
+    const items = extractItemsFromListPayload(backendPayload);
+    return { backendPayload, items };
+  };
+
+  let primaryResult: {
+    backendPayload: BackendDjSetsListResponse;
+    items: DjSet[];
+  } | null = null;
+
+  try {
+    primaryResult = await tryList(primary);
+    if (primaryResult.items.length > 0 || !backup) {
+      return {
+        backendPayload: primaryResult.backendPayload,
+        source: "primary",
+      };
+    }
+    routeLog("api/dj-sets", "primary returned empty list, trying backup", {
+      backup,
+    });
+  } catch (e) {
+    routeLog("api/dj-sets", "primary /dj-sets failed", {
+      error: classifyBackendError(e),
+    });
+    if (!backup) throw e;
+    routeLog("api/dj-sets", "trying BACKEND_URL_BACKUP", { backup });
+    const r = await tryList(backup);
+    return { backendPayload: r.backendPayload, source: "backup" };
+  }
+
+  try {
+    const r = await tryList(backup!);
+    return { backendPayload: r.backendPayload, source: "backup" };
+  } catch (e) {
+    routeLog("api/dj-sets", "backup failed; using primary response", {
+      error: classifyBackendError(e),
+    });
+    return {
+      backendPayload: primaryResult.backendPayload,
+      source: "primary",
+    };
+  }
+}
+
+function parseDjSetPayload(raw: unknown): DjSet | null {
+  const payload = raw as { item?: DjSet } | DjSet | null;
+  if (!payload || typeof payload !== "object") return null;
+  if ("item" in payload && payload.item) return payload.item;
+  if ("video_id" in payload) return payload as DjSet;
+  return null;
+}
+
+async function fetchDjSetByIdWithFallback(
+  videoId: string,
+  timeoutMs: number
+): Promise<{ raw: unknown; source: "primary" | "backup" }> {
+  const primary = getPrimaryBackendUrl();
+  const backup = getBackupBackendUrl();
+
+  const tryOne = async (base: string) => {
+    const upstream = `${base}/dj-sets/${encodeURIComponent(videoId)}`;
+    return fetchJsonWithTimeout(upstream, timeoutMs);
+  };
+
+  let primaryRaw: unknown;
+
+  try {
+    primaryRaw = await tryOne(primary);
+    const item = parseDjSetPayload(primaryRaw);
+    if (item || !backup) {
+      return { raw: primaryRaw, source: "primary" };
+    }
+    routeLog("api/dj-sets", "primary had no item for video, trying backup", {
+      videoId,
+      backup,
+    });
+  } catch (e) {
+    routeLog("api/dj-sets", "primary video lookup failed", {
+      videoId,
+      error: classifyBackendError(e),
+    });
+    if (!backup) throw e;
+    routeLog("api/dj-sets", "trying BACKEND_URL_BACKUP", { backup });
+    const raw = await tryOne(backup);
+    return { raw, source: "backup" };
+  }
+
+  try {
+    const raw = await tryOne(backup!);
+    return { raw, source: "backup" };
+  } catch (e) {
+    routeLog("api/dj-sets", "backup video lookup failed", {
+      videoId,
+      error: classifyBackendError(e),
+    });
+    return { raw: primaryRaw, source: "primary" };
   }
 }
 
@@ -214,22 +350,17 @@ function logBackendResponse(url: string, status: number, data: unknown) {
 export async function GET(request: NextRequest) {
   routeLog("api/dj-sets", "GET /api/dj-sets", { incomingUrl: request.url });
   try {
-    const backendUrl = getBackendUrl();
-    routeLog("api/dj-sets", "resolved BACKEND_URL", { base: backendUrl });
+    const primary = getPrimaryBackendUrl();
+    const backup = getBackupBackendUrl();
+    routeLog("api/dj-sets", "backend targets", {
+      BACKEND_URL: primary,
+      BACKEND_URL_BACKUP: backup ?? "(not set)",
+    });
 
-    const upstream = `${backendUrl}/dj-sets`;
-    routeLog("api/dj-sets", "fetching upstream", { upstream });
-    const backendPayload = (await fetchJsonWithTimeout(
-      upstream,
-      30_000
-    )) as BackendDjSetsListResponse;
+    const { backendPayload, source } =
+      await fetchDjSetsListWithFallback(30_000);
 
-    // Backend may return either:
-    // - an array of items, or
-    // - { items: [...] } (or similar object shape)
-    const items: DjSet[] = Array.isArray(backendPayload)
-      ? backendPayload
-      : (backendPayload.items ?? backendPayload.currentSets ?? []);
+    const items = extractItemsFromListPayload(backendPayload);
 
     const updatedAt = Array.isArray(backendPayload)
       ? null
@@ -252,9 +383,11 @@ export async function GET(request: NextRequest) {
         daily: topViewed(filtered, 1, 4),
         weekly: topViewed(filtered, 7, 6),
       },
+      backendSource: source,
     };
 
     routeLog("api/dj-sets", "GET OK", {
+      backendSource: source,
       itemsRaw: items.length,
       itemsAfterDurationFilter: filtered.length,
       count: payload.count,
@@ -286,29 +419,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ item: null }, { status: 400 });
     }
 
-    const backendUrl = getBackendUrl();
-    routeLog("api/dj-sets", "resolved BACKEND_URL", { base: backendUrl });
-    const upstream = `${backendUrl}/dj-sets/${encodeURIComponent(videoId)}`;
-    routeLog("api/dj-sets", "fetching upstream", { upstream, videoId });
-    const raw = await fetchJsonWithTimeout(upstream, 30_000);
+    routeLog("api/dj-sets", "backend targets", {
+      BACKEND_URL: getPrimaryBackendUrl(),
+      BACKEND_URL_BACKUP: getBackupBackendUrl() ?? "(not set)",
+    });
 
-    const payload = raw as { item?: DjSet } | DjSet | null;
-    let item: DjSet | null = null;
-    if (payload && typeof payload === "object") {
-      if ("item" in payload && payload.item) {
-        item = payload.item;
-      } else if ("video_id" in payload) {
-        item = payload as DjSet;
-      }
-    }
+    const { raw, source } = await fetchDjSetByIdWithFallback(videoId, 30_000);
+    const item = parseDjSetPayload(raw);
     const safeItem = item && passesDurationFilter(item) ? item : null;
 
     routeLog("api/dj-sets", "POST OK", {
       videoId,
+      backendSource: source,
       found: Boolean(item),
       returned: Boolean(safeItem),
     });
-    return NextResponse.json({ item: safeItem });
+    return NextResponse.json({ item: safeItem, backendSource: source });
   } catch (error) {
     const detail = classifyBackendError(error);
     routeError("api/dj-sets", `POST failed: ${detail}`, error);

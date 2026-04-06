@@ -13,10 +13,12 @@ Edit pages under `src/app/`.
 
 ## DJ sets API proxy
 
-`src/app/api/dj-sets/route.ts` calls your separate backend using `BACKEND_URL` (see `.env.example`).
+`src/app/api/dj-sets/route.ts` calls your separate backend using `BACKEND_URL` (see `.env.example`). Optional **`BACKEND_URL_BACKUP`** is used when the primary fails to respond, returns an empty list (GET), or returns no item for a video id (POST).
 
-- `GET /api/dj-sets` → backend `GET /dj-sets`
+- `GET /api/dj-sets` → backend `GET /dj-sets` (tries backup when needed)
 - `POST /api/dj-sets` with `{ "videoId": "..." }` → backend `GET /dj-sets/:video_id`
+
+Responses include `"backendSource": "primary"` or `"backup"` so you can see which host was used.
 
 Logs for that route use **`process.stdout` / `process.stderr`** with a `[braindance]` prefix so they show in the same terminal as `npm run dev`. Trigger the route by loading a page that fetches `/api/dj-sets` or run:
 
