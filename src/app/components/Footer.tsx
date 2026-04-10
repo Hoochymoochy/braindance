@@ -5,43 +5,41 @@ import { BrainLogo } from "@/app/components/Brain-logo";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gradient-to-r from-purple-500 via-pink-500 to-purple-500 bg-black/80 backdrop-blur-md shadow-[0_-2px_15px_rgba(236,72,153,0.2)]">
-      <div className="container mx-auto px-4 py-10">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          {/* Logo */}
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <BrainLogo withText={false} className="h-6 w-6 text-pink-400" />
-            <span className="text-sm text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-semibold tracking-wide uppercase">
+    <footer
+      className="glass-nav-footer fixed bottom-0 left-0 right-0 z-50 border-t border-white/15 pb-[env(safe-area-inset-bottom)]"
+      role="contentinfo"
+    >
+      <div className="container mx-auto px-4 py-4 md:py-5">
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+          <div className="flex items-center space-x-2">
+            <BrainLogo withText={false} className="h-6 w-6 text-[#00ccff]" />
+            <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-sm font-semibold uppercase tracking-wide text-transparent">
               Braindance
             </span>
           </div>
 
-          {/* Links */}
-          <div className="flex space-x-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
             <Link
               href="/policy"
-              className="text-sm text-gray-400 hover:text-pink-400 transition-colors"
+              className="text-sm text-white/65 transition-colors hover:text-[#00ccff]"
             >
               Policy
             </Link>
             <Link
               href="/feedback"
-              className="text-sm text-gray-400 hover:text-pink-400 transition-colors"
+              className="text-sm text-white/65 transition-colors hover:text-[#ff00f7]"
             >
               Feedback
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-gray-400 hover:text-pink-400 transition-colors"
+              className="text-sm text-white/65 transition-colors hover:text-[#3700ff]"
             >
               Contact
             </Link>
           </div>
-        </div>
 
-        {/* Bottom Text */}
-        <div className="mt-8 text-center md:text-left">
-          <p className="text-sm text-gray-500">
+          <p className="text-center text-xs text-[#7a7a7a] sm:text-right">
             © {new Date().getFullYear()} Braindance. All rights reserved.
           </p>
         </div>

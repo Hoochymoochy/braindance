@@ -5,27 +5,31 @@ import { BrainLogo } from "@/app/components/Brain-logo";
 
 export default function Header() {
   return (
-      <header className="border-b border-gradient-to-r from-purple-500 via-pink-500 to-purple-500 bg-black/80 backdrop-blur-md shadow-[0_-2px_15px_rgba(236,72,153,0.2)]">
-        <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center">
-          {/* Logo */}
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <BrainLogo withText={false} className="h-6 w-6 text-pink-400" />
-            <span className="text-sm text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-semibold tracking-wide uppercase">
-              Braindance
-            </span>
-          </div>
+    <header
+      className="glass-nav fixed left-0 right-0 top-0 z-50 border-b border-white/15 pt-[env(safe-area-inset-top)]"
+      role="banner"
+    >
+      <div className="container mx-auto flex flex-col items-center justify-between gap-3 px-4 py-3 md:flex-row md:gap-0 md:py-4">
+        <Link
+          href="/"
+          className="flex items-center space-x-2 transition-opacity hover:opacity-90"
+        >
+          <BrainLogo withText={false} className="h-6 w-6 text-[#00ccff]" />
+          <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-sm font-semibold uppercase tracking-wide text-transparent">
+            Braindance
+          </span>
+        </Link>
 
-        {/* Nav Links */}
-        <nav className="flex space-x-6 text-sm">
+        <nav className="flex items-center space-x-8 text-sm" aria-label="Primary">
           <Link
             href="/"
-            className="text-white hover:text-pink-400 transition duration-200"
+            className="text-white/90 transition-colors hover:text-[#00ccff]"
           >
             Home
           </Link>
           <Link
             href="/events"
-            className="text-white hover:text-pink-400 transition duration-200"
+            className="text-white/90 transition-colors hover:text-[#ff00f7]"
           >
             Events
           </Link>
