@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   TrendingUp,
@@ -75,13 +75,6 @@ export default function EventsPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState({ genre: "", energy: "" });
   const [isFiltering, setIsFiltering] = useState(false);
-
-  const [bendsReady, setBendsReady] = useState(false);
-
-  const handleBendsReady = useCallback(() => {
-    setBendsReady(true);
-  }, []);
-
   // Smooth parallax effect based on mouse position for 4K depth
   useEffect(() => {
     let animationFrameId: number;
@@ -261,7 +254,6 @@ export default function EventsPage() {
           }}
         >
           <ColorBends
-            onReady={handleBendsReady}
             rotation={65}
             speed={0.25}
             colors={[...BEND_COLORS]}
@@ -302,7 +294,7 @@ export default function EventsPage() {
               type="button"
               onClick={goRandomSet}
               disabled={loading || allDjSets.length === 0}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#ff00f7]/35 bg-gradient-to-r from-[#3700ff]/90 to-[#ff00f7]/75 px-3 py-1.5 text-sm font-medium transition-all duration-200 hover:from-[#ff00f7]/85 hover:to-[#3700ff]/80 disabled:pointer-events-none disabled:opacity-40 active:scale-95 active:shadow-[0_0_12px_rgba(0,204,255,0.25)] hover:scale-105"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 bg-gradient-to-r from-[#3700ff]/90 to-[#ff00f7]/75 px-3 py-1.5 text-sm font-medium transition-all duration-200 ease-in-out hover:from-[#ff00f7]/85 hover:to-[#3700ff]/80 disabled:pointer-events-none disabled:opacity-40 hover:scale-105"
             >
               <Shuffle className="w-3.5 h-3.5" />
               Random set
