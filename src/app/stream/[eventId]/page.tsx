@@ -331,7 +331,7 @@ export default function BraindanceUserStream() {
         {/* Tags + Merch */}
         <div className="glass-bends-card mt-6 rounded-lg p-4 backdrop-blur-lg bg-white/5 border border-white/10">
           <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
-            MERCH & TICKETS
+            EXTRA LINKS
           </h3>
 
           {merchItems.length > 0 ? (
@@ -351,7 +351,7 @@ export default function BraindanceUserStream() {
             </div>
           ) : (
             <p className="text-sm text-gray-500 text-center">
-              No merch or tickets available.
+              No links found.
             </p>
           )}
         </div>
