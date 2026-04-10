@@ -6,7 +6,19 @@ import { BrainLogo } from "@/app/components/Brain-logo";
 export default function Footer() {
   return (
     <footer
-      className="glass-nav-footer fixed bottom-0 left-0 right-0 z-50 border-t border-white/15 pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/15 pb-[env(safe-area-inset-bottom)]"
+      style={{
+        background: `linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.32) 0%,
+          rgba(55, 0, 255, 0.09) 50%,
+          rgba(255, 0, 247, 0.06) 100%
+        )`,
+        backdropFilter: "blur(18px) saturate(1.1)",
+        WebkitBackdropFilter: "blur(18px) saturate(1.1)",
+        boxShadow: `0 0 40px rgba(0, 204, 255, 0.05),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.06)`,
+      }}
       role="contentinfo"
     >
       <div className="container mx-auto px-4 py-4 md:py-5">
