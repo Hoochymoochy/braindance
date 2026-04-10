@@ -1,15 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
-
-const ColorBends = dynamic(() => import("@/components/ColorBends"), {
-  ssr: false,
-  loading: () => null,
-});
+import ColorBends from "@/components/ColorBends";
+import { cn } from "@/lib/utils";
 
 type DjSet = {
   video_id: string;
@@ -29,9 +25,54 @@ type DjSetsResponse = {
 const BEND_COLORS = ["#00ccff", "#ff00f7", "#3700ff", "#7a7a7a"] as const;
 
 export default function Home() {
+  const [bendsReady, setBendsReady] = useState(false);
   const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
   const [streamsLoading, setStreamsLoading] = useState(true);
+  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const eventsRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleBendsReady = useCallback(() => {
+    setBendsReady(true);
+  }, []);
+
+  // Smooth parallax effect based on mouse position for 4K depth
+  useEffect(() => {
+    let animationFrameId: number;
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      // Calculate parallax based on distance from center
+      targetX = (e.clientX - centerX) * 0.015;
+      targetY = (e.clientY - centerY) * 0.015;
+    };
+
+    const animate = () => {
+      // Smooth easing for 4K-like motion
+      currentX += (targetX - currentX) * 0.08;
+      currentY += (targetY - currentY) * 0.08;
+      setParallaxOffset({ x: currentX, y: currentY });
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setBendsReady(true), 4500);
+    return () => window.clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const getFeaturedStreams = async () => {
@@ -62,10 +103,25 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-white">
+    <div ref={containerRef} className="relative min-h-screen overflow-hidden text-white">
+      {/* BLACK OVERLAY - Fixed depth layer */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black"
+        className="pointer-events-none fixed inset-0 -z-10 bg-black transition-opacity duration-700"
+        style={{
+          opacity: bendsReady ? 0.4 : 0,
+        }}
         aria-hidden
+      />
+
+      {/* ANIMATED BACKGROUND with 4K parallax depth */}
+      <div
+        className="pointer-events-none fixed inset-0 -z-20"
+        aria-hidden
+        style={{
+          transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
+          transition: "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          willChange: "transform",
+        }}
       >
         <div
           style={{
@@ -80,6 +136,7 @@ export default function Home() {
           }}
         >
           <ColorBends
+            onReady={handleBendsReady}
             rotation={65}
             speed={0.25}
             colors={[...BEND_COLORS]}
@@ -95,10 +152,20 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="relative z-10">
+      {/* CONTENT LAYER */}
+      <div
+        className={cn(
+          "relative z-10 transition-opacity duration-700 ease-out motion-reduce:transition-none",
+          bendsReady
+            ? "opacity-100"
+            : "pointer-events-none select-none opacity-0"
+        )}
+        aria-busy={!bendsReady}
+        aria-hidden={!bendsReady}
+      >
         {/* HERO */}
         <section className="container mx-auto px-4 py-24 text-center">
-          <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends">
+          <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg bg-white/5 border border-white/10">
             <div className="mb-4 text-sm uppercase tracking-wider text-[#00ccff]/90">
               Welcome to Braindance
             </div>
@@ -110,7 +177,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <button
-                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition hover:bg-[#ff00f7]/90"
+                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
                 onClick={() =>
                   eventsRef.current?.scrollIntoView({ behavior: "smooth" })
                 }
@@ -119,7 +186,7 @@ export default function Home() {
               </button>
               <Link
                 href="/events"
-                className="rounded-md border border-white/40 bg-white/5 px-5 py-2 text-white backdrop-blur-sm transition hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10"
+                className="rounded-md border border-white/40 bg-white/5 px-5 py-2 text-white backdrop-blur-sm transition hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
               >
                 Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
               </Link>
@@ -129,7 +196,7 @@ export default function Home() {
 
         {/* STORY */}
         <section className="container mx-auto px-4 py-8 md:py-12">
-          <div className="mx-auto max-w-4xl rounded-2xl p-8 glass-bends md:p-10">
+          <div className="mx-auto max-w-4xl rounded-2xl p-8 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 md:p-10">
             <div className="mb-4 text-sm uppercase tracking-wider text-[#00ccff]/90">
               About us
             </div>
@@ -172,7 +239,7 @@ export default function Home() {
           ].map(({ Icon, title, description, accent, iconBg }) => (
             <div
               key={title}
-              className="rounded-xl p-6 glass-bends-card transition hover:shadow-[0_0_28px_rgba(0,204,255,0.15)]"
+              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 transition hover:shadow-[0_0_28px_rgba(0,204,255,0.15)] hover:bg-white/8"
             >
               <div
                 className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 ${iconBg}`}

@@ -119,36 +119,36 @@ export default function PhotoUpload() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black thermal-background px-4 py-10">
-      <div className="w-full max-w-md rounded-lg border border-purple-900/50 bg-black/60 p-6 shadow-[0_0_15px_rgba(168,85,247,0.15)] transform transition-all duration-300 hover:shadow-[0_0_25px_rgba(168,85,247,0.25)] hover:scale-[1.02]">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 text-white">
+      <div className="glass-bends w-full max-w-md transform rounded-lg p-6 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_28px_rgba(0,204,255,0.12)]">
         
         {/* Photo Counter */}
         <div className="text-center mb-4">
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+          <div className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-all duration-300 ${
             isAtLimit 
-              ? "bg-purple-900/40 text-purple-200 border border-purple-500/50" 
-              : "bg-purple-900/30 text-purple-300 border border-purple-600/40"
+              ? "border-[#ff00f7]/45 bg-[#ff00f7]/15 text-[#ff00f7]" 
+              : "border-[#00ccff]/35 bg-[#00ccff]/10 text-[#00ccff]"
           }`}>
             <span className="mr-2">{isAtLimit ? "🔥" : "📸"}</span>
             {acceptedCount} / {maxPhotos} photos
           </div>
         </div>
 
-        <h1 className={`text-2xl font-bold text-center text-transparent bg-clip-text mb-6 transition-all duration-300 ${
-          isAtLimit 
-            ? "bg-gradient-to-r from-purple-400 to-pink-400" 
-            : "bg-gradient-to-r from-purple-400 to-pink-400 animate-pulse"
-        }`}>
+        <h1
+          className={`mb-6 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-center text-2xl font-bold text-transparent transition-all duration-300 ${
+            isAtLimit ? "" : "animate-pulse"
+          }`}
+        >
           {isAtLimit ? "🎉 Gallery Complete!" : "📷 Upload a Photo"}
         </h1>
 
         {/* Gallery Full Message */}
         {isAtLimit && (
-          <div className="mb-6 p-4 rounded-lg bg-purple-900/20 border border-purple-500/40 animate-fade-in">
+          <div className="glass-bends-card mb-6 animate-fade-in rounded-lg border border-[#ff00f7]/25 p-4">
             <div className="text-center">
-              <div className="text-3xl mb-2">🎊</div>
-              <p className="text-purple-300 font-medium mb-1">Photo gallery is complete!</p>
-              <p className="text-purple-200/70 text-sm">
+              <div className="mb-2 text-3xl">🎊</div>
+              <p className="mb-1 font-medium text-[#ff00f7]">Photo gallery is complete!</p>
+              <p className="text-sm text-white/70">
                 The party has reached the maximum of {maxPhotos} photos for this event.
               </p>
             </div>
@@ -158,10 +158,10 @@ export default function PhotoUpload() {
         {/* Drag and Drop Zone */}
         {!isAtLimit && (
           <div
-            className={`relative border-2 border-dashed rounded-lg p-6 mb-4 transition-all duration-300 cursor-pointer ${
+            className={`relative mb-4 cursor-pointer rounded-lg border-2 border-dashed p-6 transition-all duration-300 ${
               isDragOver
-                ? "border-purple-400 bg-purple-900/20 scale-105"
-                : "border-purple-900/50 hover:border-purple-600/70 hover:bg-purple-900/10"
+                ? "scale-105 border-[#00ccff] bg-[#00ccff]/10"
+                : "border-white/15 hover:border-[#00ccff]/50 hover:bg-[#3700ff]/10"
             }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -184,7 +184,7 @@ export default function PhotoUpload() {
               >
                 {isDragOver ? "⬇️" : "📁"}
               </div>
-              <p className="text-purple-300 text-sm mb-1">
+              <p className="mb-1 text-sm text-[#00ccff]/90">
                 {isDragOver ? "Drop your photo here!" : "Click to select or drag & drop"}
               </p>
               <p className="text-gray-500 text-xs">PNG, JPG, GIF up to 10MB</p>
@@ -197,7 +197,7 @@ export default function PhotoUpload() {
           <div className="mb-4 space-y-3">
             <button
               onClick={() => window.location.reload()}
-              className="w-full py-3 px-4 bg-purple-600 hover:bg-pink-600 text-white font-semibold rounded-md transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-95 flex items-center justify-center"
+              className="flex w-full transform items-center justify-center rounded-md bg-[#3700ff] px-4 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.2)] active:scale-95"
             >
               <span className="mr-2">🔄</span>
               Refresh Gallery
@@ -218,7 +218,7 @@ export default function PhotoUpload() {
               Preview:
             </p>
             <div className="relative group">
-              <div className="relative w-full h-48 rounded-md overflow-hidden border border-purple-500/30 shadow-[0_0_10px_rgba(236,72,153,0.2)] group-hover:scale-[1.02] transition-transform duration-300">
+              <div className="group-hover:scale-[1.02] relative h-48 w-full overflow-hidden rounded-md border border-[#00ccff]/25 shadow-[0_0_12px_rgba(0,204,255,0.12)] transition-transform duration-300">
                 <Image
                   src={URL.createObjectURL(file)}
                   alt="Preview"
@@ -245,13 +245,13 @@ export default function PhotoUpload() {
         {/* Upload Progress Bar */}
         {status === "uploading" && !isAtLimit && (
           <div className="mb-4">
-            <div className="flex justify-between text-xs text-purple-300 mb-1">
+            <div className="mb-1 flex justify-between text-xs text-[#00ccff]/85">
               <span>Uploading...</span>
               <span>{Math.round(uploadProgress)}%</span>
             </div>
-            <div className="w-full bg-purple-900/30 rounded-full h-2 overflow-hidden">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-black/40">
               <div
-                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] transition-all duration-300 ease-out"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
@@ -265,8 +265,8 @@ export default function PhotoUpload() {
             disabled={!file || status === "uploading"}
             className={`w-full py-3 font-semibold rounded-md transition-all duration-300 transform ${
               !file || status === "uploading"
-                ? "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
-                : "bg-purple-600 hover:bg-pink-600 text-white hover:scale-105 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-95"
+                ? "cursor-not-allowed bg-gray-600 text-gray-400 opacity-50"
+                : "bg-[#3700ff] text-white hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.15)] active:scale-95"
             }`}
           >
             {status === "uploading" ? (

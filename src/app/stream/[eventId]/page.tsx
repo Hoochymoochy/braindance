@@ -31,19 +31,19 @@ interface DjSetItem {
 
 function StreamLoadingScreen() {
   return (
-    <div className="fixed inset-0 z-[100] min-h-screen bg-black thermal-background text-white flex flex-col items-center justify-center gap-8 px-6">
+    <div className="page-bends-bg fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center gap-8 px-6 text-white">
       <div
-        className="h-14 w-14 rounded-full border-2 border-purple-500/25 border-t-pink-400 border-r-purple-400/60 animate-spin"
+        className="h-14 w-14 animate-spin rounded-full border-2 border-[#3700ff]/30 border-t-[#00ccff] border-r-[#ff00f7]/70"
         aria-hidden
       />
-      <div className="text-center space-y-2">
-        <p className="text-xs font-medium tracking-[0.35em] uppercase text-purple-300/90">
+      <div className="space-y-2 text-center">
+        <p className="text-xs font-medium uppercase tracking-[0.35em] text-[#00ccff]/90">
           Braindance
         </p>
-        <p className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
+        <p className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-semibold text-transparent">
           Loading stream…
         </p>
-        <p className="text-sm text-gray-500 max-w-xs mx-auto">
+        <p className="mx-auto max-w-xs text-sm text-[#7a7a7a]">
           Hang tight while we prepare your player.
         </p>
       </div>
@@ -170,11 +170,11 @@ export default function BraindanceUserStream() {
   }
 
   return (
-    <div className="mx-auto p-10 bg-black thermal-background">
-      <main className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-5">
+    <div className="mx-auto p-6 text-white md:p-10">
+      <main className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Stream */}
         <div className="lg:col-span-2">
-          <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+          <div className="glass-bends-card relative overflow-hidden rounded-lg">
             <div className="aspect-video relative">
               {stream ? (
                 <iframe
@@ -220,18 +220,18 @@ export default function BraindanceUserStream() {
 
         {/* Stats */}
         <div>
-          <div className="rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-            <h3 className="text-lg font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+          <div className="glass-bends-card rounded-lg p-4">
+            <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
               TOP STATS
             </h3>
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-400">Total Views</p>
-                <p className="text-3xl font-bold text-purple-400">{views}</p>
+                <p className="text-3xl font-bold text-[#00ccff]">{views}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Top City</p>
-                <p className="text-3xl font-bold text-pink-400">{topCity}</p>
+                <p className="text-3xl font-bold text-[#ff00f7]">{topCity}</p>
               </div>
             </div>
             {isDbEvent && <GlobeHeatmap id={eventId} />}
@@ -240,20 +240,20 @@ export default function BraindanceUserStream() {
       </main>
 
       {/* Tags + Merch */}
-      <div className="mt-6 rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-        <h3 className="text-lg font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+      <div className="glass-bends-card mt-6 rounded-lg p-4">
+        <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
           MERCH & TICKETS
         </h3>
 
         {merchItems.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {merchItems.map((item, idx) => (
               <a
                 key={idx}
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-4 bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 rounded-md text-center hover:from-purple-800/60 hover:to-pink-800/60 cursor-pointer transition-all transform hover:scale-105 block"
+                className="block transform cursor-pointer rounded-md border border-white/12 bg-gradient-to-br from-[#3700ff]/25 to-[#ff00f7]/15 p-4 text-center transition-all hover:scale-105 hover:border-[#00ccff]/35 hover:from-[#3700ff]/45 hover:to-[#00ccff]/20"
               >
                 <p className="text-sm font-medium">{item.title}</p>
                 <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>

@@ -26,7 +26,7 @@ export default function SignUp() {
 
     const res = await signUpHost(email, password);
 
-    if ('error' in res) {
+    if ("error" in res) {
       setError(res.error);
     } else {
       router.push(`/host/${res.id}/dashboard`);
@@ -34,66 +34,66 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-black thermal-background flex items-center justify-center">
-      <div className="bg-black p-8 rounded-2xl border border-white/20 max-w-md w-full shadow-lg hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all duration-300">
-        <h2 className="text-3xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+    <div className="flex min-h-screen items-center justify-center px-4 text-white">
+      <div className="glass-bends w-full max-w-md rounded-2xl p-8 shadow-lg transition duration-300">
+        <h2 className="mb-6 text-center text-3xl font-bold text-gradient-bends">
           Create Account
         </h2>
 
         {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+          <p className="mb-4 text-center text-sm text-red-400">{error}</p>
         )}
 
         <form onSubmit={handleSignUp} className="space-y-6">
           <div>
-            <label className="block text-xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <label className="block text-xl font-medium text-[#00ccff]/95">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 mt-1 rounded-md bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="input-bends mt-1 placeholder:text-white/35"
               required
             />
           </div>
           <div>
-            <label className="block text-xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <label className="block text-xl font-medium text-[#00ccff]/95">
               Password
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-1 rounded-md bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="input-bends mt-1 placeholder:text-white/35"
               required
             />
           </div>
           <div>
-            <label className="block text-xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <label className="block text-xl font-medium text-[#00ccff]/95">
               Confirm Password
             </label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-1 rounded-md bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="input-bends mt-1 placeholder:text-white/35"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-br from-purple-900/40 to-pink-900/70 border border-purple-500/70 hover:from-purple-900/90 hover:to-pink-900/50 px-4 py-2 rounded-xl transition duration-300 text-white font-semibold"
+            className="w-full rounded-xl border border-[#3700ff]/50 bg-[#3700ff]/80 px-4 py-2 font-semibold text-white transition duration-300 hover:bg-[#ff00f7]/75"
           >
             Sign Up
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-400 mt-4">
+        <p className="mt-4 text-center text-sm text-white/55">
           Already have an account?{" "}
           <a
             href="/host/login"
-            className="text-gray-300 hover:text-pink-400 transition-colors"
+            className="text-[#ff00f7] transition-colors hover:text-[#00ccff]"
           >
             Log in
           </a>

@@ -82,7 +82,7 @@ export default function CreateEventForm({
     <section ref={ref}>
       <div className="flex flex-col md:flex-row gap-6">
         {/* Poster Preview */}
-        <div className="md:w-1/2 border border-purple-900/30 bg-black/60 backdrop-blur-md rounded-xl shadow-[0_0_12px_rgba(168,85,247,0.1)] p-4">
+        <div className="glass-bends-card md:w-1/2 rounded-xl p-4">
           <EventPoster
             {...data}
             id="preview"
@@ -96,7 +96,7 @@ export default function CreateEventForm({
         </div>
 
         {/* Form Panel */}
-        <div className="md:w-1/2 border border-pink-500/20 bg-black/50 backdrop-blur-md rounded-xl shadow-[0_0_12px_rgba(236,72,153,0.15)] p-6 space-y-4">
+        <div className="glass-bends-card md:w-1/2 space-y-4 rounded-xl p-6">
         <form
           onSubmit={(e) => {
               e.preventDefault();
@@ -115,10 +115,10 @@ export default function CreateEventForm({
               onDragLeave={handleDrag}
               onDrop={handleDrop}
               onClick={() => inputRef.current?.click()}
-              className={`flex items-center justify-center text-center border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors ${
+              className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed p-6 text-center transition-colors ${
                 dragActive
-                  ? "border-pink-500 bg-pink-500/10"
-                  : "border-zinc-600 hover:border-purple-500"
+                  ? "border-[#ff00f7] bg-[#ff00f7]/10"
+                  : "border-white/20 hover:border-[#00ccff]/55"
               }`}
             >
               <p className="text-sm text-gray-400">
@@ -137,7 +137,7 @@ export default function CreateEventForm({
             {/* Input Fields */}
             {(["title", "date", "location"] as const).map((field) => (
               <div key={field}>
-                <label className="block text-sm font-medium text-purple-300 capitalize mb-1">
+                <label className="mb-1 block text-sm font-medium capitalize text-[#00ccff]/90">
                   {field}
                 </label>
                 <input
@@ -145,21 +145,21 @@ export default function CreateEventForm({
                   type={field === "date" ? "date" : "text"}
                   value={getFieldValue(field)}
                   onChange={onChange}
-                  className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="input-bends"
                 />
               </div>
             ))}
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-purple-300 mb-1">
+              <label className="mb-1 block text-sm font-medium text-[#00ccff]/90">
                 Description
               </label>
               <textarea
                 name="description"
                 value={getFieldValue("description")}
                 onChange={onChange}
-                className="w-full px-4 py-2 bg-black border border-purple-500/30 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 min-h-[100px]"
+                className="input-bends min-h-[100px] resize-y py-3"
               />
             </div>
 
@@ -168,7 +168,7 @@ export default function CreateEventForm({
               {isEditing && (
                 <button
                   type="button"
-                  className="px-4 py-2 border border-gray-500 text-gray-300 rounded-md hover:bg-gray-700 transition"
+                  className="rounded-md border border-white/20 px-4 py-2 text-white/80 transition hover:bg-white/10"
                   onClick={onCancel}
                 >
                   Cancel
@@ -176,7 +176,7 @@ export default function CreateEventForm({
               )}
               <button
                 type="submit"
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-pink-500 transition disabled:opacity-50"
+                className="rounded-md bg-[#3700ff] px-4 py-2 text-white transition hover:bg-[#ff00f7]/85 disabled:opacity-50"
                 disabled={creating}
               >
                 {creating ? "Creating..." : isEditing ? "Update" : "Submit Event"}

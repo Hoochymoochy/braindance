@@ -93,14 +93,16 @@ export default function LocationGate() {
 
   if (!locationReady && fallbackVisible) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center text-center p-8">
-        <h2 className="text-2xl font-bold text-white mb-4">📍 Enable Location</h2>
-        <p className="text-white mb-6">
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 p-8 text-center">
+        <h2 className="mb-4 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-2xl font-bold text-transparent">
+          📍 Enable Location
+        </h2>
+        <p className="mb-6 text-white/85">
           Tap below to share your location. If you blocked it before, go to your browser settings to re-enable it.
         </p>
         <button
           onClick={requestGeo}
-          className="bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white px-6 py-3 rounded-full font-semibold text-lg shadow-lg transition-all duration-200"
+          className="rounded-full bg-[#3700ff] px-6 py-3 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#ff00f7]/90 active:scale-[0.98]"
         >
           Enable Location
         </button>

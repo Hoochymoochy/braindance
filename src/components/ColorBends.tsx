@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 type ColorBendsProps = {
+  /** Fires once after the first GPU frame is presented (use to defer UI above the canvas). */
+  onReady?: () => void;
   className?: string;
   style?: React.CSSProperties;
   rotation?: number;
@@ -112,6 +114,7 @@ void main() {
 `;
 
 export default function ColorBends({
+  onReady,
   className,
   style,
   rotation = 45,
@@ -136,9 +139,15 @@ export default function ColorBends({
   const pointerTargetRef = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
   const pointerCurrentRef = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
   const pointerSmoothRef = useRef<number>(8);
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
+  const hasSignaledReadyRef = useRef(false);
 
   useEffect(() => {
-    const container = containerRef.current!;
+    const container = containerRef.current;
+    if (!container) return;
+
+    let alive = true;
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
@@ -221,11 +230,20 @@ export default function ColorBends({
       cur.lerp(tgt, amt);
       (material.uniforms.uPointer.value as THREE.Vector2).copy(cur);
       renderer.render(scene, camera);
+      if (!hasSignaledReadyRef.current) {
+        hasSignaledReadyRef.current = true;
+        // Defer until after this frame is committed so parents don’t mount over a blank canvas.
+        requestAnimationFrame(() => {
+          if (alive) onReadyRef.current?.();
+        });
+      }
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
 
     return () => {
+      alive = false;
+      hasSignaledReadyRef.current = false;
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       if (resizeObserverRef.current) resizeObserverRef.current.disconnect();
       else (window as Window).removeEventListener('resize', handleResize);

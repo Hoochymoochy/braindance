@@ -40,13 +40,15 @@ export default function EmailManager() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow space-y-6 max-w-xl">
-      <h2 className="text-xl font-semibold">Send Custom Email Invite</h2>
+    <div className="glass-bends max-w-xl space-y-6 rounded-xl p-6 text-white">
+      <h2 className="text-xl font-semibold text-gradient-bends">
+        Send Custom Email Invite
+      </h2>
 
       <div className="flex space-x-2">
         <input
           type="email"
-          className="border rounded p-2 flex-grow"
+          className="input-bends flex-grow"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           placeholder="Add email"
@@ -54,21 +56,21 @@ export default function EmailManager() {
         <button
           type="button"
           onClick={addEmail}
-          className="bg-purple-600 text-white px-4 rounded hover:bg-purple-700"
+          className="rounded bg-[#3700ff] px-4 text-white transition hover:bg-[#ff00f7]/85"
         >
           Add
         </button>
       </div>
 
       {emails.length > 0 && (
-        <div className="bg-gray-100 p-3 rounded space-y-1">
-          <p className="font-medium">Recipients:</p>
+        <div className="glass-bends-card space-y-1 rounded-lg p-3">
+          <p className="font-medium text-[#00ccff]/90">Recipients:</p>
           {emails.map((email) => (
             <div key={email} className="flex justify-between text-sm">
               <span>{email}</span>
               <button
                 onClick={() => removeEmail(email)}
-                className="text-red-600 hover:underline"
+                className="text-red-400 hover:underline"
               >
                 Remove
               </button>
@@ -78,7 +80,7 @@ export default function EmailManager() {
       )}
 
       <textarea
-        className="w-full border rounded p-2"
+        className="input-bends min-h-[120px] resize-y py-3"
         rows={5}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -87,7 +89,7 @@ export default function EmailManager() {
 
       <button
         onClick={sendEmails}
-        className="bg-purple-700 text-white px-6 py-2 rounded hover:bg-purple-800"
+        className="rounded bg-[#3700ff] px-6 py-2 text-white transition hover:bg-[#ff00f7]/85"
       >
         Send Message
       </button>

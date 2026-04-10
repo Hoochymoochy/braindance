@@ -12,11 +12,11 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className="bg-black/40 text-white font-sans">
+        <body className="min-h-screen text-white font-sans">
         {/* Re-enable to prompt for browser location on load (see LocationGate.tsx) */}
         {/* <LocationGate /> */}
         <Header />
-        <main className="min-h-screen pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))] pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))] bg-black/40">
+        <main className="min-h-screen pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))] pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]">
           {children}
         </main>
         <Footer />

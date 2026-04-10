@@ -246,13 +246,13 @@ export default function BraindanceMockup() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-black text-white">
+        <div className="text-[#00ccff]">Loading...</div>
       </div>
     );
   }
   return (
-    <div className="min-h-screen thermal-background p-4 md:p-10">
+    <div className="min-h-screen p-4 text-white md:p-10">
       <div className="container mx-auto">
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Live Stream + Photo Review */}
@@ -260,20 +260,20 @@ export default function BraindanceMockup() {
             <div className="flex flex-wrap gap-4 items-center justify-start">
             <button
               onClick={() => handleCopy(`stream/${eventId}`)}
-              className="px-4 py-2 rounded-md bg-purple-700 hover:bg-purple-600 text-white text-sm font-medium shadow-md transition-all"
+              className="rounded-md bg-[#3700ff] px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-[#ff00f7]/85"
             >
               Copy Stream Link
             </button>
             <button
               onClick={() => handleCopy(`stream/${eventId}/photo-upload`)}
-              className="px-4 py-2 rounded-md bg-pink-600 hover:bg-pink-500 text-white text-sm font-medium shadow-md transition-all"
+              className="rounded-md bg-[#00ccff]/90 px-4 py-2 text-sm font-medium text-black shadow-md transition-all hover:bg-[#00ccff]"
             >
               Copy Photo Upload Link
             </button>
           </div>
 
             {/* Live Stream */}
-            <div className="relative rounded-lg overflow-hidden border border-purple-900/50 bg-black shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+            <div className="glass-bends-card relative overflow-hidden rounded-lg">
               <div className="aspect-video relative">
                 {url ? (
                   <iframe
@@ -293,7 +293,7 @@ export default function BraindanceMockup() {
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
+                        className="rounded-lg bg-[#3700ff] px-4 py-2 text-white hover:bg-[#ff00f7]/85"
                       >
                         Go Live
                       </button>
@@ -326,7 +326,7 @@ export default function BraindanceMockup() {
             </div>
 
             {/* Photo Review Tool */}
-            <div className="rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]p-4">
+            <div className="glass-bends-card rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-white">
                   Photo Review Tool
@@ -430,18 +430,18 @@ export default function BraindanceMockup() {
           {/* Right Column - Stats + Photo Gallery */}
           <div className="flex flex-col gap-4">
             {/* Stats Panel */}
-            <div className="rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-              <h3 className="text-lg font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <div className="glass-bends-card rounded-lg p-4">
+              <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
                 TOP STATS
               </h3>
-              <div className="flex justify-between items-center mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <div>
                 <p className="text-sm text-gray-400">Total Viewers</p>
-                  <p className="text-3xl font-bold text-purple-400">{views}</p>
+                  <p className="text-3xl font-bold text-[#00ccff]">{views}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Top City</p>
-                  <p className="text-xl font-bold text-pink-400">{city}</p>
+                  <p className="text-xl font-bold text-[#ff00f7]">{city}</p>
                 </div>
               </div>
               <GlobeHeatmap id={eventId} />
@@ -449,7 +449,7 @@ export default function BraindanceMockup() {
             </div>
 
             {/* Photo Gallery */}
-            <div className="rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)] flex-grow">
+            <div className="glass-bends-card flex-grow rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-white">
                   Photos of the Night
@@ -462,7 +462,7 @@ export default function BraindanceMockup() {
               {/* Progress Bar */}
               <div className="w-full h-2 bg-gray-800 rounded-full mb-4">
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                  className="h-full rounded-full bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>

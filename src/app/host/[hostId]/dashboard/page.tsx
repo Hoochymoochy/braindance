@@ -202,8 +202,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen thermal-background">
-      <main className="max-w-6xl mx-auto p-6 space-y-8 pt-10">
+    <div className="relative min-h-screen text-white">
+      <main className="mx-auto max-w-6xl space-y-8 p-6 pt-10">
         <StatsSection stats={stats} />
         <StreamGuide />
         {liveEvents.length > 0 && (

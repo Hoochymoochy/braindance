@@ -13,6 +13,12 @@ import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
 import { getStreams } from "@/app/lib/events/stream";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
+import dynamic from "next/dynamic";
+
+const ColorBends = dynamic(() => import("@/components/ColorBends"), {
+  ssr: false,
+  loading: () => null,
+});
 
 type DjSet = {
   video_id: string;
@@ -43,16 +49,14 @@ function SectionHeader({
   title: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 mt-4">
+    <div className="mt-4 flex flex-col gap-1">
       {eyebrow && (
-        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-purple-400/80">
-          <TrendingUp className="w-3 h-3" />
+        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#00ccff]/80">
+          <TrendingUp className="h-3 w-3" />
           {eyebrow}
         </span>
       )}
-      <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-        {title}
-      </h2>
+      <h2 className="text-2xl font-bold text-gradient-bends">{title}</h2>
     </div>
   );
 }
@@ -68,7 +72,6 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState({ genre: "", energy: "" });
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isFiltering, setIsFiltering] = useState(false);
 
   useEffect(() => {
@@ -170,25 +173,17 @@ export default function EventsPage() {
     setTimeout(() => setIsFiltering(false), 300);
   };
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
+  const BEND_COLORS = ["#00ccff", "#ff00f7", "#3700ff", "#7a7a7a"] as const;
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
 
   const skeletons = (n: number) =>
     Array.from({ length: n }).map((_, i) => (
       <div
         key={i}
-        className="rounded-2xl h-64"
+        className="glass-bends-card h-64 rounded-2xl"
         style={{
           background:
-            "linear-gradient(110deg,rgba(168,85,247,0.06) 25%,rgba(168,85,247,0.12) 50%,rgba(168,85,247,0.06) 75%)",
+            "linear-gradient(110deg,rgba(0,204,255,0.08) 25%,rgba(55,0,255,0.1) 50%,rgba(255,0,247,0.08) 75%), rgba(0,0,0,0.2)",
           backgroundSize: "200% 100%",
           animation: "fs-shimmer 1.4s infinite",
         }}
@@ -196,27 +191,55 @@ export default function EventsPage() {
     ));
 
   return (
-    <div className="min-h-screen flex flex-col text-white bg-black thermal-background relative overflow-hidden">
-      <div
-        className="thermal-cursor"
-        style={{ left: `${mousePosition.x}px`, top: `${mousePosition.y}px` }}
-      />
+    <div className="relative flex min-h-screen flex-col overflow-hidden text-white">
+            <div
+        className="pointer-events-none fixed inset-0 bg-transparent"
+        aria-hidden
+      >
+        <div
+          style={{
+            width: "1080px",
+            height: "1080px",
+            position: "relative",
+            left: "50%",
+            top: "50%",
+            transform:
+              "translate(-50%, -50%) scale(max(100vw / 1080px, 100vh / 1080px))",
+            transformOrigin: "center center",
+          }}
+        >
+          <ColorBends
+            rotation={65}
+            speed={0.25}
+            colors={[...BEND_COLORS]}
+            transparent={false}
+            autoRotate={0.3}
+            scale={1.5}
+            frequency={1}
+            warpStrength={0}
+            mouseInfluence={0}
+            parallax={0}
+            noise={0}
+          />
+        </div>
+      </div>
       <main className="flex-1">
-        <section className="max-w-7xl mx-auto px-4 py-10 pb-16">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <section className="mx-auto max-w-7xl px-4 py-10 pb-16">
+          <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <h1 className="text-3xl font-bold text-gradient-bends md:text-4xl">
               DJ Sets
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-purple-500/25 bg-black/60 backdrop-blur-md mb-10 shadow-[0_0_20px_rgba(168,85,247,0.08)] transition-all duration-300 ease-out"
+          <div
+            className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4 transition-all duration-300 ease-out"
             style={{
               transform: isFiltering ? "scale(0.995)" : "scale(1)",
               opacity: isFiltering ? 0.95 : 1,
             }}
           >
-            <div className="flex items-center gap-2 text-purple-300 text-sm shrink-0">
-              <SlidersHorizontal className="w-4 h-4" />
+            <div className="flex shrink-0 items-center gap-2 text-sm text-[#00ccff]/90">
+              <SlidersHorizontal className="h-4 w-4" />
               Filters
             </div>
 
@@ -224,7 +247,7 @@ export default function EventsPage() {
               type="button"
               onClick={goRandomSet}
               disabled={loading || allDjSets.length === 0}
-              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-600/85 to-purple-600/85 border border-pink-500/35 text-sm font-medium hover:from-pink-500 hover:to-purple-500 disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 gap-2 cursor-pointer active:scale-95 hover:scale-105 active:shadow-[0_0_12px_rgba(236,72,153,0.4)]"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#ff00f7]/35 bg-gradient-to-r from-[#3700ff]/90 to-[#ff00f7]/75 px-3 py-1.5 text-sm font-medium transition-all duration-200 hover:from-[#ff00f7]/85 hover:to-[#3700ff]/80 disabled:pointer-events-none disabled:opacity-40 active:scale-95 active:shadow-[0_0_12px_rgba(0,204,255,0.25)] hover:scale-105"
             >
               <Shuffle className="w-3.5 h-3.5" />
               Random set
@@ -233,7 +256,7 @@ export default function EventsPage() {
             <select
               value={filter.genre}
               onChange={(e) => handleFilterChange({ ...filter, genre: e.target.value })}
-              className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm min-w-[140px] cursor-pointer transition-all duration-200 hover:border-purple-400/60 focus:border-pink-500/60 focus:outline-none focus:ring-1 focus:ring-pink-500/30"
+              className="min-w-[140px] cursor-pointer rounded-lg border border-white/15 bg-black/50 px-3 py-1.5 text-sm transition-all duration-200 hover:border-[#00ccff]/45 focus:border-[#ff00f7]/50 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
             >
               <option value="">All Genres</option>
               {genreOptions.map((g) => (
@@ -255,7 +278,7 @@ export default function EventsPage() {
               onChange={(e) =>
                 handleFilterChange({ ...filter, energy: e.target.value })
               }
-              className="px-3 py-1.5 rounded-lg bg-black border border-purple-400/30 text-sm min-w-[140px] cursor-pointer transition-all duration-200 hover:border-purple-400/60 focus:border-pink-500/60 focus:outline-none focus:ring-1 focus:ring-pink-500/30"
+              className="min-w-[140px] cursor-pointer rounded-lg border border-white/15 bg-black/50 px-3 py-1.5 text-sm transition-all duration-200 hover:border-[#00ccff]/45 focus:border-[#ff00f7]/50 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
             >
               <option value="">All Energy</option>
               <option value="low">Low</option>
@@ -267,7 +290,7 @@ export default function EventsPage() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="ml-auto text-xs text-pink-400 hover:text-pink-300 hover:underline transition-colors duration-200 cursor-pointer"
+                className="ml-auto cursor-pointer text-xs text-[#ff00f7] transition-colors duration-200 hover:text-[#00ccff] hover:underline"
               >
                 Reset
               </button>
@@ -288,7 +311,7 @@ export default function EventsPage() {
                   <StreamCard key={set.video_id} set={set} index={i} />
                 ))}
               {!loading && featuredWeekly.length === 0 && (
-                <p className="text-sm text-purple-400/50 col-span-full py-4">
+                <p className="col-span-full py-4 text-sm text-[#7a7a7a]">
                   No featured picks yet. Refresh the DJ feed or check back soon.
                 </p>
               )}
@@ -299,7 +322,7 @@ export default function EventsPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
               <SectionHeader title="Current DJ Sets" />
               {!loading && filteredDjSets.length > 0 && (
-                <p className="text-xs text-purple-400/60 tabular-nums ">
+                <p className="tabular-nums text-xs text-[#00ccff]/65">
                   Showing {visibleDjSets.length} of {filteredDjSets.length}
                 </p>
               )}
@@ -316,7 +339,7 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-purple-500/40 bg-black/50 text-purple-200 text-sm font-medium hover:border-pink-500/45 hover:bg-purple-950/35 transition-all duration-200 cursor-pointer active:scale-95 hover:scale-105 active:shadow-[0_0_12px_rgba(236,72,153,0.4)]"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/15 bg-black/40 px-6 py-3 text-sm font-medium text-white/90 transition-all duration-200 hover:border-[#00ccff]/40 hover:bg-[#3700ff]/15 active:scale-95 active:shadow-[0_0_12px_rgba(0,204,255,0.15)] hover:scale-105"
                 >
                   Load more
                   <ChevronDown className="w-4 h-4" />
@@ -324,12 +347,12 @@ export default function EventsPage() {
               </div>
             )}
             {!loading && filteredDjSets.length === 0 && allDjSets.length > 0 && (
-              <p className="text-sm text-purple-400/55 py-10 text-center max-w-md mx-auto">
+              <p className="mx-auto max-w-md py-10 text-center text-sm text-white/55">
                 No sets match these filters. Reset filters or try{" "}
                 <button
                   type="button"
                   onClick={goRandomSet}
-                  className="text-pink-400 hover:text-pink-300 hover:underline transition-colors duration-200 cursor-pointer"
+                  className="cursor-pointer text-[#ff00f7] transition-colors duration-200 hover:text-[#00ccff] hover:underline"
                 >
                   Random set
                 </button>

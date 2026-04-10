@@ -22,7 +22,7 @@ const StreamGuide: React.FC = () => {
 
       {/* Guide Panel */}
       {open && (
-        <div className="rounded-2xl p-6 bg-black/40 border border-white/10 text-white space-y-4 mt-2">
+        <div className="glass-bends-card mt-2 space-y-4 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">🎥 Stream Setup Guide</h2>
             <button
@@ -41,7 +41,7 @@ const StreamGuide: React.FC = () => {
             <li>
               <strong>Activate YouTube Streaming</strong><br />
               Go to{" "}
-              <Link href="https://studio.youtube.com/" className="underline text-blue-400" target="_blank">
+              <Link href="https://studio.youtube.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
                 YouTube Studio
               </Link>, click <code>Go Live</code>, and wait 24h if it&apos;s your first time.
             </li>
@@ -49,7 +49,7 @@ const StreamGuide: React.FC = () => {
             <li>
               <strong>Set Up OBS</strong><br />
               Download from{" "}
-              <Link href="https://obsproject.com/" className="underline text-blue-400" target="_blank">
+              <Link href="https://obsproject.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
                 obsproject.com
               </Link>, add webcam + mic, and paste your YouTube stream key in OBS → Settings → Stream.
             </li>
@@ -67,11 +67,11 @@ const StreamGuide: React.FC = () => {
 
           <div className="text-sm text-white/60 pt-2">
             Bonus overlays? Try{" "}
-            <Link href="https://www.canva.com/" className="underline text-blue-400" target="_blank">
+            <Link href="https://www.canva.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
               Canva
             </Link>{" "}
             or{" "}
-            <Link href="https://streamelements.com/" className="underline text-blue-400" target="_blank">
+            <Link href="https://streamelements.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
               StreamElements
             </Link>.
           </div>

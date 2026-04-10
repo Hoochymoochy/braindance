@@ -25,15 +25,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thermal-hot/50 disabled:opacity-50";
+      "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ccff]/40 disabled:opacity-50";
 
     const variants = {
-      default: "bg-thermal-hot hover:bg-thermal-warm text-black shadow-sm",
+      default: "bg-[#00ccff] text-black shadow-sm hover:bg-[#ff00f7]/90",
       outline:
-        "border border-thermal-neutral text-thermal-neutral hover:border-thermal-hot hover:text-thermal-hot bg-transparent",
+        "border border-white/25 bg-transparent text-white/70 hover:border-[#00ccff] hover:text-[#00ccff]",
       ghost:
-        "text-thermal-neutral hover:text-thermal-hot hover:bg-thermal-hot/10 bg-transparent",
-      link: "text-thermal-neutral underline-offset-4 hover:underline hover:text-thermal-hot bg-transparent",
+        "bg-transparent text-white/65 hover:bg-[#3700ff]/20 hover:text-[#ff00f7]",
+      link: "bg-transparent text-white/65 underline-offset-4 hover:text-[#00ccff] hover:underline",
     };
 
     const sizes = {

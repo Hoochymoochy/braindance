@@ -12,15 +12,15 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     if (!email || !password) {
       setError("All fields are required");
       return;
     }
-  
+
     try {
       const user = await loginHost(email, password);
-  
+
       if (user?.id) {
         router.push(`/host/${user.id}/dashboard`);
       } else {
@@ -37,50 +37,52 @@ export default function Login() {
       }
     }
   };
-  
 
   return (
-    <div className="min-h-screen bg-black thermal-background flex items-center justify-center">
-      <div className="bg-black p-8 rounded-2xl border border-white/20 max-w-md w-full shadow-lg hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all duration-300">
-        <h2 className="text-3xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+    <div className="flex min-h-screen items-center justify-center px-4 text-white">
+      <div className="glass-bends w-full max-w-md rounded-2xl p-8 shadow-lg transition duration-300">
+        <h2 className="mb-6 text-center text-3xl font-bold text-gradient-bends">
           Host Login
         </h2>
-        {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+        {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <label className="block text-lg font-medium text-[#00ccff]/95">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 mt-1 rounded-md bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="input-bends mt-1"
               required
             />
           </div>
           <div>
-            <label className="block text-xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <label className="block text-lg font-medium text-[#00ccff]/95">
               Password
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 mt-1 rounded-md bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="input-bends mt-1"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-br from-purple-900/40 to-pink-900/70 border border-purple-500/70 hover:bg-gradient-to-br hover:from-purple-900/90 hover:to-pink-900/50 px-4 py-2 rounded-xl transition duration-300 text-white"
+            className="w-full rounded-xl border border-[#3700ff]/50 bg-[#3700ff]/80 px-4 py-2 text-white transition duration-300 hover:bg-[#ff00f7]/75"
           >
             Log In
           </button>
         </form>
-        <p className="text-center text-sm text-gray-400 mt-4">
-          Don’t have an account?{" "}
-          <a href="/host/sign-up" className="text-gray-500 hover:underline">
+        <p className="mt-4 text-center text-sm text-white/55">
+          Don&apos;t have an account?{" "}
+          <a
+            href="/host/sign-up"
+            className="text-[#00ccff] transition-colors hover:text-[#ff00f7] hover:underline"
+          >
             Sign up
           </a>
         </p>

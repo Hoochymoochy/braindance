@@ -49,7 +49,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   );
 
   return (
-    <div className="bg-black border border-white/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-white/20 hover:border-white transition-all duration-300 w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto group">
+    <div className="glass-bends-card group mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/15 shadow-lg transition-all duration-300 hover:border-[#00ccff]/35 hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] sm:max-w-md md:max-w-lg">
       <div className="relative aspect-[2/3] w-full">
         <Image
           src={image_url || "/placeholder.svg"}
@@ -63,7 +63,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
 
       <div className="p-4 sm:p-5 md:p-6 text-white">
         <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">{title}</h2>
-        <p className="text-sm sm:text-base text-thermal-neutral mt-1">
+        <p className="mt-1 text-sm text-white/65 sm:text-base">
           {date} · {location}
         </p>
 
@@ -78,7 +78,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
               tabIndex={0}
               onClick={handleClick}
               onTouchStart={handleClick}
-              className="bg-white text-black hover:bg-pink-500 hover:text-white px-4 py-1 sm:px-5 sm:py-2 rounded-full shadow-md text-sm sm:text-base font-semibold transition cursor-pointer select-none"
+              className="cursor-pointer select-none rounded-full bg-[#3700ff] px-4 py-1 text-sm font-semibold text-white shadow-md transition hover:bg-[#ff00f7]/90 sm:px-5 sm:py-2 sm:text-base"
             >
               Join
             </div>

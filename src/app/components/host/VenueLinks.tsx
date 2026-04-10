@@ -48,14 +48,12 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
   }, [fetchLinks]);
 
   return (
-    <div className="mt-6 rounded-lg border border-purple-900/50 bg-black/60 p-4 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-          MERCH & TICKETS
-        </h3>
+    <div className="glass-bends-card mt-6 rounded-lg p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-xl font-bold text-gradient-bends">MERCH & TICKETS</h3>
         <button
           onClick={() => setIsEditingLinks(!isEditingLinks)}
-          className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+          className="rounded px-2 py-1 text-xs transition-colors bg-[#00ccff]/25 text-[#00ccff] hover:bg-[#00ccff]/35"
         >
           {isEditingLinks ? "Done" : "Edit"}
         </button>
@@ -68,7 +66,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-4 bg-gradient-to-br from-purple-900/40 to-pink-900/40 border border-purple-500/30 rounded-md text-center hover:from-purple-800/60 hover:to-pink-800/60 cursor-pointer transition-all transform hover:scale-105 block"
+              className="block transform cursor-pointer rounded-md border border-white/12 bg-gradient-to-br from-[#3700ff]/25 to-[#ff00f7]/15 p-4 text-center transition-all hover:scale-105 hover:border-[#00ccff]/35 hover:from-[#3700ff]/45 hover:to-[#00ccff]/20"
             >
               <p className="text-sm font-medium text-white">{label}</p>
               <p className="text-xs text-gray-400 mt-1">{description}</p>
@@ -96,7 +94,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
         ))}
 
         {isEditingLinks && (
-          <div className="p-4 bg-zinc-800 border-2 border-dashed border-purple-500/30 rounded-md">
+          <div className="rounded-md border-2 border-dashed border-[#00ccff]/25 bg-black/35 p-4">
             <input
               type="text"
               value={linkInput.label}
@@ -104,7 +102,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
                 setLinkInput({ ...linkInput, label: e.target.value })
               }
               placeholder="Label"
-              className="w-full mb-2 px-2 py-1 bg-zinc-700 rounded text-xs text-white placeholder-gray-400"
+              className="mb-2 w-full rounded px-2 py-1 text-xs text-white placeholder:text-white/40 bg-black/50 border border-white/10"
             />
             <input
               type="text"
@@ -113,7 +111,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
                 setLinkInput({ ...linkInput, description: e.target.value })
               }
               placeholder="Description"
-              className="w-full mb-2 px-2 py-1 bg-zinc-700 rounded text-xs text-white placeholder-gray-400"
+              className="mb-2 w-full rounded px-2 py-1 text-xs text-white placeholder:text-white/40 bg-black/50 border border-white/10"
             />
             <input
               type="url"
@@ -122,11 +120,11 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
                 setLinkInput({ ...linkInput, link: e.target.value })
               }
               placeholder="URL"
-              className="w-full mb-3 px-2 py-1 bg-zinc-700 rounded text-xs text-white placeholder-gray-400"
+              className="mb-3 w-full rounded px-2 py-1 text-xs text-white placeholder:text-white/40 bg-black/50 border border-white/10"
             />
             <button
               onClick={handleAddLink}
-              className="w-full py-1 bg-green-600 rounded text-xs hover:bg-green-700 transition-colors"
+              className="w-full rounded bg-emerald-600/90 py-1 text-xs text-white transition-colors hover:bg-emerald-500"
             >
               Add Link
             </button>

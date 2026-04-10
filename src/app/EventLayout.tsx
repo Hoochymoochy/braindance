@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { EventPosterProps, EventPoster } from "@/app/components/user/Poster";
 
 type EventsLayoutProps = {
@@ -20,16 +20,6 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   upcomingEvents = [],
   hideStuff = {},
 }) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
   const renderSection = (
     title: string,
     gradient: string,
@@ -39,19 +29,19 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
     if (events.length === 0) return null;
 
     return (
-      <section className="mt-20 pt-8 border-t border-purple-900/40">
+      <section className="mt-20 border-t border-white/10 pt-8">
         {!hideStuff.title && (
           <h2
-            className={`text-3xl md:text-4xl font-bold text-transparent bg-clip-text ${gradient} mb-10 leading-tight`}
+            className={`mb-10 bg-clip-text text-3xl font-bold leading-tight text-transparent md:text-4xl ${gradient}`}
           >
             {title}
           </h2>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event, index) => (
             <div
               key={index}
-              className="group transition-transform transform hover:scale-[1.02] duration-300"
+              className="group transform transition-transform duration-300 hover:scale-[1.02]"
             >
               <EventPoster {...event} hideStuff={hideStuff} live={live} />
             </div>
@@ -62,32 +52,22 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-      {/* Cursor Aura */}
-      <div
-        className="thermal-cursor pointer-events-none fixed z-50"
-        style={{
-          left: `${mousePosition.x}px`,
-          top: `${mousePosition.y}px`,
-        }}
-      />
-
-      {/* Sections */}
+    <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
       {renderSection(
         "Top Events",
-        "bg-gradient-to-r from-purple-400 to-pink-400",
+        "bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff]",
         topEvents,
         true
       )}
       {renderSection(
         "Live Events",
-        "bg-gradient-to-r from-pink-500 to-yellow-400",
+        "bg-gradient-to-r from-[#ff00f7] to-[#00ccff]",
         liveEvents,
         true
       )}
       {renderSection(
         "Upcoming Events",
-        "bg-gradient-to-r from-indigo-400 to-purple-500",
+        "bg-gradient-to-r from-[#3700ff] to-[#00ccff]",
         upcomingEvents
       )}
     </div>

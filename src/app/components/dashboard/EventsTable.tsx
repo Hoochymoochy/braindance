@@ -62,10 +62,10 @@ export default function EventsTable({
 
   return (
     <section>
-      <h2 className="text-2xl font-bold mb-6">{title}</h2>
-      <div className="border border-purple-900/30 bg-black/60 rounded-2xl shadow-[0_0_12px_rgba(168,85,247,0.1)]">
+      <h2 className="mb-6 text-2xl font-bold text-gradient-bends">{title}</h2>
+      <div className="glass-bends-card overflow-hidden rounded-2xl">
         <table className="min-w-full text-sm text-white">
-          <thead className="uppercase text-xs text-purple-300 bg-black border-b border-purple-900/30">
+          <thead className="border-b border-white/10 bg-black/35 text-xs uppercase text-[#00ccff]/85">
             <tr>
               <th className="py-3 px-5 text-left">Event</th>
               {eventType === "passed" ? (
@@ -102,7 +102,7 @@ export default function EventsTable({
               events.map((event) => (
                 <tr
                   key={event.id}
-                  className="border-t border-purple-900/30 hover:bg-purple-900/10 transition"
+                  className="border-t border-white/10 transition hover:bg-[#3700ff]/10"
                 >
                   <td className="py-4 px-5 font-semibold">{event.title}</td>
 
@@ -125,7 +125,7 @@ export default function EventsTable({
                     <td className="py-4 px-5 text-center">
                       <button
                         onClick={() => onStart(event.id)}
-                        className="bg-purple-700/30 hover:bg-purple-700/50 transition text-white text-xs font-medium px-4 py-2 rounded-xl"
+                        className="rounded-xl bg-[#3700ff]/35 px-4 py-2 text-xs font-medium text-white transition hover:bg-[#ff00f7]/35"
                       >
                         Join Stream
                       </button>
@@ -135,20 +135,20 @@ export default function EventsTable({
                   {showActions && (
                     <td className="py-4 px-5 text-center relative">
                       <button
-                        className="p-2 rounded hover:bg-purple-800/30 transition"
+                        className="rounded p-2 transition hover:bg-white/10"
                         onClick={() => toggleMenu(event.id)}
                       >
-                        <MoreVertical className="h-5 w-5 text-purple-300" />
+                        <MoreVertical className="h-5 w-5 text-[#00ccff]/80" />
                       </button>
 
                       {openMenuId === event.id && (
-                        <div className="absolute right-0 mt-2 w-40 bg-black border border-purple-900/40 rounded-md shadow-xl z-10 animate-fadeIn">
+                        <div className="animate-fadeIn absolute right-0 z-10 mt-2 w-40 rounded-md border border-white/15 bg-black/95 shadow-xl backdrop-blur-md">
                           <button
                             onClick={() => {
                               onEdit?.(event.id);
                               setOpenMenuId(null);
                             }}
-                            className="w-full px-4 py-2 text-left hover:bg-purple-700/30 text-sm"
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-[#3700ff]/25"
                           >
                             ✏️ Edit
                           </button>
@@ -157,7 +157,7 @@ export default function EventsTable({
                               onStart(event.id);
                               setOpenMenuId(null);
                             }}
-                            className="w-full px-4 py-2 text-left hover:bg-purple-700/30 text-sm"
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-[#3700ff]/25"
                           >
                             🚀 Start
                           </button>
@@ -166,7 +166,7 @@ export default function EventsTable({
                               onDelete(event.id, event.image_url ?? "");
                               setOpenMenuId(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-red-400 hover:bg-red-500/10 text-sm"
+                            className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10"
                           >
                             🗑️ Delete
                           </button>
