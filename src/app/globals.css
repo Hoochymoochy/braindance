@@ -127,6 +127,15 @@
   .page-bends-bg {
     /* Tinted base so mesh radials stay visible through glass layers */
     background-color: rgba(2, 2, 12, 0.9);
+    background-repeat: no-repeat;
+    background-size:
+      140% 120%,
+      130% 110%,
+      130% 110%;
+    background-position:
+      0% 0%,
+      100% 0%,
+      50% 100%;
     background-image:
       radial-gradient(
         ellipse 120% 90% at 10% 0%,
@@ -375,7 +384,6 @@ body {
     @apply font-sans;
     background-color: #010108;
   }
-  /* Background comes from layout (page-bends-bg); avoid solid bg-background hiding mesh */
   body {
     @apply text-foreground antialiased;
   }

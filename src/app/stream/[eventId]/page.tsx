@@ -230,18 +230,7 @@ export default function BraindanceUserStream() {
           willChange: "transform",
         }}
       >
-        <div
-          style={{
-            width: "1080px",
-            height: "1080px",
-            position: "relative",
-            left: "50%",
-            top: "50%",
-            transform:
-              "translate(-50%, -50%) scale(max(100vw / 1080px, 100vh / 1080px))",
-            transformOrigin: "center center",
-          }}
-        >
+        <div className="absolute inset-0">
           <ColorBends
             rotation={65}
             speed={0.25}
