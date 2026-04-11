@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  classifyBackendError,
+  fetchJsonWithTimeout,
+  getBackupBackendUrl,
+  getPrimaryBackendUrl,
+} from "@/app/lib/backend/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
 
 /** Ensure route runs on each request; logs appear in `next dev` terminal. */
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const LOG = "api/dj-sets";
 
 type DjSet = {
   video_id: string;
@@ -29,11 +37,6 @@ type BackendDjSetsListResponse =
       items?: DjSet[];
       currentSets?: DjSet[];
     };
-
-class BackendConfigError extends Error {}
-class BackendRequestError extends Error {
-  statusCode?: number;
-}
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_DURATION_SECONDS = 30 * 60;
@@ -63,46 +66,6 @@ function topViewed(items: DjSet[], days: number, limit = 6): DjSet[] {
   return sortByViewsDesc(scoped).slice(0, limit);
 }
 
-/** Normalize env base URL to origin (optional trailing /dj-sets stripped). */
-function normalizeBackendBase(raw: string | undefined): string | null {
-  if (!raw?.trim()) return null;
-  let base = raw.trim().replace(/\/+$/, "");
-  if (base.endsWith("/dj-sets")) {
-    base = base.slice(0, -"/dj-sets".length);
-  }
-  base = base.replace(/\/+$/, "");
-  try {
-    const parsed = new URL(base);
-    if (!parsed.protocol || !parsed.host) return null;
-    return parsed.origin;
-  } catch {
-    return null;
-  }
-}
-
-function getPrimaryBackendUrl(): string {
-  const base = normalizeBackendBase(process.env.BACKEND_URL);
-  if (!base) {
-    throw new BackendConfigError(
-      "Missing or invalid BACKEND_URL env var (expected https://host)"
-    );
-  }
-  return base;
-}
-
-function getBackupBackendUrl(): string | null {
-  const raw = process.env.BACKEND_URL_BACKUP;
-  if (!raw?.trim()) return null;
-  const base = normalizeBackendBase(raw);
-  if (!base) {
-    routeLog("api/dj-sets", "BACKEND_URL_BACKUP ignored (invalid URL)", {
-      preview: raw.slice(0, 120),
-    });
-    return null;
-  }
-  return base;
-}
-
 function extractItemsFromListPayload(
   backendPayload: BackendDjSetsListResponse
 ): DjSet[] {
@@ -116,13 +79,14 @@ async function fetchDjSetsListWithFallback(timeoutMs: number): Promise<{
   source: "primary" | "backup";
 }> {
   const primary = getPrimaryBackendUrl();
-  const backup = getBackupBackendUrl();
+  const backup = getBackupBackendUrl(LOG);
 
   const tryList = async (base: string) => {
     const upstream = `${base}/dj-sets`;
     const backendPayload = (await fetchJsonWithTimeout(
       upstream,
-      timeoutMs
+      timeoutMs,
+      LOG
     )) as BackendDjSetsListResponse;
     const items = extractItemsFromListPayload(backendPayload);
     return { backendPayload, items };
@@ -162,7 +126,7 @@ async function fetchDjSetsListWithFallback(timeoutMs: number): Promise<{
       error: classifyBackendError(e),
     });
     return {
-      backendPayload: primaryResult.backendPayload,
+      backendPayload: primaryResult!.backendPayload,
       source: "primary",
     };
   }
@@ -181,11 +145,11 @@ async function fetchDjSetByIdWithFallback(
   timeoutMs: number
 ): Promise<{ raw: unknown; source: "primary" | "backup" }> {
   const primary = getPrimaryBackendUrl();
-  const backup = getBackupBackendUrl();
+  const backup = getBackupBackendUrl(LOG);
 
   const tryOne = async (base: string) => {
     const upstream = `${base}/dj-sets/${encodeURIComponent(videoId)}`;
-    return fetchJsonWithTimeout(upstream, timeoutMs);
+    return fetchJsonWithTimeout(upstream, timeoutMs, LOG);
   };
 
   let primaryRaw: unknown;
@@ -223,135 +187,11 @@ async function fetchDjSetByIdWithFallback(
   }
 }
 
-/** Node/undici often wraps failures as "fetch failed"; the real reason is in `cause`. */
-function formatNodeErrorExtras(err: Error): string {
-  const e = err as NodeJS.ErrnoException & {
-    syscall?: string;
-    address?: string;
-    port?: number;
-  };
-  const bits: string[] = [];
-  if (e.code) bits.push(`code=${e.code}`);
-  if (e.syscall) bits.push(`syscall=${e.syscall}`);
-  if (e.address) bits.push(`address=${e.address}`);
-  if (e.port != null) bits.push(`port=${String(e.port)}`);
-  return bits.join(" ");
-}
-
-function explainFetchFailure(error: unknown): string {
-  if (error instanceof BackendRequestError) return error.message;
-  if (error instanceof BackendConfigError) return error.message;
-  const lines: string[] = [];
-  let cur: unknown = error;
-  let depth = 0;
-  while (cur != null && depth < 10) {
-    if (cur instanceof Error) {
-      const extra = formatNodeErrorExtras(cur);
-      lines.push(extra ? `${cur.message} (${extra})` : cur.message);
-      cur = (cur as Error & { cause?: unknown }).cause;
-    } else {
-      lines.push(typeof cur === "string" ? cur : JSON.stringify(cur));
-      break;
-    }
-    depth++;
-  }
-  return lines.join(" → ");
-}
-
-async function fetchJsonWithTimeout(url: string, timeoutMs: number) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    // For HTTPS with self-signed certs, use node-fetch or disable verification differently
-    const nodeUrl = new URL(url);
-    const isHttps = nodeUrl.protocol === 'https:';
-    
-    const fetchOptions: RequestInit = {
-      method: "GET",
-      headers: { "content-type": "application/json" },
-      cache: "no-store",
-      signal: controller.signal,
-    };
-
-    // Add NODE_TLS_REJECT_UNAUTHORIZED for development
-    if (isHttps && process.env.NODE_ENV === 'development') {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    }
-
-    const res = await fetch(url, fetchOptions);
-    
-    const text = await res.text();
-    if (!res.ok) {
-      routeError(
-        "api/dj-sets",
-        `backend HTTP ${res.status} ${url}`,
-        text.slice(0, 2000)
-      );
-      const err = new BackendRequestError(
-        `Backend ${res.status}: ${text.slice(0, 500)}`
-      );
-      err.statusCode = res.status;
-      throw err;
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      routeError(
-        "api/dj-sets",
-        `backend invalid JSON ${url}`,
-        text.slice(0, 2000)
-      );
-      throw new BackendRequestError("Backend returned invalid JSON");
-    }
-    logBackendResponse(url, res.status, parsed);
-    return parsed;
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new BackendRequestError(
-        `Backend request timed out after ${timeoutMs}ms`
-      );
-    }
-    if (error instanceof BackendRequestError) throw error;
-    const detail = explainFetchFailure(error);
-    routeError("api/dj-sets", `fetch failed ${url}`, error);
-    throw new BackendRequestError(`Upstream fetch failed: ${detail}`);
-  } finally {
-    clearTimeout(timeout);
-    // Reset for production
-    if (process.env.NODE_ENV === 'development') {
-      delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-    }
-  }
-}
-
-function classifyBackendError(error: unknown): string {
-  if (error instanceof BackendConfigError) return error.message;
-  if (error instanceof BackendRequestError) return error.message;
-  if (error instanceof Error) return explainFetchFailure(error);
-  return String(error);
-}
-
-const BACKEND_LOG_MAX_CHARS = 12_000;
-
-function logBackendResponse(url: string, status: number, data: unknown) {
-  try {
-    const raw = JSON.stringify(data);
-    const preview =
-      raw.length > BACKEND_LOG_MAX_CHARS
-        ? `${raw.slice(0, BACKEND_LOG_MAX_CHARS)}…(truncated, ${raw.length} chars total)`
-        : raw;
-    routeLog("api/dj-sets", `backend OK ${status}`, { url, bodyPreview: preview });
-  } catch {
-    routeLog("api/dj-sets", `backend OK ${status} (unserializable body)`, { url });
-  }
-}
-
 export async function GET(request: NextRequest) {
   routeLog("api/dj-sets", "GET /api/dj-sets", { incomingUrl: request.url });
   try {
     const primary = getPrimaryBackendUrl();
-    const backup = getBackupBackendUrl();
+    const backup = getBackupBackendUrl(LOG);
     routeLog("api/dj-sets", "backend targets", {
       BACKEND_URL: primary,
       BACKEND_URL_BACKUP: backup ?? "(not set)",
@@ -421,7 +261,7 @@ export async function POST(request: NextRequest) {
 
     routeLog("api/dj-sets", "backend targets", {
       BACKEND_URL: getPrimaryBackendUrl(),
-      BACKEND_URL_BACKUP: getBackupBackendUrl() ?? "(not set)",
+      BACKEND_URL_BACKUP: getBackupBackendUrl(LOG) ?? "(not set)",
     });
 
     const { raw, source } = await fetchDjSetByIdWithFallback(videoId, 30_000);

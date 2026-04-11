@@ -6,17 +6,16 @@ import ColorBends from "@/components/ColorBends";
 /**
  * Screen Recording Template (Web Version)
  * Pure background for easy recording
- * 
+ *
  * Usage:
- * 1. Place this in app/record/page.tsx
+ * 1. Copy this file back to `src/app/test/page.tsx` (or `src/app/record/page.tsx`)
  * 2. Run dev server: npm run dev
- * 3. Open http://localhost:3000/record
+ * 3. Open http://localhost:3000/test (or /record)
  * 4. Use a screen recording tool (OBS, QuickTime, etc.)
  */
 export default function RecordingPage() {
   return (
     <div className="relative min-h-dvh w-full overflow-hidden bg-black">
-      {/* Full-screen ColorBends background */}
       <div className="absolute inset-0 w-full h-full">
         <ColorBends
           rotation={65}
@@ -32,11 +31,6 @@ export default function RecordingPage() {
           noise={0}
         />
       </div>
-
-      {/* Optional: Center text overlay (remove if not needed) */}
-      {/* <div className="absolute inset-0 flex items-center justify-center">
-        <h1 className="text-4xl font-bold text-white/50">Recording...</h1>
-      </div> */}
     </div>
   );
 }
