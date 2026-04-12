@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Music2 } from "lucide-react";
+import { Music2 } from "lucide-react";
 
 export type TrackRow = {
   id: string;
@@ -50,30 +50,35 @@ export function StreamTracklistSidebar({
                       {t.title}
                     </p>
                     <p className="truncate text-xs text-gray-400">{t.artist}</p>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {t.spotify_url && (
-                        <a
-                          href={t.spotify_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-[#1ed760] transition-opacity hover:opacity-80"
-                        >
-                          Spotify
-                          <ExternalLink className="h-3 w-3" aria-hidden />
-                        </a>
-                      )}
-                      {t.soundcloud_url && (
-                        <a
-                          href={t.soundcloud_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-[#ff5500] transition-opacity hover:opacity-80"
-                        >
-                          SoundCloud
-                          <ExternalLink className="h-3 w-3" aria-hidden />
-                        </a>
-                      )}
-                    </div>
+                    {(t.spotify_url || t.soundcloud_url) && (
+                      <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-gray-500">
+                        {t.spotify_url && (
+                          <a
+                            href={t.spotify_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-sm hover:text-[#1ed760] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#1ed760]/50"
+                          >
+                            Spotify
+                          </a>
+                        )}
+                        {t.spotify_url && t.soundcloud_url && (
+                          <span className="text-gray-600" aria-hidden>
+                            ·
+                          </span>
+                        )}
+                        {t.soundcloud_url && (
+                          <a
+                            href={t.soundcloud_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-sm hover:text-[#ff5500] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#ff5500]/50"
+                          >
+                            SoundCloud
+                          </a>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
               </li>
