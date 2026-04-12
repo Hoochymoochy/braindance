@@ -9,14 +9,6 @@ export default function PolicyPage() {
     <div className="relative min-h-screen overflow-hidden text-white">
       <section className="container mx-auto px-4 py-24">
         <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends">
-          <Link
-            href="/"
-            className="mb-8 flex items-center text-[#00ccff]/85 transition-colors duration-bends-fast ease-bends hover:text-[#ff00f7]"
-          >
-            <ArrowLeftCircle className="mr-2 h-5 w-5" />
-            Back to Home
-          </Link>
-
           <h1 className="mb-6 text-4xl font-bold text-gradient-bends sm:text-5xl">
             Policies
           </h1>
