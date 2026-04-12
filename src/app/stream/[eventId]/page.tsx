@@ -440,29 +440,38 @@ export default function BraindanceUserStream() {
         </main>
 
         {merchItems.length > 0 && (
-          <section className="glass-bends-card mt-8 rounded-xl p-5">
-            <h3 className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
-              Links
-            </h3>
-            <ul className="space-y-3">
-              {merchItems.map((item, idx) => (
-                <li key={idx} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-4">
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-white/90 underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/40"
+          <section className="glass-bends-card relative mt-8 overflow-hidden rounded-xl p-5">
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#00ccff]/[0.14] via-[#ff00f7]/[0.06] to-[#3700ff]/[0.14]"
+              aria-hidden
+            />
+            <div className="relative z-10">
+              <h3 className="mb-4 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
+                Links
+              </h3>
+              <ul className="space-y-3">
+                {merchItems.map((item, idx) => (
+                  <li
+                    key={idx}
+                    className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-4"
                   >
-                    {item.title}
-                  </a>
-                  {item.subtitle ? (
-                    <span className="text-xs text-gray-500 sm:min-w-0 sm:flex-1 sm:truncate">
-                      {item.subtitle}
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-white/90 underline-offset-2 transition-[background-image,color] hover:bg-gradient-to-r hover:from-[#00ccff] hover:via-[#ff00f7] hover:to-[#3700ff] hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/40"
+                    >
+                      {item.title}
+                    </a>
+                    {item.subtitle ? (
+                      <span className="text-xs text-gray-500 sm:min-w-0 sm:flex-1 sm:truncate">
+                        {item.subtitle}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
         )}
       </div>
