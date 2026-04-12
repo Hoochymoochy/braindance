@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import ColorBends from "@/components/ColorBends";
-import { cn } from "@/lib/utils";
 
 type DjSet = {
   video_id: string;
@@ -25,16 +24,11 @@ type DjSetsResponse = {
 const BEND_COLORS = ["#00ccff", "#ff00f7", "#3700ff", "#7a7a7a"] as const;
 
 export default function Home() {
-  const [bendsReady, setBendsReady] = useState(false);
   const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
   const [streamsLoading, setStreamsLoading] = useState(true);
   const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const eventsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleBendsReady = useCallback(() => {
-    setBendsReady(true);
-  }, []);
 
   // Smooth parallax effect based on mouse position for 4K depth
   useEffect(() => {
@@ -70,11 +64,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setBendsReady(true), 4500);
-    return () => window.clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
     const getFeaturedStreams = async () => {
       try {
         const response = await fetch("/api/dj-sets", { cache: "no-store" });
@@ -106,10 +95,7 @@ export default function Home() {
     <div ref={containerRef} className="relative min-h-screen overflow-hidden text-white">
       {/* BLACK OVERLAY - Fixed depth layer */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black transition-opacity duration-[600ms] ease-bends-soft motion-reduce:transition-none"
-        style={{
-          opacity: bendsReady ? 0.4 : 0,
-        }}
+        className="pointer-events-none fixed inset-0 -z-10 bg-black/40"
         aria-hidden
       />
 
@@ -124,7 +110,6 @@ export default function Home() {
       >
         <div className="absolute inset-0">
           <ColorBends
-            onReady={handleBendsReady}
             rotation={65}
             speed={0.25}
             colors={[...BEND_COLORS]}
@@ -141,16 +126,7 @@ export default function Home() {
       </div>
 
       {/* CONTENT LAYER */}
-      <div
-        className={cn(
-          "relative z-10 transition-opacity duration-[600ms] ease-bends-soft motion-reduce:transition-none",
-          bendsReady
-            ? "opacity-100"
-            : "pointer-events-none select-none opacity-0"
-        )}
-        aria-busy={!bendsReady}
-        aria-hidden={!bendsReady}
-      >
+      <div className="relative z-10">
         {/* HERO */}
         <section className="container mx-auto px-4 py-24 text-center">
           <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg bg-white/5 border border-white/10">
