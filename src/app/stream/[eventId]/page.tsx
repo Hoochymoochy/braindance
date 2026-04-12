@@ -14,7 +14,11 @@ import { getTopCity } from "@/app/lib/utils/location";
 import { totalViews } from "@/app/lib/events/views";
 import { getLinks } from "@/app/lib/events/links";
 import { getEventById } from "@/app/lib/events/event";
-import { youtubeVideoIdFromUrl } from "@/app/lib/utils/youtube";
+import {
+  buildYoutubeEmbedSrc,
+  youtubeVideoIdFromUrl,
+  YOUTUBE_IFRAME_ALLOW,
+} from "@/app/lib/utils/youtube";
 
 const ColorBends = dynamic(() => import("@/components/ColorBends"), {
   ssr: false,
@@ -288,9 +292,11 @@ export default function BraindanceUserStream() {
   const getEmbedUrl = () => {
     if (!url) return "";
     if (platform === "twitch") {
-      return `https://player.twitch.tv/?channel=${url}&parent=braindance.live`;
+      const parent =
+        process.env.NEXT_PUBLIC_TWITCH_PARENT ?? "localhost";
+      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&muted=true`;
     }
-    return `https://www.youtube.com/embed/${url}?autoplay=1&mute=1`;
+    return buildYoutubeEmbedSrc(url);
   };
 
   useEffect(() => {
@@ -359,11 +365,16 @@ export default function BraindanceUserStream() {
                     <div className="aspect-video relative">
                       {stream ? (
                         <iframe
-                          className="absolute left-0 top-0 h-full w-full"
+                          className="absolute left-0 top-0 h-full w-full border-0"
                           src={getEmbedUrl()}
                           title={headerTitle}
-                          allow="autoplay; encrypted-media"
+                          allow={
+                            platform === "twitch"
+                              ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
+                              : YOUTUBE_IFRAME_ALLOW
+                          }
                           allowFullScreen
+                          referrerPolicy="strict-origin-when-cross-origin"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
@@ -426,11 +437,16 @@ export default function BraindanceUserStream() {
                   <div className="aspect-video relative">
                     {stream ? (
                       <iframe
-                        className="absolute left-0 top-0 h-full w-full"
+                        className="absolute left-0 top-0 h-full w-full border-0"
                         src={getEmbedUrl()}
                         title={headerTitle}
-                        allow="autoplay; encrypted-media"
+                        allow={
+                          platform === "twitch"
+                            ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
+                            : YOUTUBE_IFRAME_ALLOW
+                        }
                         allowFullScreen
+                        referrerPolicy="strict-origin-when-cross-origin"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">

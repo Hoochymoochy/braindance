@@ -16,6 +16,10 @@ import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import { totalViews } from "@/app/lib/events/views";
 import { getTopCity } from "@/app/lib/utils/location";
 import { getEventById } from "@/app/lib/events/event";
+import {
+  buildYoutubeEmbedSrc,
+  YOUTUBE_IFRAME_ALLOW,
+} from "@/app/lib/utils/youtube";
 
 interface Photo {
   id: number;
@@ -238,9 +242,11 @@ export default function BraindanceMockup() {
   const getEmbedUrl = () => {
     if (!url) return "";
     if (platform === "twitch") {
-      return `https://player.twitch.tv/?channel=${url}&parent=localhost:3000`;
+      const parent =
+        process.env.NEXT_PUBLIC_TWITCH_PARENT ?? "localhost";
+      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&muted=true`;
     }
-    return `https://www.youtube.com/embed/${url}?autoplay=1&mute=1`;
+    return buildYoutubeEmbedSrc(url);
   };
 
 
@@ -277,10 +283,15 @@ export default function BraindanceMockup() {
               <div className="aspect-video relative">
                 {url ? (
                   <iframe
-                    className="w-full h-full absolute top-0 left-0"
+                    className="absolute left-0 top-0 h-full w-full border-0"
                     src={getEmbedUrl()}
-                    allow="autoplay; encrypted-media"
+                    allow={
+                      platform === "twitch"
+                        ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
+                        : YOUTUBE_IFRAME_ALLOW
+                    }
                     allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-black">
