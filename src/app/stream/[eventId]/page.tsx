@@ -350,89 +350,153 @@ export default function BraindanceUserStream() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl p-5 md:p-8">
-        <main
-          className={`mt-5 grid grid-cols-1 gap-6 ${showTracklist ? "lg:grid-cols-[minmax(0,1fr)_340px]" : "lg:grid-cols-3"}`}
-        >
-          <div className={showTracklist ? "" : "lg:col-span-2"}>
-            <div className="glass-bends-card relative overflow-hidden rounded-lg">
-              <div className="aspect-video relative">
-                {stream ? (
-                  <iframe
-                    className="w-full h-full absolute top-0 left-0"
-                    src={getEmbedUrl()}
-                    title={headerTitle}
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white bg-zinc-900/50">
-                    Stream unavailable.
+        <main className="mt-5">
+          {showTracklist ? (
+            <>
+              <div className="relative mb-6">
+                <div className="lg:pr-[calc(340px+1.5rem)]">
+                  <div className="glass-bends-card relative overflow-hidden rounded-lg">
+                    <div className="aspect-video relative">
+                      {stream ? (
+                        <iframe
+                          className="absolute left-0 top-0 h-full w-full"
+                          src={getEmbedUrl()}
+                          title={headerTitle}
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
+                          Stream unavailable.
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
+                <aside
+                  className="mt-6 flex min-h-0 w-full flex-col lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
+                  aria-label="Tracklist"
+                >
+                  <StreamTracklistSidebar
+                    tracks={pipelineTracks}
+                    className="min-h-[10rem] max-h-[min(65vh,520px)] flex-1 lg:h-full lg:max-h-none lg:min-h-0"
+                  />
+                </aside>
               </div>
 
               {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
-                <div className="mt-4 flex items-center gap-3 px-4 py-2">
-                  <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-black/40">
-                    {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
-                      <Image
-                        src={
-                          event?.image_url ||
-                          djSet?.thumbnail ||
-                          pipelineStream?.thumbnail ||
-                          ""
-                        }
-                        alt={headerTitle}
-                        width={56}
-                        height={56}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
-                    )}
-                  </div>
-                  <div className="text-sm min-w-0">
-                    <h2 className="text-white font-semibold leading-tight truncate">
-                      {headerTitle}
-                    </h2>
-                    <p className="text-xs text-gray-400 leading-tight">
-                      {headerSubtitle}
-                    </p>
-                    <p className="text-xs text-gray-300 italic leading-tight line-clamp-2">
-                      {pipelineStream
-                        ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
-                        : event?.description ||
-                          "Curated DJ set inside Braindance stream player."}
-                    </p>
+                <div className="glass-bends-card relative mb-6 overflow-hidden rounded-lg">
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
+                      {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
+                        <Image
+                          src={
+                            event?.image_url ||
+                            djSet?.thumbnail ||
+                            pipelineStream?.thumbnail ||
+                            ""
+                          }
+                          alt={headerTitle}
+                          width={56}
+                          height={56}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                      )}
+                    </div>
+                    <div className="min-w-0 text-sm">
+                      <h2 className="truncate font-semibold leading-tight text-white">
+                        {headerTitle}
+                      </h2>
+                      <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
+                      <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
+                        {pipelineStream
+                          ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
+                          : event?.description ||
+                            "Curated DJ set inside Braindance stream player."}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {showTracklist ? (
-            <aside className="min-h-0 lg:sticky lg:top-24 lg:self-start">
-              <StreamTracklistSidebar tracks={pipelineTracks} />
-            </aside>
+            </>
           ) : (
-            <div>
-              <div className="glass-bends-card rounded-lg p-4">
-                <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
-                  Stats
-                </h3>
-                <div className="mb-4 flex items-center justify-between gap-6">
-                  <div>
-                    <p className="text-xs text-gray-500">Views</p>
-                    <p className="text-2xl font-semibold tabular-nums text-white/90">
-                      {views}
-                    </p>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <div className="glass-bends-card relative overflow-hidden rounded-lg">
+                  <div className="aspect-video relative">
+                    {stream ? (
+                      <iframe
+                        className="absolute left-0 top-0 h-full w-full"
+                        src={getEmbedUrl()}
+                        title={headerTitle}
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
+                        Stream unavailable.
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Top city</p>
-                    <p className="text-2xl font-semibold text-white/90">{topCity}</p>
-                  </div>
+
+                  {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
+                    <div className="mt-4 flex items-center gap-3 px-4 py-2">
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
+                        {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
+                          <Image
+                            src={
+                              event?.image_url ||
+                              djSet?.thumbnail ||
+                              pipelineStream?.thumbnail ||
+                              ""
+                            }
+                            alt={headerTitle}
+                            width={56}
+                            height={56}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                        )}
+                      </div>
+                      <div className="min-w-0 text-sm">
+                        <h2 className="truncate font-semibold leading-tight text-white">
+                          {headerTitle}
+                        </h2>
+                        <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
+                        <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
+                          {pipelineStream
+                            ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
+                            : event?.description ||
+                              "Curated DJ set inside Braindance stream player."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {isDbEvent && <GlobeHeatmap id={eventId} />}
+              </div>
+
+              <div>
+                <div className="glass-bends-card rounded-lg p-4">
+                  <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
+                    Stats
+                  </h3>
+                  <div className="mb-4 flex items-center justify-between gap-6">
+                    <div>
+                      <p className="text-xs text-gray-500">Views</p>
+                      <p className="text-2xl font-semibold tabular-nums text-white/90">
+                        {views}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Top city</p>
+                      <p className="text-2xl font-semibold text-white/90">{topCity}</p>
+                    </div>
+                  </div>
+                  {isDbEvent && <GlobeHeatmap id={eventId} />}
+                </div>
               </div>
             </div>
           )}

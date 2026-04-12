@@ -1,6 +1,7 @@
 "use client";
 
 import { Music2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type TrackRow = {
   id: string;
@@ -14,12 +15,19 @@ export type TrackRow = {
 export function StreamTracklistSidebar({
   tracks,
   emptyHint,
+  className,
 }: {
   tracks: TrackRow[];
   emptyHint?: string;
+  className?: string;
 }) {
   return (
-    <div className="glass-bends-card relative flex max-h-[min(70vh,720px)] min-h-[200px] flex-col overflow-hidden rounded-lg">
+    <div
+      className={cn(
+        "glass-bends-card relative flex min-h-0 w-full flex-col overflow-hidden rounded-lg",
+        className
+      )}
+    >
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#00ccff]/[0.14] via-[#ff00f7]/[0.06] to-[#3700ff]/[0.14]"
         aria-hidden
