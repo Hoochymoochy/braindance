@@ -274,11 +274,9 @@ export default function EventsPage() {
               opacity: isFiltering ? 0.95 : 1,
             }}
           >
-            <div className="flex shrink-0 items-center gap-2 text-sm">
-              <SlidersHorizontal className="h-4 w-4 text-[#00ccff]" />
-              <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text font-medium text-transparent">
-                Filters
-              </span>
+            <div className="flex shrink-0 items-center gap-2 text-sm font-medium text-[#00ccff]">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
             </div>
 
             <button
@@ -288,9 +286,7 @@ export default function EventsPage() {
               className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/18 bg-black/35 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-all duration-200 hover:border-[#00ccff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
             >
               <Shuffle className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" />
-              <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text font-medium text-transparent">
-                Random set
-              </span>
+              <span className="font-medium text-[#00ccff]">Random set</span>
             </button>
 
             <select

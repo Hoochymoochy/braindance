@@ -49,13 +49,13 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   );
 
   return (
-    <div className="glass-bends-card group mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/15 shadow-lg transition-all duration-300 hover:border-[#00ccff]/35 hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] sm:max-w-md md:max-w-lg">
-      <div className="relative aspect-[2/3] w-full">
+    <div className="glass-bends-card group mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/15 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[#00ccff]/35 hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] sm:max-w-md md:max-w-lg">
+      <div className="relative aspect-[2/3] w-full overflow-hidden">
         <Image
           src={image_url || "/placeholder.svg"}
           alt={title}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
         />
