@@ -350,12 +350,12 @@ export default function BraindanceUserStream() {
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto p-6 md:p-10">
+      <div className="relative z-10 mx-auto max-w-6xl p-5 md:p-8">
         <main
           className={`mt-5 grid grid-cols-1 gap-6 ${showTracklist ? "lg:grid-cols-[minmax(0,1fr)_340px]" : "lg:grid-cols-3"}`}
         >
           <div className={showTracklist ? "" : "lg:col-span-2"}>
-            <div className="glass-bends-card relative overflow-hidden rounded-lg backdrop-blur-lg bg-white/5 border border-white/10">
+            <div className="relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] backdrop-blur-sm">
               <div className="aspect-video relative">
                 {stream ? (
                   <iframe
@@ -417,18 +417,20 @@ export default function BraindanceUserStream() {
             </aside>
           ) : (
             <div>
-              <div className="glass-bends-card rounded-lg p-4 backdrop-blur-lg bg-white/5 border border-white/10">
-                <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
-                  TOP STATS
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+                <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
+                  Stats
                 </h3>
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between gap-6">
                   <div>
-                    <p className="text-sm text-gray-400">Total Views</p>
-                    <p className="text-3xl font-bold text-[#00ccff]">{views}</p>
+                    <p className="text-xs text-gray-500">Views</p>
+                    <p className="text-2xl font-semibold tabular-nums text-white/90">
+                      {views}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Top City</p>
-                    <p className="text-3xl font-bold text-[#ff00f7]">{topCity}</p>
+                    <p className="text-xs text-gray-500">Top city</p>
+                    <p className="text-2xl font-semibold text-white/90">{topCity}</p>
                   </div>
                 </div>
                 {isDbEvent && <GlobeHeatmap id={eventId} />}
@@ -437,30 +439,32 @@ export default function BraindanceUserStream() {
           )}
         </main>
 
-        <div className="glass-bends-card mt-6 rounded-lg p-4 backdrop-blur-lg bg-white/5 border border-white/10">
-          <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
-            EXTRA LINKS
-          </h3>
-
-          {merchItems.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {merchItems.length > 0 && (
+          <section className="mt-8 border-t border-white/10 pt-6">
+            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
+              Links
+            </h3>
+            <ul className="space-y-3">
               {merchItems.map((item, idx) => (
-                <a
-                  key={idx}
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block transform cursor-pointer rounded-md border border-white/12 bg-gradient-to-br from-[#3700ff]/25 to-[#ff00f7]/15 p-4 text-center transition-all hover:scale-105 hover:border-[#00ccff]/35 hover:from-[#3700ff]/45 hover:to-[#00ccff]/20 backdrop-blur-sm"
-                >
-                  <p className="text-sm font-medium">{item.title}</p>
-                  <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>
-                </a>
+                <li key={idx} className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-4">
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-white/90 underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-white/30"
+                  >
+                    {item.title}
+                  </a>
+                  {item.subtitle ? (
+                    <span className="text-xs text-gray-500 sm:min-w-0 sm:flex-1 sm:truncate">
+                      {item.subtitle}
+                    </span>
+                  ) : null}
+                </li>
               ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 text-center">No links found.</p>
-          )}
-        </div>
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );

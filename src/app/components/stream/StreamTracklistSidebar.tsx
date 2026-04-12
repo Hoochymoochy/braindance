@@ -19,13 +19,15 @@ export function StreamTracklistSidebar({
   emptyHint?: string;
 }) {
   return (
-    <div className="glass-bends-card flex max-h-[min(70vh,720px)] min-h-[200px] flex-col rounded-lg border border-white/10 bg-white/5 backdrop-blur-lg">
+    <div className="flex max-h-[min(70vh,720px)] min-h-[200px] flex-col rounded-lg border border-white/10 bg-white/[0.03] backdrop-blur-sm">
       <div className="flex shrink-0 items-center gap-2 border-b border-white/10 px-4 py-3">
-        <Music2 className="h-4 w-4 text-[#00ccff]" aria-hidden />
-        <h3 className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-base font-bold text-transparent">
+        <Music2 className="h-3.5 w-3.5 text-gray-500" aria-hidden />
+        <h3 className="text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
           Tracklist
         </h3>
-        <span className="ml-auto text-xs text-gray-500">{tracks.length} tracks</span>
+        <span className="ml-auto text-xs tabular-nums text-gray-600">
+          {tracks.length}
+        </span>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
