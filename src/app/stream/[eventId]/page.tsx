@@ -371,6 +371,41 @@ export default function BraindanceUserStream() {
                         </div>
                       )}
                     </div>
+
+                    {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
+                      <div className="mt-4 flex items-center gap-3 px-4 py-2">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
+                          {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
+                            <Image
+                              src={
+                                event?.image_url ||
+                                djSet?.thumbnail ||
+                                pipelineStream?.thumbnail ||
+                                ""
+                              }
+                              alt={headerTitle}
+                              width={56}
+                              height={56}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                          )}
+                        </div>
+                        <div className="min-w-0 text-sm">
+                          <h2 className="truncate font-semibold leading-tight text-white">
+                            {headerTitle}
+                          </h2>
+                          <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
+                          <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
+                            {pipelineStream
+                              ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
+                              : event?.description ||
+                                "Curated DJ set inside Braindance stream player."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <aside
@@ -383,43 +418,6 @@ export default function BraindanceUserStream() {
                   />
                 </aside>
               </div>
-
-              {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
-                <div className="glass-bends-card relative mb-6 overflow-hidden rounded-lg">
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
-                      {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
-                        <Image
-                          src={
-                            event?.image_url ||
-                            djSet?.thumbnail ||
-                            pipelineStream?.thumbnail ||
-                            ""
-                          }
-                          alt={headerTitle}
-                          width={56}
-                          height={56}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
-                      )}
-                    </div>
-                    <div className="min-w-0 text-sm">
-                      <h2 className="truncate font-semibold leading-tight text-white">
-                        {headerTitle}
-                      </h2>
-                      <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
-                      <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
-                        {pipelineStream
-                          ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
-                          : event?.description ||
-                            "Curated DJ set inside Braindance stream player."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           ) : (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
