@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { BrainLogo } from "@/app/components/Brain-logo";
 
 export default function Footer() {
   return (
@@ -23,14 +22,7 @@ export default function Footer() {
     >
       <div className="container mx-auto px-4 py-4 md:py-5">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-          <div className="flex items-center space-x-2">
-            <BrainLogo withText={false} className="h-6 w-6 text-[#00ccff]" />
-            <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-sm font-semibold uppercase tracking-wide text-transparent">
-              Braindance
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 sm:justify-start">
             <Link
               href="/policy"
               className="text-sm text-white/65 transition-colors hover:text-[#00ccff]"
@@ -52,7 +44,7 @@ export default function Footer() {
           </div>
 
           <p className="text-center text-xs text-[#7a7a7a] sm:text-right">
-            © {new Date().getFullYear()} Braindance. All rights reserved.
+            © {new Date().getFullYear()} All rights reserved.
           </p>
         </div>
       </div>
