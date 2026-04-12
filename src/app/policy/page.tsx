@@ -18,74 +18,76 @@ export default function PolicyPage() {
           </Link>
 
           <h1 className="mb-6 text-4xl font-bold text-gradient-bends sm:text-5xl">
-            Braindance Policies
+            Policies
           </h1>
           <p className="mb-8 text-base text-white/80">
-            We keep Braindance clear and trustworthy while building a better home
-            for EDM streaming and set discovery.
+            Quick rundown of how we handle stuff on Braindance. Nothing sneaky—just
+            what you&apos;d expect if we ran this thing like we&apos;d want it run for
+            us.
           </p>
 
           <div className="space-y-10 text-sm text-white/80 md:text-base">
             <div>
               <h2 className="mb-2 text-lg font-semibold text-[#00ccff]">
-                🎧 Data Usage
+                Data usage
               </h2>
               <p>
-                We collect just enough data to fuel the experience—event joins,
-                stream interactions, hype metrics. No shady tracking. No
-                unnecessary snooping.
+                We only collect what we need to make the app work—things like event
+                joins, stream views, and rough location when you opt in. We&apos;re
+                not here to build a creepy profile of you.
               </p>
             </div>
 
             <div>
               <h2 className="mb-2 text-lg font-semibold text-[#ff00f7]">
-                📨 Emails & Contact
+                Email & contact
               </h2>
               <p>
-                If you join our waitlist, we&apos;ll hit you up with drops,
-                updates, and exclusives. No spam. Unsubscribe anytime.
+                If you sign up for updates, we&apos;ll email you about product news
+                and drops. You can bail out anytime—one click unsubscribe, no guilt
+                trip.
               </p>
             </div>
 
             <div>
               <h2 className="mb-2 text-lg font-semibold text-[#3700ff]">
-                🔐 Privacy & Security
+                Privacy & security
               </h2>
               <p>
-                Your data lives in secure vaults. We use Supabase, encrypted
-                auth, and token-based sessions. If we ever update how we handle
-                info, you&apos;ll know first.
+                Data lives behind normal modern safeguards (we use Supabase, encrypted
+                connections, and sensible session handling). If we change something
+                important, we&apos;ll say so on this page.
               </p>
             </div>
 
             <div>
               <h2 className="mb-2 text-lg font-semibold text-[#00ccff]/90">
-                🎚️ Content Standards
+                Content
               </h2>
               <p>
-                We focus on authentic DJ culture. Content should be respectful,
-                music-first, and connected to real sets, artists, and events.
+                We&apos;re built around DJ culture and live sets. Keep it respectful,
+                music-focused, and don&apos;t use the platform to be weird at people.
               </p>
             </div>
 
             <div>
               <h2 className="mb-2 text-lg font-semibold text-[#ff00f7]/90">
-                🌍 Platform Direction
+                What we&apos;re trying to do
               </h2>
               <p>
-                Our mission is simple: make it easier to stream DJ sets and
-                highlight both new talent and older iconic sets in one ecosystem.
+                Make it easier to find and watch DJ sets—new artists, old favorites,
+                all in one place. That&apos;s the whole pitch.
               </p>
             </div>
 
             <div>
               <h2 className="mb-2 text-lg font-semibold text-white">
-                👾 Final Word
+                Questions?
               </h2>
               <p>
-                We&apos;re building Braindance as a global ritual—not a data
-                trap. If you&apos;ve got questions, hit us up. We&apos;re here,
-                alive, and listening.
+                We&apos;re not trying to trap your data or hide behind legalese. If
+                something&apos;s unclear, use the contact page and we&apos;ll actually
+                read it.
               </p>
             </div>
           </div>
