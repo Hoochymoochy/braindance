@@ -25,7 +25,7 @@ export default function ContactPage() {
             Contact
           </h1>
           <p className="mb-8 text-base text-white/80">
-            DJs, venues, random questions—whatever. Leave your email and a message
+            DJs, venues, random questions, whatever. Leave your email and a message
             and we&apos;ll get back when we can.
           </p>
 

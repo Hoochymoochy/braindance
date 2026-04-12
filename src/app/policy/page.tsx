@@ -21,7 +21,7 @@ export default function PolicyPage() {
             Policies
           </h1>
           <p className="mb-8 text-base text-white/80">
-            Quick rundown of how we handle stuff on Braindance. Nothing sneaky—just
+            Quick rundown of how we handle stuff on Braindance. Nothing sneaky, just
             what you&apos;d expect if we ran this thing like we&apos;d want it run for
             us.
           </p>
@@ -32,9 +32,9 @@ export default function PolicyPage() {
                 Data usage
               </h2>
               <p>
-                We only collect what we need to make the app work—things like event
-                joins, stream views, and rough location when you opt in. We&apos;re
-                not here to build a creepy profile of you.
+                We only collect what we need to make the app work, like event joins,
+                stream views, and rough location when you opt in. We&apos;re not here
+                to build a creepy profile of you.
               </p>
             </div>
 
@@ -44,8 +44,7 @@ export default function PolicyPage() {
               </h2>
               <p>
                 If you sign up for updates, we&apos;ll email you about product news
-                and drops. You can bail out anytime—one click unsubscribe, no guilt
-                trip.
+                and drops. You can bail out anytime with one click. No guilt trip.
               </p>
             </div>
 
@@ -75,8 +74,8 @@ export default function PolicyPage() {
                 What we&apos;re trying to do
               </h2>
               <p>
-                Make it easier to find and watch DJ sets—new artists, old favorites,
-                all in one place. That&apos;s the whole pitch.
+                Make it easier to find and watch DJ sets from new artists and old
+                favorites in one place. That&apos;s the whole pitch.
               </p>
             </div>
 

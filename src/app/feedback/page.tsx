@@ -32,7 +32,7 @@ export default function FeedbackPage() {
               <MessageSquare className="mx-auto mb-4 h-10 w-10" />
               <h2 className="mb-2 text-2xl font-bold">Got it</h2>
               <p className="text-white/65">
-                Thanks for taking the time—it really does help.
+                Thanks for taking the time. It really does help.
               </p>
             </div>
           ) : (
@@ -40,7 +40,7 @@ export default function FeedbackPage() {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Say whatever you want—bugs, ideas, rants, all fair game."
+                placeholder="Say whatever you want. Bugs, ideas, rants, all fair game."
                 required
                 rows={6}
                 className="input-bends min-h-[140px] resize-y py-3"
