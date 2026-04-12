@@ -14,7 +14,11 @@ import { getTopCity } from "@/app/lib/utils/location";
 import { totalViews } from "@/app/lib/events/views";
 import { getLinks } from "@/app/lib/events/links";
 import { getEventById } from "@/app/lib/events/event";
-import { youtubeVideoIdFromUrl } from "@/app/lib/utils/youtube";
+import {
+  buildYoutubeEmbedSrc,
+  youtubeVideoIdFromUrl,
+  YOUTUBE_IFRAME_ALLOW,
+} from "@/app/lib/utils/youtube";
 
 const ColorBends = dynamic(() => import("@/components/ColorBends"), {
   ssr: false,
@@ -288,9 +292,11 @@ export default function BraindanceUserStream() {
   const getEmbedUrl = () => {
     if (!url) return "";
     if (platform === "twitch") {
-      return `https://player.twitch.tv/?channel=${url}&parent=braindance.live`;
+      const parent =
+        process.env.NEXT_PUBLIC_TWITCH_PARENT ?? "localhost";
+      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&muted=true`;
     }
-    return `https://www.youtube.com/embed/${url}?autoplay=1&mute=1`;
+    return buildYoutubeEmbedSrc(url);
   };
 
   useEffect(() => {
@@ -329,8 +335,7 @@ export default function BraindanceUserStream() {
         aria-hidden
         style={{
           transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
-          transition: "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-          willChange: "transform",
+          transition: "transform 0.45s var(--ease-bends-soft)",
         }}
       >
         <div className="absolute inset-0">
@@ -350,117 +355,202 @@ export default function BraindanceUserStream() {
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto p-6 md:p-10">
-        <main
-          className={`mt-5 grid grid-cols-1 gap-6 ${showTracklist ? "lg:grid-cols-[minmax(0,1fr)_340px]" : "lg:grid-cols-3"}`}
-        >
-          <div className={showTracklist ? "" : "lg:col-span-2"}>
-            <div className="glass-bends-card relative overflow-hidden rounded-lg backdrop-blur-lg bg-white/5 border border-white/10">
-              <div className="aspect-video relative">
-                {stream ? (
-                  <iframe
-                    className="w-full h-full absolute top-0 left-0"
-                    src={getEmbedUrl()}
-                    title={headerTitle}
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white bg-zinc-900/50">
-                    Stream unavailable.
-                  </div>
-                )}
-              </div>
+      <div className="relative z-10 mx-auto max-w-6xl p-5 md:p-8">
+        <main className="mt-5">
+          {showTracklist ? (
+            <>
+              <div className="relative mb-6">
+                <div className="lg:pr-[calc(340px+1.5rem)]">
+                  <div className="glass-bends-card relative overflow-hidden rounded-lg">
+                    <div className="aspect-video relative">
+                      {stream ? (
+                        <iframe
+                          className="absolute left-0 top-0 h-full w-full border-0"
+                          src={getEmbedUrl()}
+                          title={headerTitle}
+                          allow={
+                            platform === "twitch"
+                              ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
+                              : YOUTUBE_IFRAME_ALLOW
+                          }
+                          allowFullScreen
+                          referrerPolicy="strict-origin-when-cross-origin"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
+                          Stream unavailable.
+                        </div>
+                      )}
+                    </div>
 
-              {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
-                <div className="mt-4 flex items-center gap-3 px-4 py-2">
-                  <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-black/40">
-                    {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
-                      <Image
-                        src={
-                          event?.image_url ||
-                          djSet?.thumbnail ||
-                          pipelineStream?.thumbnail ||
-                          ""
-                        }
-                        alt={headerTitle}
-                        width={56}
-                        height={56}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                    {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
+                      <div className="mt-4 flex items-center gap-3 px-4 py-2">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
+                          {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
+                            <Image
+                              src={
+                                event?.image_url ||
+                                djSet?.thumbnail ||
+                                pipelineStream?.thumbnail ||
+                                ""
+                              }
+                              alt={headerTitle}
+                              width={56}
+                              height={56}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                          )}
+                        </div>
+                        <div className="min-w-0 text-sm">
+                          <h2 className="truncate font-semibold leading-tight text-white">
+                            {headerTitle}
+                          </h2>
+                          <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
+                          <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
+                            {pipelineStream
+                              ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
+                              : event?.description ||
+                                "Curated DJ set inside Braindance stream player."}
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <div className="text-sm min-w-0">
-                    <h2 className="text-white font-semibold leading-tight truncate">
-                      {headerTitle}
-                    </h2>
-                    <p className="text-xs text-gray-400 leading-tight">
-                      {headerSubtitle}
-                    </p>
-                    <p className="text-xs text-gray-300 italic leading-tight line-clamp-2">
-                      {pipelineStream
-                        ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
-                        : event?.description ||
-                          "Curated DJ set inside Braindance stream player."}
-                    </p>
-                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {showTracklist ? (
-            <aside className="min-h-0 lg:sticky lg:top-24 lg:self-start">
-              <StreamTracklistSidebar tracks={pipelineTracks} />
-            </aside>
+                <aside
+                  className="mt-6 flex min-h-0 w-full flex-col lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
+                  aria-label="Tracklist"
+                >
+                  <StreamTracklistSidebar
+                    tracks={pipelineTracks}
+                    className="min-h-[10rem] max-h-[min(65vh,520px)] flex-1 lg:h-full lg:max-h-none lg:min-h-0"
+                  />
+                </aside>
+              </div>
+            </>
           ) : (
-            <div>
-              <div className="glass-bends-card rounded-lg p-4 backdrop-blur-lg bg-white/5 border border-white/10">
-                <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
-                  TOP STATS
-                </h3>
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400">Total Views</p>
-                    <p className="text-3xl font-bold text-[#00ccff]">{views}</p>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <div className="glass-bends-card relative overflow-hidden rounded-lg">
+                  <div className="aspect-video relative">
+                    {stream ? (
+                      <iframe
+                        className="absolute left-0 top-0 h-full w-full border-0"
+                        src={getEmbedUrl()}
+                        title={headerTitle}
+                        allow={
+                          platform === "twitch"
+                            ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
+                            : YOUTUBE_IFRAME_ALLOW
+                        }
+                        allowFullScreen
+                        referrerPolicy="strict-origin-when-cross-origin"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
+                        Stream unavailable.
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Top City</p>
-                    <p className="text-3xl font-bold text-[#ff00f7]">{topCity}</p>
-                  </div>
+
+                  {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
+                    <div className="mt-4 flex items-center gap-3 px-4 py-2">
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
+                        {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
+                          <Image
+                            src={
+                              event?.image_url ||
+                              djSet?.thumbnail ||
+                              pipelineStream?.thumbnail ||
+                              ""
+                            }
+                            alt={headerTitle}
+                            width={56}
+                            height={56}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                        )}
+                      </div>
+                      <div className="min-w-0 text-sm">
+                        <h2 className="truncate font-semibold leading-tight text-white">
+                          {headerTitle}
+                        </h2>
+                        <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
+                        <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
+                          {pipelineStream
+                            ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
+                            : event?.description ||
+                              "Curated DJ set inside Braindance stream player."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {isDbEvent && <GlobeHeatmap id={eventId} />}
+              </div>
+
+              <div>
+                <div className="glass-bends-card rounded-lg p-4">
+                  <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
+                    Stats
+                  </h3>
+                  <div className="mb-4 flex items-center justify-between gap-6">
+                    <div>
+                      <p className="text-xs text-gray-500">Views</p>
+                      <p className="text-2xl font-semibold tabular-nums text-white/90">
+                        {views}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Top city</p>
+                      <p className="text-2xl font-semibold text-white/90">{topCity}</p>
+                    </div>
+                  </div>
+                  {isDbEvent && <GlobeHeatmap id={eventId} />}
+                </div>
               </div>
             </div>
           )}
         </main>
 
-        <div className="glass-bends-card mt-6 rounded-lg p-4 backdrop-blur-lg bg-white/5 border border-white/10">
-          <h3 className="mb-3 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-bold text-transparent">
-            EXTRA LINKS
-          </h3>
-
-          {merchItems.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {merchItems.map((item, idx) => (
-                <a
-                  key={idx}
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block transform cursor-pointer rounded-md border border-white/12 bg-gradient-to-br from-[#3700ff]/25 to-[#ff00f7]/15 p-4 text-center transition-all hover:scale-105 hover:border-[#00ccff]/35 hover:from-[#3700ff]/45 hover:to-[#00ccff]/20 backdrop-blur-sm"
-                >
-                  <p className="text-sm font-medium">{item.title}</p>
-                  <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>
-                </a>
-              ))}
+        {merchItems.length > 0 && (
+          <section className="glass-bends-card relative mt-8 overflow-hidden rounded-xl p-5">
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#00ccff]/[0.14] via-[#ff00f7]/[0.06] to-[#3700ff]/[0.14]"
+              aria-hidden
+            />
+            <div className="relative z-10">
+              <h3 className="mb-4 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
+                Links
+              </h3>
+              <ul className="space-y-3">
+                {merchItems.map((item, idx) => (
+                  <li
+                    key={idx}
+                    className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-4"
+                  >
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-white/90 underline-offset-2 transition-[background-image,color] duration-bends-fast ease-bends hover:bg-gradient-to-r hover:from-[#00ccff] hover:via-[#ff00f7] hover:to-[#3700ff] hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/40"
+                    >
+                      {item.title}
+                    </a>
+                    {item.subtitle ? (
+                      <span className="text-xs text-gray-500 sm:min-w-0 sm:flex-1 sm:truncate">
+                        {item.subtitle}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
             </div>
-          ) : (
-            <p className="text-sm text-gray-500 text-center">No links found.</p>
-          )}
-        </div>
+          </section>
+        )}
       </div>
     </div>
   );

@@ -39,10 +39,7 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
         )}
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event, index) => (
-            <div
-              key={index}
-              className="group transform transition-transform duration-300 hover:scale-[1.02]"
-            >
+            <div key={index}>
               <EventPoster {...event} hideStuff={hideStuff} live={live} />
             </div>
           ))}

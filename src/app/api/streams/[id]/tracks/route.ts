@@ -5,6 +5,10 @@ import {
   classifyBackendError,
   fetchJsonFromBackendWithFallback,
 } from "@/app/lib/backend/http";
+import {
+  getMockTracksForStream,
+  isStreamUiMocksEnabled,
+} from "@/app/lib/mocks/streamMocks";
 import { routeLog } from "@/app/lib/routeLog";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +26,12 @@ export async function GET(
   }
 
   const sid = id.trim();
+
+  if (isStreamUiMocksEnabled()) {
+    const tracks = getMockTracksForStream(sid);
+    routeLog(LOG, "GET OK (STREAM_UI_MOCKS)", { id: sid, count: tracks.length });
+    return NextResponse.json({ tracks, backendSource: "mock" as const });
+  }
 
   try {
     const { data, source } = await fetchJsonFromBackendWithFallback(

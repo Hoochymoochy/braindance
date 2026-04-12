@@ -1,0 +1,40 @@
+
+/stream/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+/stream/b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22
+
+
+Uncaught Error: Switched to client rendering because the server rendering errored:
+
+window is not defined
+    at eval (webpack-internal:///(ssr)/./node_modules/three-conic-polygon-geometry/dist/three-conic-polygon-geometry.mjs:347:13)
+    at (ssr)/./node_modules/three-conic-polygon-geometry/dist/three-conic-polygon-geometry.mjs (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/vendor-chunks/three-conic-polygon-geometry.js:20:1)
+    at __webpack_require__ (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(ssr)/./node_modules/globe.gl/node_modules/three-globe/dist/three-globe.mjs:21:86)
+    at (ssr)/./node_modules/globe.gl/node_modules/three-globe/dist/three-globe.mjs (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/vendor-chunks/globe.gl.js:30:1)
+    at __webpack_require__ (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(ssr)/./node_modules/globe.gl/dist/globe.gl.mjs:7:69)
+    at (ssr)/./node_modules/globe.gl/dist/globe.gl.mjs (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/vendor-chunks/globe.gl.js:20:1)
+    at __webpack_require__ (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(ssr)/./node_modules/react-globe.gl/dist/react-globe.gl.mjs:6:66)
+    at (ssr)/./node_modules/react-globe.gl/dist/react-globe.gl.mjs (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/vendor-chunks/react-globe.gl.js:20:1)
+    at __webpack_require__ (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(ssr)/./src/app/components/GlobeHeatmap.tsx:9:72)
+    at (ssr)/./src/app/components/GlobeHeatmap.tsx (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/app/stream/[eventId]/page.js:248:1)
+    at __webpack_require__ (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/webpack-runtime.js:33:43)
+    at eval (webpack-internal:///(ssr)/./src/app/stream/[eventId]/page.tsx:12:86)
+    at (ssr)/./src/app/stream/[eventId]/page.tsx (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/app/stream/[eventId]/page.js:369:1)
+    at Object.__webpack_require__ [as require] (/Users/khaydenroberts/Workplace/Personal/braindance/.next/server/webpack-runtime.js:33:43)
+    at require (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:423:15430)
+    at requireModule (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:1012)
+    at initializeModuleChunk (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:26505)
+    at getOutlinedModel (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:32886)
+    at /Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:37832
+    at ResponseInstance._fromJSON (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:37926)
+    at JSON.parse (<anonymous>)
+    at initializeModelChunk (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:25940)
+    at resolveModelChunk (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:25312)
+    at /Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:57603
+    at /Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:57708
+    at progress (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:186:57760)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:473:9)

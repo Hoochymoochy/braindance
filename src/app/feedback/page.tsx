@@ -20,19 +20,19 @@ export default function FeedbackPage() {
       <section className="container mx-auto px-4 py-24">
         <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends">
           <h1 className="mb-6 text-4xl font-bold text-gradient-bends sm:text-5xl">
-            We Hear You
+            Feedback
           </h1>
           <p className="mb-8 text-base text-white/80">
-            Drop your thoughts, dreams, bugs, or ideas. We tune into every signal
-            that moves Braindance forward.
+            Something broken? An idea? Tell us what&apos;s working and what isn&apos;t.
+            We read these.
           </p>
 
           {submitted ? (
             <div className="text-center text-[#ff00f7]">
               <MessageSquare className="mx-auto mb-4 h-10 w-10" />
-              <h2 className="mb-2 text-2xl font-bold">Thanks for your feedback!</h2>
+              <h2 className="mb-2 text-2xl font-bold">Got it</h2>
               <p className="text-white/65">
-                You&apos;re helping shape the movement. Respect. 🔮
+                Thanks for taking the time. It really does help.
               </p>
             </div>
           ) : (
@@ -40,16 +40,16 @@ export default function FeedbackPage() {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Let it out. What are you thinking?"
+                placeholder="Say whatever you want. Bugs, ideas, rants, all fair game."
                 required
                 rows={6}
                 className="input-bends min-h-[140px] resize-y py-3"
               />
               <button
                 type="submit"
-                className="flex items-center gap-2 self-end rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition hover:bg-[#ff00f7]/90"
+                className="flex items-center gap-2 self-end rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90"
               >
-                Send It <Send className="h-4 w-4" />
+                Send <Send className="h-4 w-4" />
               </button>
             </form>
           )}

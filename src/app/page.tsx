@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import ColorBends from "@/components/ColorBends";
-import { cn } from "@/lib/utils";
 
 type DjSet = {
   video_id: string;
@@ -25,16 +24,11 @@ type DjSetsResponse = {
 const BEND_COLORS = ["#00ccff", "#ff00f7", "#3700ff", "#7a7a7a"] as const;
 
 export default function Home() {
-  const [bendsReady, setBendsReady] = useState(false);
   const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
   const [streamsLoading, setStreamsLoading] = useState(true);
   const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const eventsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleBendsReady = useCallback(() => {
-    setBendsReady(true);
-  }, []);
 
   // Smooth parallax effect based on mouse position for 4K depth
   useEffect(() => {
@@ -70,11 +64,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setBendsReady(true), 4500);
-    return () => window.clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
     const getFeaturedStreams = async () => {
       try {
         const response = await fetch("/api/dj-sets", { cache: "no-store" });
@@ -106,10 +95,7 @@ export default function Home() {
     <div ref={containerRef} className="relative min-h-screen overflow-hidden text-white">
       {/* BLACK OVERLAY - Fixed depth layer */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black transition-opacity duration-700"
-        style={{
-          opacity: bendsReady ? 0.4 : 0,
-        }}
+        className="pointer-events-none fixed inset-0 -z-10 bg-black/40"
         aria-hidden
       />
 
@@ -119,13 +105,11 @@ export default function Home() {
         aria-hidden
         style={{
           transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
-          transition: "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-          willChange: "transform",
+          transition: "transform 0.45s var(--ease-bends-soft)",
         }}
       >
         <div className="absolute inset-0">
           <ColorBends
-            onReady={handleBendsReady}
             rotation={65}
             speed={0.25}
             colors={[...BEND_COLORS]}
@@ -142,16 +126,7 @@ export default function Home() {
       </div>
 
       {/* CONTENT LAYER */}
-      <div
-        className={cn(
-          "relative z-10 transition-opacity duration-700 ease-out motion-reduce:transition-none",
-          bendsReady
-            ? "opacity-100"
-            : "pointer-events-none select-none opacity-0"
-        )}
-        aria-busy={!bendsReady}
-        aria-hidden={!bendsReady}
-      >
+      <div className="relative z-10">
         {/* HERO */}
         <section className="container mx-auto px-4 py-24 text-center">
           <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg bg-white/5 border border-white/10">
@@ -166,7 +141,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <button
-                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
+                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
                 onClick={() =>
                   eventsRef.current?.scrollIntoView({ behavior: "smooth" })
                 }
@@ -175,7 +150,7 @@ export default function Home() {
               </button>
               <Link
                 href="/events"
-                className="rounded-md border border-white/40 bg-white/5 px-5 py-2 text-white backdrop-blur-sm transition hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
+                className="rounded-md border border-white/40 bg-white/5 px-5 py-2 text-white backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
               >
                 Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
               </Link>
@@ -228,7 +203,7 @@ export default function Home() {
           ].map(({ Icon, title, description, accent, iconBg }) => (
             <div
               key={title}
-              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 transition hover:shadow-[0_0_28px_rgba(0,204,255,0.15)] hover:bg-white/8"
+              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-white/8 hover:shadow-[0_0_28px_rgba(0,204,255,0.15)]"
             >
               <div
                 className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 ${iconBg}`}
@@ -255,10 +230,10 @@ export default function Home() {
             </div>
             <Link
               href="/events"
-              className="group inline-flex items-center gap-1.5 text-[0.8rem] text-[#00ccff]/75 no-underline transition-colors hover:text-[#00ccff]"
+              className="group inline-flex items-center gap-1.5 text-[0.8rem] text-[#00ccff]/75 no-underline transition-colors duration-bends-fast ease-bends hover:text-[#00ccff]"
             >
               View all
-              <span className="inline-block transition-transform group-hover:translate-x-0.5">
+              <span className="inline-block transition-transform duration-bends-fast ease-bends group-hover:translate-x-0.5">
                 →
               </span>
             </Link>
@@ -299,10 +274,6 @@ export default function Home() {
         @keyframes fs-shimmer {
           0%   { background-position: 200% 0; }
           100% { background-position: -200% 0; }
-        }
-        @keyframes fs-card-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
       </div>

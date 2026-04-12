@@ -5,6 +5,7 @@ import {
   classifyBackendError,
   fetchJsonFromBackendWithFallback,
 } from "@/app/lib/backend/http";
+import { getMockStream, isStreamUiMocksEnabled } from "@/app/lib/mocks/streamMocks";
 import { routeLog } from "@/app/lib/routeLog";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,12 @@ export async function GET(
   const { id } = await context.params;
   if (!id?.trim()) {
     return NextResponse.json({ error: "Missing stream id" }, { status: 400 });
+  }
+
+  if (isStreamUiMocksEnabled()) {
+    const stream = getMockStream(id.trim());
+    routeLog(LOG, "GET OK (STREAM_UI_MOCKS)", { id: id.trim() });
+    return NextResponse.json({ ...stream, backendSource: "mock" as const });
   }
 
   try {

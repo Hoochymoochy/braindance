@@ -1,0 +1,1 @@
+Braindance frontend: full route map, env vars, data examples, and file pointers are in **[AGENTS.md](./AGENTS.md)** and **[README.md](./README.md)**. Start with **AGENTS.md** for a compact “where is what.”
