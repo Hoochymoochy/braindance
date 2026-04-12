@@ -268,31 +268,35 @@ export default function EventsPage() {
           </div>
 
           <div
-            className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4 transition-all duration-300 ease-out backdrop-blur-lg bg-white/5 border border-white/10"
+            className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4 transition-all duration-300 ease-out"
             style={{
               transform: isFiltering ? "scale(0.995)" : "scale(1)",
               opacity: isFiltering ? 0.95 : 1,
             }}
           >
-            <div className="flex shrink-0 items-center gap-2 text-sm text-[#00ccff]/90">
-              <SlidersHorizontal className="h-4 w-4" />
-              Filters
+            <div className="flex shrink-0 items-center gap-2 text-sm">
+              <SlidersHorizontal className="h-4 w-4 text-[#00ccff]" />
+              <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text font-medium text-transparent">
+                Filters
+              </span>
             </div>
 
             <button
               type="button"
               onClick={goRandomSet}
               disabled={loading || allDjSets.length === 0}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 bg-gradient-to-r from-[#3700ff]/90 to-[#ff00f7]/75 px-3 py-1.5 text-sm font-medium transition-all duration-200 ease-in-out hover:from-[#ff00f7]/85 hover:to-[#3700ff]/80 disabled:pointer-events-none disabled:opacity-40 hover:scale-105"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/18 bg-black/35 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-all duration-200 hover:border-[#00ccff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
             >
-              <Shuffle className="w-3.5 h-3.5" />
-              Random set
+              <Shuffle className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" />
+              <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text font-medium text-transparent">
+                Random set
+              </span>
             </button>
 
             <select
               value={filter.genre}
               onChange={(e) => handleFilterChange({ ...filter, genre: e.target.value })}
-              className="min-w-[140px] cursor-pointer rounded-lg border border-white/15 bg-black/50 px-3 py-1.5 text-sm transition-all duration-200 hover:border-[#00ccff]/45 focus:border-[#ff00f7]/50 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
             >
               <option value="">All Genres</option>
               {genreOptions.map((g) => (
@@ -314,7 +318,7 @@ export default function EventsPage() {
               onChange={(e) =>
                 handleFilterChange({ ...filter, energy: e.target.value })
               }
-              className="min-w-[140px] cursor-pointer rounded-lg border border-white/15 bg-black/50 px-3 py-1.5 text-sm transition-all duration-200 hover:border-[#00ccff]/45 focus:border-[#ff00f7]/50 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
             >
               <option value="">All Energy</option>
               <option value="low">Low</option>
