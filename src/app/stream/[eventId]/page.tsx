@@ -355,7 +355,7 @@ export default function BraindanceUserStream() {
           className={`mt-5 grid grid-cols-1 gap-6 ${showTracklist ? "lg:grid-cols-[minmax(0,1fr)_340px]" : "lg:grid-cols-3"}`}
         >
           <div className={showTracklist ? "" : "lg:col-span-2"}>
-            <div className="relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] backdrop-blur-sm">
+            <div className="glass-bends-card relative overflow-hidden rounded-lg">
               <div className="aspect-video relative">
                 {stream ? (
                   <iframe
@@ -417,7 +417,7 @@ export default function BraindanceUserStream() {
             </aside>
           ) : (
             <div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+              <div className="glass-bends-card rounded-lg p-4">
                 <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
                   Stats
                 </h3>
@@ -440,8 +440,8 @@ export default function BraindanceUserStream() {
         </main>
 
         {merchItems.length > 0 && (
-          <section className="mt-8 border-t border-white/10 pt-6">
-            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
+          <section className="glass-bends-card mt-8 rounded-xl p-5">
+            <h3 className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
               Links
             </h3>
             <ul className="space-y-3">
@@ -451,7 +451,7 @@ export default function BraindanceUserStream() {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-white/90 underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-white/30"
+                    className="text-sm text-white/90 underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/40"
                   >
                     {item.title}
                   </a>
