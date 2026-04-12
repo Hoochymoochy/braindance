@@ -102,7 +102,7 @@ export default function LocationGate() {
         </p>
         <button
           onClick={requestGeo}
-          className="rounded-full bg-[#3700ff] px-6 py-3 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#ff00f7]/90 active:scale-[0.98]"
+          className="rounded-full bg-[#3700ff] px-6 py-3 text-lg font-semibold text-white shadow-lg transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-[#ff00f7]/90 active:opacity-90"
         >
           Enable Location
         </button>

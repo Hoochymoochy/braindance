@@ -106,7 +106,7 @@ export default function Home() {
     <div ref={containerRef} className="relative min-h-screen overflow-hidden text-white">
       {/* BLACK OVERLAY - Fixed depth layer */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black transition-opacity duration-700"
+        className="pointer-events-none fixed inset-0 -z-10 bg-black transition-opacity duration-[600ms] ease-bends-soft motion-reduce:transition-none"
         style={{
           opacity: bendsReady ? 0.4 : 0,
         }}
@@ -119,8 +119,7 @@ export default function Home() {
         aria-hidden
         style={{
           transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
-          transition: "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-          willChange: "transform",
+          transition: "transform 0.45s var(--ease-bends-soft)",
         }}
       >
         <div className="absolute inset-0">
@@ -144,7 +143,7 @@ export default function Home() {
       {/* CONTENT LAYER */}
       <div
         className={cn(
-          "relative z-10 transition-opacity duration-700 ease-out motion-reduce:transition-none",
+          "relative z-10 transition-opacity duration-[600ms] ease-bends-soft motion-reduce:transition-none",
           bendsReady
             ? "opacity-100"
             : "pointer-events-none select-none opacity-0"
@@ -166,7 +165,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <button
-                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
+                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
                 onClick={() =>
                   eventsRef.current?.scrollIntoView({ behavior: "smooth" })
                 }
@@ -175,7 +174,7 @@ export default function Home() {
               </button>
               <Link
                 href="/events"
-                className="rounded-md border border-white/40 bg-white/5 px-5 py-2 text-white backdrop-blur-sm transition hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
+                className="rounded-md border border-white/40 bg-white/5 px-5 py-2 text-white backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
               >
                 Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
               </Link>
@@ -228,7 +227,7 @@ export default function Home() {
           ].map(({ Icon, title, description, accent, iconBg }) => (
             <div
               key={title}
-              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 transition hover:shadow-[0_0_28px_rgba(0,204,255,0.15)] hover:bg-white/8"
+              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-white/8 hover:shadow-[0_0_28px_rgba(0,204,255,0.15)]"
             >
               <div
                 className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 ${iconBg}`}
@@ -255,10 +254,10 @@ export default function Home() {
             </div>
             <Link
               href="/events"
-              className="group inline-flex items-center gap-1.5 text-[0.8rem] text-[#00ccff]/75 no-underline transition-colors hover:text-[#00ccff]"
+              className="group inline-flex items-center gap-1.5 text-[0.8rem] text-[#00ccff]/75 no-underline transition-colors duration-bends-fast ease-bends hover:text-[#00ccff]"
             >
               View all
-              <span className="inline-block transition-transform group-hover:translate-x-0.5">
+              <span className="inline-block transition-transform duration-bends-fast ease-bends group-hover:translate-x-0.5">
                 →
               </span>
             </Link>
@@ -299,10 +298,6 @@ export default function Home() {
         @keyframes fs-shimmer {
           0%   { background-position: 200% 0; }
           100% { background-position: -200% 0; }
-        }
-        @keyframes fs-card-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
       </div>

@@ -46,7 +46,7 @@ export function StreamTracklistSidebar({
             {tracks.map((t) => (
               <li
                 key={t.id}
-                className="group rounded-md border border-transparent px-2 py-2 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
+                className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-white/10 hover:bg-white/[0.04]"
               >
                 <div className="flex gap-2">
                   <span className="shrink-0 bg-gradient-to-b from-[#00ccff] to-[#3700ff] bg-clip-text font-mono text-xs tabular-nums text-transparent">

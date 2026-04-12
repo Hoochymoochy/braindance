@@ -237,8 +237,7 @@ export default function EventsPage() {
         aria-hidden
         style={{
           transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
-          transition: "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-          willChange: "transform",
+          transition: "transform 0.45s var(--ease-bends-soft)",
         }}
       >
         <div className="absolute inset-0">
@@ -268,10 +267,9 @@ export default function EventsPage() {
           </div>
 
           <div
-            className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4 transition-all duration-300 ease-out"
+            className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4 transition-opacity duration-bends ease-bends motion-reduce:transition-none"
             style={{
-              transform: isFiltering ? "scale(0.995)" : "scale(1)",
-              opacity: isFiltering ? 0.95 : 1,
+              opacity: isFiltering ? 0.92 : 1,
             }}
           >
             <div className="flex shrink-0 items-center gap-2 text-sm font-medium text-[#00ccff]">
@@ -283,7 +281,7 @@ export default function EventsPage() {
               type="button"
               onClick={goRandomSet}
               disabled={loading || allDjSets.length === 0}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/18 bg-black/35 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-all duration-200 hover:border-[#00ccff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/18 bg-black/35 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
             >
               <Shuffle className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" />
               <span className="font-medium text-[#00ccff]">Random set</span>
@@ -292,7 +290,7 @@ export default function EventsPage() {
             <select
               value={filter.genre}
               onChange={(e) => handleFilterChange({ ...filter, genre: e.target.value })}
-              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
             >
               <option value="">All Genres</option>
               {genreOptions.map((g) => (
@@ -314,7 +312,7 @@ export default function EventsPage() {
               onChange={(e) =>
                 handleFilterChange({ ...filter, energy: e.target.value })
               }
-              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
             >
               <option value="">All Energy</option>
               <option value="low">Low</option>
@@ -326,7 +324,7 @@ export default function EventsPage() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="ml-auto cursor-pointer text-xs text-[#ff00f7] transition-colors duration-200 hover:text-[#00ccff] hover:underline"
+                className="ml-auto cursor-pointer text-xs text-[#ff00f7] transition-colors duration-bends-fast ease-bends hover:text-[#00ccff] hover:underline"
               >
                 Reset
               </button>
@@ -340,7 +338,7 @@ export default function EventsPage() {
                 title="Featured This Week"
               />
             </div>
-            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300 ${isFiltering ? "opacity-75" : "opacity-100"}`}>
+            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
               {loading && skeletons(3)}
               {!loading &&
                 featuredWeekly.map((set, i) => (
@@ -363,7 +361,7 @@ export default function EventsPage() {
                 </p>
               )}
             </div>
-            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300 ${isFiltering ? "opacity-75" : "opacity-100"}`}>
+            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
               {loading && skeletons(6)}
               {!loading &&
                 visibleDjSets.map((set, i) => (
@@ -375,7 +373,7 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/15 bg-black/40 px-6 py-3 text-sm font-medium text-white/90 transition-all duration-200 hover:border-[#00ccff]/40 hover:bg-[#3700ff]/15 active:scale-95 active:shadow-[0_0_12px_rgba(0,204,255,0.15)] hover:scale-105 backdrop-blur-sm"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/15 bg-black/40 px-6 py-3 text-sm font-medium text-white/90 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-[#3700ff]/15 hover:shadow-[0_0_20px_rgba(0,204,255,0.1)] active:opacity-90"
                 >
                   Load more
                   <ChevronDown className="w-4 h-4" />
@@ -388,7 +386,7 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={goRandomSet}
-                  className="cursor-pointer text-[#ff00f7] transition-colors duration-200 hover:text-[#00ccff] hover:underline"
+                  className="cursor-pointer text-[#ff00f7] transition-colors duration-bends-fast ease-bends hover:text-[#00ccff] hover:underline"
                 >
                   Random set
                 </button>

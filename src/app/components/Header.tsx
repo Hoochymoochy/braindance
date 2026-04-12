@@ -24,7 +24,7 @@ export default function Header() {
       <div className="container mx-auto flex flex-col items-center justify-between gap-3 px-4 py-3 md:flex-row md:gap-0 md:py-4">
         <Link
           href="/"
-          className="flex items-center space-x-2 transition-opacity hover:opacity-90"
+          className="flex items-center space-x-2 transition-opacity duration-bends-fast ease-bends hover:opacity-90"
         >
           <BrainLogo withText={false} className="h-6 w-6 text-[#00ccff]" />
           <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-sm font-semibold uppercase tracking-wide text-transparent">
@@ -35,13 +35,13 @@ export default function Header() {
         <nav className="flex items-center space-x-8 text-sm" aria-label="Primary">
           <Link
             href="/"
-            className="text-white/90 transition-colors hover:text-[#00ccff]"
+            className="text-white/90 transition-colors duration-bends-fast ease-bends hover:text-[#00ccff]"
           >
             Home
           </Link>
           <Link
             href="/events"
-            className="text-white/90 transition-colors hover:text-[#ff00f7]"
+            className="text-white/90 transition-colors duration-bends-fast ease-bends hover:text-[#ff00f7]"
           >
             Events
           </Link>

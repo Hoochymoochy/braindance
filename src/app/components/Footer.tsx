@@ -25,19 +25,19 @@ export default function Footer() {
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 sm:justify-start">
             <Link
               href="/policy"
-              className="text-sm text-white/65 transition-colors hover:text-[#00ccff]"
+              className="text-sm text-white/65 transition-colors duration-bends-fast ease-bends hover:text-[#00ccff]"
             >
               Policy
             </Link>
             <Link
               href="/feedback"
-              className="text-sm text-white/65 transition-colors hover:text-[#ff00f7]"
+              className="text-sm text-white/65 transition-colors duration-bends-fast ease-bends hover:text-[#ff00f7]"
             >
               Feedback
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-white/65 transition-colors hover:text-[#3700ff]"
+              className="text-sm text-white/65 transition-colors duration-bends-fast ease-bends hover:text-[#3700ff]"
             >
               Contact
             </Link>

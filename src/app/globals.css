@@ -308,6 +308,11 @@ body {
   /* Space for fixed nav chrome (Header.tsx / Footer.tsx) */
   --nav-header-h: 4.75rem;
   --nav-footer-h: 8.75rem;
+  /* Motion: smooth deceleration, premium feel */
+  --ease-bends: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bends-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-bends: 320ms;
+  --duration-bends-fast: 200ms;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -374,6 +379,42 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer utilities {
+  .ease-bends {
+    transition-timing-function: var(--ease-bends);
+  }
+  .ease-bends-soft {
+    transition-timing-function: var(--ease-bends-soft);
+  }
+  .duration-bends {
+    transition-duration: var(--duration-bends);
+  }
+  .duration-bends-fast {
+    transition-duration: var(--duration-bends-fast);
+  }
+  /** Staggered card entrance; respect reduced motion */
+  .motion-enter {
+    animation: bends-fade-up 0.48s var(--ease-bends) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-enter {
+    animation: none !important;
+  }
+}
+
+@keyframes bends-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @layer base {
