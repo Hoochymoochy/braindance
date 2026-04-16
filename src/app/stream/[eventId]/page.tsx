@@ -87,6 +87,32 @@ function parseTracksPayload(raw: unknown): TrackRow[] {
   return [];
 }
 
+type DjNativeTrack = {
+  timestamp_label?: string;
+  artist?: string;
+  title?: string;
+  raw?: string;
+  position?: number;
+};
+
+/** Maps `GET /dj-sets/:id/tracklists` (Supabase / YouTube parser) into sidebar rows. */
+function mapDjSetTracklistResponse(data: unknown): TrackRow[] {
+  if (!data || typeof data !== "object") return [];
+  const items =
+    (data as { items?: { payload?: { tracks?: DjNativeTrack[] } }[] }).items ??
+    [];
+  const first = items.find((i) => i.payload?.tracks?.length);
+  const tracks = first?.payload?.tracks ?? [];
+  return tracks.map((t, idx) => ({
+    id: `dj-${String(t.position ?? idx + 1)}-${idx}`,
+    timestamp: t.timestamp_label?.trim() || "—",
+    artist: (t.artist ?? "").trim() || "—",
+    title: (t.title ?? t.raw ?? "Track").trim(),
+    spotify_url: null,
+    soundcloud_url: null,
+  }));
+}
+
 function formatDuration(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "—";
   const h = Math.floor(seconds / 3600);
@@ -118,6 +144,7 @@ export default function BraindanceUserStream() {
     null
   );
   const [pipelineTracks, setPipelineTracks] = useState<TrackRow[]>([]);
+  const [djSetTracks, setDjSetTracks] = useState<TrackRow[]>([]);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -163,6 +190,7 @@ export default function BraindanceUserStream() {
     setStreamLoading(true);
     setPipelineStream(null);
     setPipelineTracks([]);
+    setDjSetTracks([]);
 
     try {
       if (isUuid(eventId)) {
@@ -283,6 +311,19 @@ export default function BraindanceUserStream() {
             )}`,
           },
         ]);
+
+        try {
+          const tr = await fetch(
+            `/api/dj-sets/${encodeURIComponent(payload.item.video_id)}/tracklists`,
+            { cache: "no-store" }
+          );
+          if (tr.ok) {
+            const body = await tr.json();
+            setDjSetTracks(mapDjSetTracklistResponse(body));
+          }
+        } catch {
+          setDjSetTracks([]);
+        }
       }
     } finally {
       setStreamLoading(false);
@@ -321,7 +362,12 @@ export default function BraindanceUserStream() {
     return <StreamLoadingScreen />;
   }
 
-  const showTracklist = Boolean(pipelineStream);
+  const showTracklist = Boolean(pipelineStream) || Boolean(djSet);
+
+  const sidebarTracks = pipelineStream ? pipelineTracks : djSetTracks;
+  const tracklistEmptyHint = pipelineStream
+    ? undefined
+    : "No tracklist parsed for this video yet.";
 
   return (
     <div className="relative min-h-screen overflow-hidden text-white">
@@ -424,7 +470,8 @@ export default function BraindanceUserStream() {
                   aria-label="Tracklist"
                 >
                   <StreamTracklistSidebar
-                    tracks={pipelineTracks}
+                    tracks={sidebarTracks}
+                    emptyHint={tracklistEmptyHint}
                     className="min-h-[10rem] max-h-[min(65vh,520px)] flex-1 lg:h-full lg:max-h-none lg:min-h-0"
                   />
                 </aside>

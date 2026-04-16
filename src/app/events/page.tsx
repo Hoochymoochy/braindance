@@ -12,7 +12,7 @@ import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
 import { getStreams } from "@/app/lib/events/stream";
-import { DjSetRow } from "@/app/components/dj-sets/DjSetRow";
+import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import dynamic from "next/dynamic";
 
 const ColorBends = dynamic(() => import("@/components/ColorBends"), {
@@ -361,11 +361,11 @@ export default function EventsPage() {
                 title="Featured This Week"
               />
             </div>
-            <div className={`flex flex-col gap-8 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
+            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
               {loading && skeletons(3)}
               {!loading &&
                 featuredWeekly.map((set, i) => (
-                  <DjSetRow key={set.video_id} set={set} index={i} />
+                  <StreamCard key={set.video_id} set={set} index={i} />
                 ))}
               {!loading && featuredWeekly.length === 0 && (
                 <p className="col-span-full py-4 text-sm text-[#7a7a7a]">
@@ -384,11 +384,11 @@ export default function EventsPage() {
                 </p>
               )}
             </div>
-            <div className={`flex flex-col gap-8 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
+            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
               {loading && skeletons(6)}
               {!loading &&
                 visibleDjSets.map((set, i) => (
-                  <DjSetRow key={set.video_id} set={set} index={i} />
+                  <StreamCard key={set.video_id} set={set} index={i} />
                 ))}
             </div>
             {!loading && hasMore && (
