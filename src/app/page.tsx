@@ -95,7 +95,7 @@ export default function Home() {
     <div ref={containerRef} className="relative min-h-screen overflow-hidden text-white">
       {/* BLACK OVERLAY - Fixed depth layer */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black/40"
+        className="pointer-events-none fixed inset-0 -z-10 bg-black/50"
         aria-hidden
       />
 

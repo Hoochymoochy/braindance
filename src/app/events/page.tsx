@@ -227,7 +227,7 @@ export default function EventsPage() {
     <div ref={containerRef} className="relative flex min-h-screen flex-col overflow-hidden text-white">
       {/* BLACK OVERLAY - Fixed depth layer */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black/40"
+        className="pointer-events-none fixed inset-0 -z-10 bg-black/50"
         aria-hidden
       />
 

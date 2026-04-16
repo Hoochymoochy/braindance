@@ -2,9 +2,14 @@
 export const YOUTUBE_IFRAME_ALLOW =
   "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
 
+type YoutubeEmbedOptions = {
+  autoplay?: boolean;
+  mute?: boolean;
+};
+
 /**
  * Build an embed URL that plays reliably across browsers:
- * muted autoplay, `playsinline` (iOS), `enablejsapi`, modest branding.
+ * configurable autoplay, `playsinline` (iOS), `enablejsapi`, modest branding.
  *
  * **Production:** set `NEXT_PUBLIC_SITE_URL` (e.g. `https://braindance.live`) so the
  * `origin` query param is included consistently; YouTube uses this for embed security.
@@ -12,9 +17,13 @@ export const YOUTUBE_IFRAME_ALLOW =
  * **Privacy / blocked cookies:** set `NEXT_PUBLIC_YOUTUBE_EMBED_HOST=nocookie` to use
  * `youtube-nocookie.com` instead of `youtube.com`.
  */
-export function buildYoutubeEmbedSrc(rawVideoIdOrUrl: string): string {
+export function buildYoutubeEmbedSrc(
+  rawVideoIdOrUrl: string,
+  options: YoutubeEmbedOptions = {}
+): string {
   const trimmed = rawVideoIdOrUrl.trim();
   if (!trimmed) return "";
+  const { autoplay = false, mute = false } = options;
 
   let id = trimmed;
   if (
@@ -26,8 +35,8 @@ export function buildYoutubeEmbedSrc(rawVideoIdOrUrl: string): string {
   }
 
   const params = new URLSearchParams({
-    autoplay: "1",
-    mute: "1",
+    autoplay: autoplay ? "1" : "0",
+    mute: mute ? "1" : "0",
     playsinline: "1",
     rel: "0",
     modestbranding: "1",
