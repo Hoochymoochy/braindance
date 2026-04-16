@@ -12,6 +12,9 @@ export type TrackRow = {
   soundcloud_url: string | null;
 };
 
+const scrollbarHidden =
+  "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
+
 /** Horizontal scroll, scrollbar visually hidden (still swipe / drag / shift+wheel). */
 function ScrollableLine({
   text,
@@ -24,7 +27,8 @@ function ScrollableLine({
     <div
       title={text}
       className={cn(
-        "touch-pan-x cursor-default overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+        "touch-pan-x cursor-default overflow-x-auto whitespace-nowrap",
+        scrollbarHidden,
         className
       )}
     >
@@ -64,7 +68,12 @@ export function StreamTracklistSidebar({
           </span>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+        <div
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto px-2 py-2",
+            scrollbarHidden
+          )}
+        >
         {tracks.length === 0 ? (
           <p className="px-2 py-6 text-center text-sm text-gray-500">
             {emptyHint ??
