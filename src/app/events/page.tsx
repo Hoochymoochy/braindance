@@ -30,6 +30,7 @@ type DjSet = {
   view_count?: number;
   duration_seconds?: number;
   genres?: string[];
+  contexts?: string[];
   energy?: string;
 };
 
@@ -73,7 +74,7 @@ export default function EventsPage() {
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [filter, setFilter] = useState({ genre: "", energy: "" });
+  const [filter, setFilter] = useState({ genre: "", context: "", energy: "" });
   const [isFiltering, setIsFiltering] = useState(false);
   // Smooth parallax effect based on mouse position for 4K depth
   useEffect(() => {
@@ -162,15 +163,22 @@ export default function EventsPage() {
     return Array.from(s).sort();
   }, [allDjSets]);
 
+  const contextOptions = useMemo(() => {
+    const s = new Set<string>();
+    allDjSets.forEach((set) => set.contexts?.forEach((c) => s.add(c)));
+    return Array.from(s).sort();
+  }, [allDjSets]);
+
   const filteredDjSets = useMemo(
     () =>
       allDjSets.filter((set) => {
         return (
           (!filter.genre || set.genres?.includes(filter.genre)) &&
+          (!filter.context || set.contexts?.includes(filter.context)) &&
           (!filter.energy || set.energy === filter.energy)
         );
       }),
-    [allDjSets, filter.genre, filter.energy]
+    [allDjSets, filter.genre, filter.context, filter.energy]
   );
 
   const visibleDjSets = useMemo(
@@ -182,7 +190,7 @@ export default function EventsPage() {
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [filter.genre, filter.energy]);
+  }, [filter.genre, filter.context, filter.energy]);
 
   const loadMore = () => {
     setVisibleCount((c) => c + PAGE_SIZE);
@@ -203,7 +211,7 @@ export default function EventsPage() {
 
   const handleResetFilters = () => {
     setIsFiltering(true);
-    setFilter({ genre: "", energy: "" });
+    setFilter({ genre: "", context: "", energy: "" });
     setTimeout(() => setIsFiltering(false), 300);
   };
 
@@ -308,6 +316,21 @@ export default function EventsPage() {
             </select>
 
             <select
+              value={filter.context}
+              onChange={(e) =>
+                handleFilterChange({ ...filter, context: e.target.value })
+              }
+              className="min-w-[150px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+            >
+              <option value="">All Contexts</option>
+              {contextOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                </option>
+              ))}
+            </select>
+
+            <select
               value={filter.energy}
               onChange={(e) =>
                 handleFilterChange({ ...filter, energy: e.target.value })
@@ -320,7 +343,7 @@ export default function EventsPage() {
               <option value="high">High</option>
             </select>
 
-            {(filter.genre || filter.energy) && (
+            {(filter.genre || filter.context || filter.energy) && (
               <button
                 type="button"
                 onClick={handleResetFilters}

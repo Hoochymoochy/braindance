@@ -5,7 +5,17 @@ export class BackendRequestError extends Error {
   statusCode?: number;
 }
 
-/** Normalize env base URL to origin (optional trailing /dj-sets stripped). */
+function isLoopbackHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  return h === "localhost" || h === "127.0.0.1" || h === "::1" || h === "[::1]";
+}
+
+/**
+ * Normalize env base URL to origin (optional trailing /dj-sets stripped).
+ * `https://localhost` / `https://127.0.0.1` are rewritten to `http://…` — local
+ * APIs (uvicorn, etc.) almost always speak HTTP; using HTTPS causes TLS errors
+ * like ERR_SSL_PACKET_LENGTH_TOO_LONG.
+ */
 export function normalizeBackendBase(raw: string | undefined): string | null {
   if (!raw?.trim()) return null;
   let base = raw.trim().replace(/\/+$/, "");
@@ -16,6 +26,15 @@ export function normalizeBackendBase(raw: string | undefined): string | null {
   try {
     const parsed = new URL(base);
     if (!parsed.protocol || !parsed.host) return null;
+    if (parsed.protocol === "https:" && isLoopbackHost(parsed.hostname)) {
+      routeLog(
+        "backend",
+        "BACKEND_URL uses https for loopback; using http for local dev",
+        { original: parsed.origin }
+      );
+      parsed.protocol = "http:";
+      return parsed.origin;
+    }
     return parsed.origin;
   } catch {
     return null;
@@ -26,7 +45,7 @@ export function getPrimaryBackendUrl(): string {
   const base = normalizeBackendBase(process.env.BACKEND_URL);
   if (!base) {
     throw new BackendConfigError(
-      "Missing or invalid BACKEND_URL env var (expected https://host)"
+      "Missing or invalid BACKEND_URL env var (expected http(s)://host)"
     );
   }
   return base;

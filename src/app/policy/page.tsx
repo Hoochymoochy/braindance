@@ -2,7 +2,6 @@
 
 import React from "react";
 
-
 export default function PolicyPage() {
   return (
     <div className="relative min-h-screen overflow-hidden text-white">

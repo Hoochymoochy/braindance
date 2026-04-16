@@ -1,0 +1,73 @@
+khaydenroberts@Mac braindance % npm run dev
+
+> braindance@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.8
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.226:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1367ms
+ ○ Compiling /events ...
+ ✓ Compiled /events in 2.3s (973 modules)
+ GET /events 200 in 2777ms
+ ○ Compiling /api/dj-sets ...
+ ✓ Compiled /api/dj-sets in 2.3s (994 modules)
+[2026-04-16T06:51:51.408Z] [braindance] [api/dj-sets] GET /api/dj-sets {"incomingUrl":"http://localhost:3000/api/dj-sets"}
+[2026-04-16T06:51:51.408Z] [braindance] [api/dj-sets] backend targets {"BACKEND_URL":"https://localhost:8001","BACKEND_URL_BACKUP":"https://braindance-backend.vercel.app"}
+(node:43043) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[2026-04-16T06:51:51.421Z] [braindance] [api/dj-sets] ERROR fetch failed https://localhost:8001/dj-sets
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:15422:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async fetchJsonWithTimeout (webpack-internal:///(rsc)/./src/app/lib/backend/http.ts:112:21)
+    at async tryList (webpack-internal:///(rsc)/./src/app/api/dj-sets/route.ts:49:32)
+    at async fetchDjSetsListWithFallback (webpack-internal:///(rsc)/./src/app/api/dj-sets/route.ts:58:25)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/dj-sets/route.ts:169:44)
+    at async AppRouteRouteModule.do (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)
+    at async AppRouteRouteModule.handle (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)
+    at async doRender (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:1518:42)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:1920:28)
+    at async DevServer.renderPageComponent (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:2408:24)
+    at async DevServer.renderToResponseImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:2445:32)
+    at async DevServer.pipeImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:1008:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/next-server.js:305:17)
+    at async DevServer.handleRequestImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:900:17)
+    at async /Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/dev/next-dev-server.js:371:20
+    at async Span.traceAsyncFn (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/dev/next-dev-server.js:368:24)
+    at async invokeRender (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/router-server.js:237:21)
+    at async handleRequest (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/router-server.js:428:24)
+    at async requestHandlerImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/router-server.js:452:13)
+    at async Server.requestListener (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/start-server.js:158:13)
+[2026-04-16T06:51:51.422Z] [braindance] [api/dj-sets] primary /dj-sets failed {"error":"Upstream fetch failed: fetch failed → 4062B9F501000000:error:0A0000C6:SSL routines:tls_get_more_records:packet length too long:ssl/record/methods/tls_common.c:661:\n (code=ERR_SSL_PACKET_LENGTH_TOO_LONG)"}
+[2026-04-16T06:51:51.422Z] [braindance] [api/dj-sets] trying BACKEND_URL_BACKUP {"backup":"https://braindance-backend.vercel.app"}
+[2026-04-16T06:51:51.737Z] [braindance] [api/dj-sets] ERROR backend HTTP 503 https://braindance-backend.vercel.app/dj-sets
+{"detail":"Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY)."}
+[2026-04-16T06:51:51.737Z] [braindance] [api/dj-sets] ERROR GET failed: Backend 503: {"detail":"Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY)."}
+Error: Backend 503: {"detail":"Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY)."}
+    at fetchJsonWithTimeout (webpack-internal:///(rsc)/./src/app/lib/backend/http.ts:116:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async tryList (webpack-internal:///(rsc)/./src/app/api/dj-sets/route.ts:49:32)
+    at async fetchDjSetsListWithFallback (webpack-internal:///(rsc)/./src/app/api/dj-sets/route.ts:76:19)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/dj-sets/route.ts:169:44)
+    at async AppRouteRouteModule.do (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:34112)
+    at async AppRouteRouteModule.handle (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:26:41338)
+    at async doRender (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:1518:42)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:1920:28)
+    at async DevServer.renderPageComponent (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:2408:24)
+    at async DevServer.renderToResponseImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:2445:32)
+    at async DevServer.pipeImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:1008:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/next-server.js:305:17)
+    at async DevServer.handleRequestImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/base-server.js:900:17)
+    at async /Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/dev/next-dev-server.js:371:20
+    at async Span.traceAsyncFn (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/dev/next-dev-server.js:368:24)
+    at async invokeRender (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/router-server.js:237:21)
+    at async handleRequest (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/router-server.js:428:24)
+    at async requestHandlerImpl (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/router-server.js:452:13)
+    at async Server.requestListener (/Users/khaydenroberts/Workplace/Personal/braindance/node_modules/next/dist/server/lib/start-server.js:158:13)
+ GET /api/dj-sets 200 in 2785ms
