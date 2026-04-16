@@ -399,7 +399,7 @@ export default function BraindanceUserStream() {
   return (
     <div className="relative min-h-screen overflow-hidden text-white">
       <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black/60"
+        className="pointer-events-none fixed inset-0 -z-10 bg-black/40"
         aria-hidden
       />
 
