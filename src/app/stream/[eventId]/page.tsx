@@ -149,6 +149,7 @@ export default function BraindanceUserStream() {
   const [djSetTracklistError, setDjSetTracklistError] = useState<string | null>(
     null
   );
+  const [isPlayerActivated, setIsPlayerActivated] = useState(false);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -192,6 +193,7 @@ export default function BraindanceUserStream() {
     }
 
     setStreamLoading(true);
+    setIsPlayerActivated(false);
     setPipelineStream(null);
     setPipelineTracks([]);
     setDjSetTracks([]);
@@ -361,9 +363,12 @@ export default function BraindanceUserStream() {
     if (platform === "twitch") {
       const parent =
         process.env.NEXT_PUBLIC_TWITCH_PARENT ?? "localhost";
-      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&autoplay=true&muted=true`;
+      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&autoplay=${isPlayerActivated ? "true" : "false"}&muted=${isPlayerActivated ? "false" : "true"}`;
     }
-    return buildYoutubeEmbedSrc(url, { autoplay: true, mute: true });
+    return buildYoutubeEmbedSrc(url, {
+      autoplay: isPlayerActivated,
+      mute: !isPlayerActivated,
+    });
   };
 
   useEffect(() => {
@@ -395,6 +400,66 @@ export default function BraindanceUserStream() {
     ? undefined
     : djSetTracklistError ??
       "No tracklist parsed for this video yet.";
+  const streamArtwork =
+    event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail || "";
+
+  const renderPlayer = () => {
+    if (!stream) {
+      return (
+        <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
+          Stream unavailable.
+        </div>
+      );
+    }
+
+    if (!isPlayerActivated) {
+      return (
+        <button
+          type="button"
+          onClick={() => setIsPlayerActivated(true)}
+          className="group absolute inset-0 h-full w-full overflow-hidden text-left"
+          aria-label={`Play ${headerTitle}`}
+        >
+          {streamArtwork ? (
+            <Image
+              src={streamArtwork}
+              alt={headerTitle}
+              fill
+              className="object-cover opacity-55"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#3700ff]/40 to-[#00ccff]/20" />
+          )}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <div className="rounded-full bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] p-[2px] shadow-[0_0_24px_rgba(255,0,247,0.35)]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/65 backdrop-blur-md">
+                <span className="ml-0.5 text-xl text-white" aria-hidden>
+                  ▶
+                </span>
+              </div>
+            </div>
+            <p className="text-sm font-semibold text-white">Click play to start</p>
+          </div>
+        </button>
+      );
+    }
+
+    return (
+      <iframe
+        className="absolute left-0 top-0 h-full w-full border-0"
+        src={getEmbedUrl()}
+        title={headerTitle}
+        allow={
+          platform === "twitch"
+            ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
+            : YOUTUBE_IFRAME_ALLOW
+        }
+        allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    );
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden text-white">
@@ -436,24 +501,7 @@ export default function BraindanceUserStream() {
                 <div className="lg:pr-[calc(340px+1.5rem)]">
                   <div className="glass-bends-card relative overflow-hidden rounded-lg">
                     <div className="aspect-video relative">
-                      {stream ? (
-                        <iframe
-                          className="absolute left-0 top-0 h-full w-full border-0"
-                          src={getEmbedUrl()}
-                          title={headerTitle}
-                          allow={
-                            platform === "twitch"
-                              ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
-                              : YOUTUBE_IFRAME_ALLOW
-                          }
-                          allowFullScreen
-                          referrerPolicy="strict-origin-when-cross-origin"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
-                          Stream unavailable.
-                        </div>
-                      )}
+                      {renderPlayer()}
                     </div>
 
                     {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
@@ -509,24 +557,7 @@ export default function BraindanceUserStream() {
               <div className="lg:col-span-2">
                 <div className="glass-bends-card relative overflow-hidden rounded-lg">
                   <div className="aspect-video relative">
-                    {stream ? (
-                      <iframe
-                        className="absolute left-0 top-0 h-full w-full border-0"
-                        src={getEmbedUrl()}
-                        title={headerTitle}
-                        allow={
-                          platform === "twitch"
-                            ? "autoplay; encrypted-media; fullscreen; picture-in-picture"
-                            : YOUTUBE_IFRAME_ALLOW
-                        }
-                        allowFullScreen
-                        referrerPolicy="strict-origin-when-cross-origin"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
-                        Stream unavailable.
-                      </div>
-                    )}
+                    {renderPlayer()}
                   </div>
 
                   {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
