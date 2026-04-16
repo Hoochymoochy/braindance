@@ -361,9 +361,9 @@ export default function BraindanceUserStream() {
     if (platform === "twitch") {
       const parent =
         process.env.NEXT_PUBLIC_TWITCH_PARENT ?? "localhost";
-      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&muted=true`;
+      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&autoplay=true&muted=true`;
     }
-    return buildYoutubeEmbedSrc(url);
+    return buildYoutubeEmbedSrc(url, { autoplay: true, mute: true });
   };
 
   useEffect(() => {
