@@ -447,7 +447,7 @@ export default function BraindanceUserStream() {
 
     return (
       <iframe
-        className="absolute left-0 top-0 h-full w-full border-0"
+        className="absolute left-0 top-0 h-full w-full border-0 bg-black"
         src={getEmbedUrl()}
         title={headerTitle}
         allow={
