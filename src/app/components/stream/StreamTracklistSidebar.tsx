@@ -12,6 +12,27 @@ export type TrackRow = {
   soundcloud_url: string | null;
 };
 
+/** Horizontal scroll, scrollbar visually hidden (still swipe / drag / shift+wheel). */
+function ScrollableLine({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
+  return (
+    <div
+      title={text}
+      className={cn(
+        "touch-pan-x cursor-default overflow-x-auto whitespace-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+        className
+      )}
+    >
+      {text}
+    </div>
+  );
+}
+
 export function StreamTracklistSidebar({
   tracks,
   emptyHint,
@@ -61,10 +82,14 @@ export function StreamTracklistSidebar({
                     {t.timestamp}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white/95">
-                      {t.title}
-                    </p>
-                    <p className="truncate text-xs text-gray-400">{t.artist}</p>
+                    <ScrollableLine
+                      text={t.title}
+                      className="text-sm font-medium text-white/95"
+                    />
+                    <ScrollableLine
+                      text={t.artist}
+                      className="text-xs text-gray-400"
+                    />
                     {(t.spotify_url || t.soundcloud_url) && (
                       <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-gray-500">
                         {t.spotify_url && (
