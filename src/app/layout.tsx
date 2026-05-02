@@ -1,5 +1,6 @@
 import "./globals.css";
 import { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import { Geist } from "next/font/google";
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
