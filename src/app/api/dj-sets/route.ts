@@ -36,6 +36,10 @@ type BackendDjSetsListResponse =
       count?: number;
       items?: DjSet[];
       currentSets?: DjSet[];
+      featured?: {
+        weekly?: DjSet[];
+        daily?: DjSet[];
+      };
     };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -213,6 +217,10 @@ export async function GET(request: NextRequest) {
       (item) => Boolean(item.video_id) && passesDurationFilter(item)
     );
 
+    const backendFeatured = Array.isArray(backendPayload)
+      ? null
+      : (backendPayload.featured ?? null);
+
     const payload = {
       updatedAt,
       count: Array.isArray(backendPayload)
@@ -221,7 +229,10 @@ export async function GET(request: NextRequest) {
       currentSets: filtered,
       featured: {
         daily: topViewed(filtered, 1, 4),
-        weekly: topViewed(filtered, 7, 6),
+        weekly:
+          backendFeatured?.weekly?.length
+            ? backendFeatured.weekly
+            : topViewed(filtered, 7, 6),
       },
       backendSource: source,
     };
