@@ -1,8 +1,7 @@
 import "./globals.css";
 import { ReactNode } from "react";
 import { Analytics } from "@vercel/analytics/react";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
+import AppShell from "@/app/components/AppShell";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 
@@ -16,11 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <body className="min-h-screen bg-[var(--page-bg)] text-zinc-900 font-sans">
         {/* Re-enable to prompt for browser location on load (see LocationGate.tsx) */}
         {/* <LocationGate /> */}
-        <Header />
-        <main className="min-h-screen pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))] pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]">
-          {children}
-        </main>
-        <Footer />
+        <AppShell>{children}</AppShell>
         <Analytics />
       </body>
     </html>

@@ -16,13 +16,13 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-white">
+    <div className="relative min-h-screen overflow-hidden text-zinc-900">
       <section className="container mx-auto px-4 py-24">
         <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends">
           <h1 className="mb-6 text-4xl font-bold text-gradient-bends sm:text-5xl">
             Feedback
           </h1>
-          <p className="mb-8 text-base text-white/80">
+          <p className="mb-8 text-base text-zinc-600">
             Something broken? An idea? Tell us what&apos;s working and what isn&apos;t.
             We read these.
           </p>
@@ -31,7 +31,7 @@ export default function FeedbackPage() {
             <div className="text-center text-[#ff00f7]">
               <MessageSquare className="mx-auto mb-4 h-10 w-10" />
               <h2 className="mb-2 text-2xl font-bold">Got it</h2>
-              <p className="text-white/65">
+              <p className="text-zinc-600">
                 Thanks for taking the time. It really does help.
               </p>
             </div>
@@ -47,7 +47,7 @@ export default function FeedbackPage() {
               />
               <button
                 type="submit"
-                className="flex items-center gap-2 self-end rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90"
+                className="flex items-center gap-2 self-end rounded-md bg-[#3700ff] px-5 py-2 text-zinc-950 shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90"
               >
                 Send <Send className="h-4 w-4" />
               </button>

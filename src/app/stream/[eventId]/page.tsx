@@ -51,7 +51,7 @@ type PipelineStream = {
 
 function StreamLoadingScreen() {
   return (
-    <div className="fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center gap-8 px-6 text-white bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center gap-8 px-6 bg-black/80 backdrop-blur-sm">
       <div
         className="h-14 w-14 animate-spin rounded-full border-2 border-[#3700ff]/30 border-t-[#00ccff] border-r-[#ff00f7]/70"
         aria-hidden
@@ -367,7 +367,7 @@ export default function BraindanceUserStream() {
   const renderPlayer = () => {
     if (!stream) {
       return (
-        <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-white">
+        <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-zinc-900">
           Stream unavailable.
         </div>
       );
@@ -395,12 +395,12 @@ export default function BraindanceUserStream() {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
             <div className="rounded-full bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] p-[2px] shadow-[0_0_24px_rgba(255,0,247,0.35)]">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/65 backdrop-blur-md">
-                <span className="ml-0.5 text-xl text-white" aria-hidden>
+                <span className="ml-0.5 text-xl text-zinc-900" aria-hidden>
                   ▶
                 </span>
               </div>
             </div>
-            <p className="text-sm font-semibold text-white">Click play to start</p>
+            <p className="text-sm font-semibold text-gradient-bends">Click play to start</p>
           </div>
         </button>
       );
@@ -423,7 +423,7 @@ export default function BraindanceUserStream() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-white">
+    <div className="relative min-h-screen overflow-hidden text-zinc-900">
       <div className="relative z-10 mx-auto max-w-6xl p-5 md:p-8">
         <main className="mt-5">
           {showTracklist ? (
@@ -456,11 +456,11 @@ export default function BraindanceUserStream() {
                           )}
                         </div>
                         <div className="min-w-0 text-sm">
-                          <h2 className="truncate font-semibold leading-tight text-white">
+                          <h2 className="truncate font-semibold leading-tight text-gradient-bends">
                             {headerTitle}
                           </h2>
-                          <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
-                          <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
+                          <p className="text-xs leading-tight text-zinc-500">{headerSubtitle}</p>
+                          <p className="line-clamp-2 text-xs italic leading-tight text-zinc-500">
                             {pipelineStream
                               ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
                               : event?.description ||
@@ -512,11 +512,11 @@ export default function BraindanceUserStream() {
                         )}
                       </div>
                       <div className="min-w-0 text-sm">
-                        <h2 className="truncate font-semibold leading-tight text-white">
+                        <h2 className="truncate font-semibold leading-tight text-gradient-bends">
                           {headerTitle}
                         </h2>
-                        <p className="text-xs leading-tight text-gray-400">{headerSubtitle}</p>
-                        <p className="line-clamp-2 text-xs italic leading-tight text-gray-300">
+                        <p className="text-xs leading-tight text-zinc-500">{headerSubtitle}</p>
+                        <p className="line-clamp-2 text-xs italic leading-tight text-zinc-500">
                           {pipelineStream
                             ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
                             : event?.description ||
@@ -530,19 +530,19 @@ export default function BraindanceUserStream() {
 
               <div>
                 <div className="glass-bends-card rounded-lg p-4">
-                  <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-gray-500">
+                  <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
                     Stats
                   </h3>
                   <div className="mb-4 flex items-center justify-between gap-6">
                     <div>
-                      <p className="text-xs text-gray-500">Views</p>
-                      <p className="text-2xl font-semibold tabular-nums text-white/90">
+                      <p className="text-xs text-zinc-500">Views</p>
+                      <p className="text-2xl font-semibold tabular-nums text-zinc-900">
                         {views}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Top city</p>
-                      <p className="text-2xl font-semibold text-white/90">{topCity}</p>
+                      <p className="text-xs text-zinc-500">Top city</p>
+                      <p className="text-2xl font-semibold text-zinc-900">{topCity}</p>
                     </div>
                   </div>
                   {isDbEvent && <GlobeHeatmap id={eventId} />}
@@ -572,12 +572,12 @@ export default function BraindanceUserStream() {
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-white/90 underline-offset-2 transition-[background-image,color] duration-bends-fast ease-bends hover:bg-gradient-to-r hover:from-[#00ccff] hover:via-[#ff00f7] hover:to-[#3700ff] hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/40"
+                      className="text-sm text-[#3700ff] underline-offset-2 transition-[background-image,color] duration-bends-fast ease-bends hover:bg-gradient-to-r hover:from-[#00ccff] hover:via-[#ff00f7] hover:to-[#3700ff] hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/40"
                     >
                       {item.title}
                     </a>
                     {item.subtitle ? (
-                      <span className="text-xs text-gray-500 sm:min-w-0 sm:flex-1 sm:truncate">
+                      <span className="text-xs text-zinc-500 sm:min-w-0 sm:flex-1 sm:truncate">
                         {item.subtitle}
                       </span>
                     ) : null}

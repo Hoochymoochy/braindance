@@ -36,8 +36,8 @@ export default function DashboardLayout({ children }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        Loading your dashboard...
+      <div className="min-h-screen flex items-center justify-center bg-[var(--page-bg)] text-zinc-900">
+        <p className="text-gradient-bends font-semibold">Loading your dashboard...</p>
       </div>
     );
   }

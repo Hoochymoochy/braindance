@@ -1,6 +1,6 @@
 export default function StreamRouteLoading() {
   return (
-    <div className="page-bends-bg fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center gap-8 px-6 text-white">
+    <div className="page-bends-bg fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center gap-8 px-6 text-zinc-900">
       <div
         className="h-14 w-14 animate-spin rounded-full border-2 border-[#3700ff]/30 border-t-[#00ccff] border-r-[#ff00f7]/70"
         aria-hidden

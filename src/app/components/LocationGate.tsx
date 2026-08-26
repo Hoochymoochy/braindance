@@ -97,12 +97,12 @@ export default function LocationGate() {
         <h2 className="mb-4 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-2xl font-bold text-transparent">
           📍 Enable Location
         </h2>
-        <p className="mb-6 text-white/85">
+        <p className="mb-6 text-zinc-700">
           Tap below to share your location. If you blocked it before, go to your browser settings to re-enable it.
         </p>
         <button
           onClick={requestGeo}
-          className="rounded-full bg-[#3700ff] px-6 py-3 text-lg font-semibold text-white shadow-lg transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-[#ff00f7]/90 active:opacity-90"
+          className="rounded-full bg-[#3700ff] px-6 py-3 text-lg font-semibold text-zinc-950 shadow-lg transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-[#ff00f7]/90 active:opacity-90"
         >
           Enable Location
         </button>

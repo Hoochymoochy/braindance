@@ -129,7 +129,7 @@
   }
 
   .input-bends {
-    @apply w-full rounded-md border border-white/18 bg-black/18 px-4 py-2 text-white backdrop-blur-sm placeholder:text-white/45;
+    @apply w-full rounded-md border border-zinc-300/80 bg-white/70 px-4 py-2 text-zinc-900 backdrop-blur-sm placeholder:text-zinc-400;
     @apply focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25;
   }
 

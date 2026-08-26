@@ -49,7 +49,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   );
 
   return (
-    <div className="glass-bends-card group mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-white/15 shadow-lg transition-[transform,box-shadow,border-color] duration-500 ease-in-out motion-reduce:transition-none hover:-translate-y-1 hover:border-[#00ccff]/35 hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] sm:max-w-md md:max-w-lg">
+    <div className="glass-bends-card group mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-black/8 shadow-lg transition-[transform,box-shadow,border-color] duration-500 ease-in-out motion-reduce:transition-none hover:-translate-y-1 hover:border-[#00ccff]/35 hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] sm:max-w-md md:max-w-lg">
       <div className="relative aspect-[2/3] w-full overflow-hidden">
         <Image
           src={image_url || "/placeholder.svg"}
@@ -61,14 +61,14 @@ export const EventPoster: React.FC<EventPosterProps> = ({
         />
       </div>
 
-      <div className="p-4 sm:p-5 md:p-6 text-white">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">{title}</h2>
-        <p className="mt-1 text-sm text-white/65 sm:text-base">
+      <div className="p-4 sm:p-5 md:p-6 text-zinc-900">
+        <h2 className="text-lg font-semibold text-gradient-bends sm:text-xl md:text-2xl">{title}</h2>
+        <p className="mt-1 text-sm text-zinc-600 sm:text-base">
           {date} · {location}
         </p>
 
         {description && (
-          <p className="mt-3 text-sm sm:text-base text-zinc-400">{description}</p>
+          <p className="mt-3 text-sm text-zinc-500 sm:text-base">{description}</p>
         )}
 
         <div className="flex justify-end items-center mt-5">
@@ -78,7 +78,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
               tabIndex={0}
               onClick={handleClick}
               onTouchStart={handleClick}
-              className="cursor-pointer select-none rounded-full bg-[#3700ff] px-4 py-1 text-sm font-semibold text-white shadow-md transition-[background-color,box-shadow] duration-300 ease-in-out hover:bg-[#ff00f7]/90 sm:px-5 sm:py-2 sm:text-base"
+              className="cursor-pointer select-none rounded-full bg-[#3700ff] px-4 py-1 text-sm font-semibold text-zinc-950 shadow-md transition-[background-color,box-shadow] duration-300 ease-in-out hover:bg-[#ff00f7]/90 sm:px-5 sm:py-2 sm:text-base"
             >
               Join
             </div>

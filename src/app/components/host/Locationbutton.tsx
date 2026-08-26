@@ -17,7 +17,7 @@ export default function LocationButton() {
 
   return (
     <div className="p-4">
-      <button onClick={handleClick} className="bg-blue-500 text-white p-2 rounded">
+      <button onClick={handleClick} className="rounded bg-blue-500 p-2 text-zinc-950">
         Get Location
       </button>
 
@@ -25,7 +25,7 @@ export default function LocationButton() {
         <div className="mt-2">
           <p>Latitude: {coords.latitude}</p>
           <p>Longitude: {coords.longitude}</p>
-          <button onClick={handleSend} className="mt-2 bg-green-500 text-white p-2 rounded">
+          <button onClick={handleSend} className="mt-2 rounded bg-green-500 p-2 text-zinc-950">
             Send to Server
           </button>
         </div>

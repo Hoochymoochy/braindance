@@ -168,7 +168,7 @@ export default function CreateEventForm({
               {isEditing && (
                 <button
                   type="button"
-                  className="rounded-md border border-white/20 px-4 py-2 text-white/80 transition hover:bg-white/10"
+                  className="rounded-md border border-zinc-300/80 px-4 py-2 text-zinc-700 transition hover:bg-black/5"
                   onClick={onCancel}
                 >
                   Cancel
@@ -176,7 +176,7 @@ export default function CreateEventForm({
               )}
               <button
                 type="submit"
-                className="rounded-md bg-[#3700ff] px-4 py-2 text-white transition hover:bg-[#ff00f7]/85 disabled:opacity-50"
+                className="rounded-md bg-[#3700ff] px-4 py-2 text-zinc-950 transition hover:bg-[#ff00f7]/85 disabled:opacity-50"
                 disabled={creating}
               >
                 {creating ? "Creating..." : isEditing ? "Update" : "Submit Event"}

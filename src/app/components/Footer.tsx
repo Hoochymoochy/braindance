@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-export default function Footer() {
+export default function Footer({ showOnMobile = false }: { showOnMobile?: boolean }) {
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-black/10 pb-[env(safe-area-inset-bottom)]"
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 border-t border-black/10 pb-[env(safe-area-inset-bottom)]",
+        showOnMobile ? "block" : "hidden md:block"
+      )}
       style={{
         background: `linear-gradient(
           0deg,

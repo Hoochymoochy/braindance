@@ -66,14 +66,14 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className="block transform cursor-pointer rounded-md border border-white/12 bg-gradient-to-br from-[#3700ff]/25 to-[#ff00f7]/15 p-4 text-center transition-all hover:scale-105 hover:border-[#00ccff]/35 hover:from-[#3700ff]/45 hover:to-[#00ccff]/20"
+              className="block transform cursor-pointer rounded-md border border-black/8 bg-gradient-to-br from-[#3700ff]/15 to-[#ff00f7]/10 p-4 text-center transition-all hover:scale-105 hover:border-[#00ccff]/35 hover:from-[#3700ff]/25 hover:to-[#00ccff]/15"
             >
-              <p className="text-sm font-medium text-white">{label}</p>
-              <p className="text-xs text-gray-400 mt-1">{description}</p>
+              <p className="text-sm font-medium text-zinc-900">{label}</p>
+              <p className="mt-1 text-xs text-zinc-500">{description}</p>
               {link && (
                 <ExternalLink
                   size={12}
-                  className="absolute top-1 right-1 text-gray-400"
+                  className="absolute top-1 right-1 text-zinc-500"
                 />
               )}
             </a>
@@ -87,14 +87,14 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
                 }}
                 className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
               >
-                <X size={12} className="text-white" />
+                <X size={12} className="text-zinc-950" />
               </button>
             )}
           </div>
         ))}
 
         {isEditingLinks && (
-          <div className="rounded-md border-2 border-dashed border-[#00ccff]/25 bg-black/35 p-4">
+          <div className="rounded-md border-2 border-dashed border-[#00ccff]/25 bg-white/60 p-4">
             <input
               type="text"
               value={linkInput.label}
@@ -102,7 +102,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
                 setLinkInput({ ...linkInput, label: e.target.value })
               }
               placeholder="Label"
-              className="mb-2 w-full rounded px-2 py-1 text-xs text-white placeholder:text-white/40 bg-black/50 border border-white/10"
+              className="mb-2 w-full rounded border border-zinc-300/80 bg-white/80 px-2 py-1 text-xs text-zinc-900 placeholder:text-zinc-400"
             />
             <input
               type="text"
@@ -111,7 +111,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
                 setLinkInput({ ...linkInput, description: e.target.value })
               }
               placeholder="Description"
-              className="mb-2 w-full rounded px-2 py-1 text-xs text-white placeholder:text-white/40 bg-black/50 border border-white/10"
+              className="mb-2 w-full rounded border border-zinc-300/80 bg-white/80 px-2 py-1 text-xs text-zinc-900 placeholder:text-zinc-400"
             />
             <input
               type="url"
@@ -120,11 +120,11 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
                 setLinkInput({ ...linkInput, link: e.target.value })
               }
               placeholder="URL"
-              className="mb-3 w-full rounded px-2 py-1 text-xs text-white placeholder:text-white/40 bg-black/50 border border-white/10"
+              className="mb-3 w-full rounded border border-zinc-300/80 bg-white/80 px-2 py-1 text-xs text-zinc-900 placeholder:text-zinc-400"
             />
             <button
               onClick={handleAddLink}
-              className="w-full rounded bg-emerald-600/90 py-1 text-xs text-white transition-colors hover:bg-emerald-500"
+              className="w-full rounded bg-emerald-600/90 py-1 text-xs text-zinc-950 transition-colors hover:bg-emerald-500"
             >
               Add Link
             </button>

@@ -119,7 +119,7 @@ export default function PhotoUpload() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10 text-white">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 text-zinc-900">
       <div className="glass-bends w-full max-w-md transform rounded-lg p-6 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_28px_rgba(0,204,255,0.12)]">
         
         {/* Photo Counter */}
@@ -148,7 +148,7 @@ export default function PhotoUpload() {
             <div className="text-center">
               <div className="mb-2 text-3xl">🎊</div>
               <p className="mb-1 font-medium text-[#ff00f7]">Photo gallery is complete!</p>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-zinc-600">
                 The party has reached the maximum of {maxPhotos} photos for this event.
               </p>
             </div>
@@ -197,7 +197,7 @@ export default function PhotoUpload() {
           <div className="mb-4 space-y-3">
             <button
               onClick={() => window.location.reload()}
-              className="flex w-full transform items-center justify-center rounded-md bg-[#3700ff] px-4 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.2)] active:scale-95"
+              className="flex w-full transform items-center justify-center rounded-md bg-[#3700ff] px-4 py-3 font-semibold text-zinc-950 transition-all duration-300 hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.2)] active:scale-95"
             >
               <span className="mr-2">🔄</span>
               Refresh Gallery
@@ -233,7 +233,7 @@ export default function PhotoUpload() {
                   setFile(null);
                   setStatus("idle");
                 }}
-                className="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                className="absolute top-2 right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-zinc-950 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
               >
                 ✕
               </button>
@@ -266,13 +266,13 @@ export default function PhotoUpload() {
             className={`w-full py-3 font-semibold rounded-md transition-all duration-300 transform ${
               !file || status === "uploading"
                 ? "cursor-not-allowed bg-gray-600 text-gray-400 opacity-50"
-                : "bg-[#3700ff] text-white hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.15)] active:scale-95"
+                : "bg-[#3700ff] text-zinc-950 hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.15)] active:scale-95"
             }`}
           >
             {status === "uploading" ? (
               <span className="flex items-center justify-center">
                 <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-zinc-950"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"

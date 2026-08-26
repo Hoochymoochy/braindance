@@ -252,13 +252,13 @@ export default function BraindanceMockup() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black text-white">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--page-bg)] text-zinc-900">
         <div className="text-[#00ccff]">Loading...</div>
       </div>
     );
   }
   return (
-    <div className="min-h-screen p-4 text-white md:p-10">
+    <div className="min-h-screen p-4 text-zinc-900 md:p-10">
       <div className="container mx-auto">
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Live Stream + Photo Review */}
@@ -266,7 +266,7 @@ export default function BraindanceMockup() {
             <div className="flex flex-wrap gap-4 items-center justify-start">
             <button
               onClick={() => handleCopy(`stream/${eventId}`)}
-              className="rounded-md bg-[#3700ff] px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-[#ff00f7]/85"
+              className="rounded-md bg-[#3700ff] px-4 py-2 text-sm font-medium text-zinc-950 shadow-md transition-all hover:bg-[#ff00f7]/85"
             >
               Copy Stream Link
             </button>
@@ -300,11 +300,11 @@ export default function BraindanceMockup() {
                         type="text"
                         name="url"
                         placeholder="Enter YouTube URL"
-                        className="px-4 py-2 rounded-lg bg-gray-800 text-white w-72"
+                        className="w-72 rounded-lg bg-white/80 px-4 py-2 text-zinc-900"
                       />
                       <button
                         type="submit"
-                        className="rounded-lg bg-[#3700ff] px-4 py-2 text-white hover:bg-[#ff00f7]/85"
+                        className="rounded-lg bg-[#3700ff] px-4 py-2 text-zinc-950 hover:bg-[#ff00f7]/85"
                       >
                         Go Live
                       </button>
@@ -326,7 +326,7 @@ export default function BraindanceMockup() {
                   />
                 </div>
                 <div className="text-sm">
-                  <h2 className="text-white font-semibold leading-tight">{event.title}</h2>
+                  <h2 className="font-semibold leading-tight text-gradient-bends">{event.title}</h2>
                   <p className="text-xs text-gray-400 leading-tight">
                     {event.location} — {new Date(event.date).toLocaleDateString()}
                   </p>
@@ -339,7 +339,7 @@ export default function BraindanceMockup() {
             {/* Photo Review Tool */}
             <div className="glass-bends-card rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-lg font-bold text-gradient-bends">
                   Photo Review Tool
                 </h3>
                 <div className="flex items-center gap-4">
@@ -462,7 +462,7 @@ export default function BraindanceMockup() {
             {/* Photo Gallery */}
             <div className="glass-bends-card flex-grow rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-lg font-bold text-gradient-bends">
                   Photos of the Night
                 </h3>
                 <span className="text-sm text-gray-400">
@@ -495,11 +495,11 @@ export default function BraindanceMockup() {
                     />
 
                       <div className="absolute top-1 right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                        <Check className="text-white" size={12} />
+                        <Check className="text-zinc-950" size={12} />
                       </div>
                       {/* Photo overlay on hover */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Eye className="text-white" size={20} />
+                        <Eye className="text-zinc-950" size={20} />
                       </div>
                     </div>
                   ))}

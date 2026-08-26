@@ -9,35 +9,33 @@ const StreamGuide: React.FC = () => {
 
   return (
     <div className="relative mb-4">
-      {/* Floating ? Button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 text-sm px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all"
+          className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-sm text-zinc-800 transition-all hover:bg-white"
         >
           <HelpCircle size={16} />
           How do I stream?
         </button>
       )}
 
-      {/* Guide Panel */}
       {open && (
-        <div className="glass-bends-card mt-2 space-y-4 rounded-2xl p-6 text-white">
+        <div className="glass-bends-card mt-2 space-y-4 rounded-2xl p-6 text-zinc-900">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">🎥 Stream Setup Guide</h2>
+            <h2 className="text-xl font-bold text-gradient-bends">Stream Setup Guide</h2>
             <button
               onClick={() => setOpen(false)}
-              className="text-white/60 hover:text-white transition"
+              className="text-zinc-500 transition hover:text-zinc-900"
             >
               <X size={20} />
             </button>
           </div>
 
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-zinc-600">
             Bring your event to life with a livestream in just a few steps.
           </p>
 
-          <ol className="list-decimal list-inside space-y-3 text-white/90">
+          <ol className="list-decimal list-inside space-y-3 text-zinc-700">
             <li>
               <strong>Activate YouTube Streaming</strong><br />
               Go to{" "}
@@ -61,11 +59,11 @@ const StreamGuide: React.FC = () => {
 
             <li>
               <strong>Go Live and Dance</strong><br />
-              Your event will show in <em>Live Streams</em> once live 🎶🔥
+              Your event will show in <em>Live Streams</em> once live
             </li>
           </ol>
 
-          <div className="text-sm text-white/60 pt-2">
+          <div className="pt-2 text-sm text-zinc-500">
             Bonus overlays? Try{" "}
             <Link href="https://www.canva.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
               Canva

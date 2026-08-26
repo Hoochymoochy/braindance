@@ -202,7 +202,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-screen text-white">
+    <div className="relative min-h-screen text-zinc-900">
       <main className="mx-auto max-w-6xl space-y-8 p-6 pt-10">
         <StatsSection stats={stats} />
         <StreamGuide />

@@ -30,10 +30,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const variants = {
       default: "bg-[#00ccff] text-black shadow-sm hover:bg-[#ff00f7]/90",
       outline:
-        "border border-white/25 bg-transparent text-white/70 hover:border-[#00ccff] hover:text-[#00ccff]",
+        "border border-zinc-300 bg-transparent text-zinc-700 hover:border-[#00ccff] hover:text-[#00ccff]",
       ghost:
-        "bg-transparent text-white/65 hover:bg-[#3700ff]/20 hover:text-[#ff00f7]",
-      link: "bg-transparent text-white/65 underline-offset-4 hover:text-[#00ccff] hover:underline",
+        "bg-transparent text-zinc-600 hover:bg-[#3700ff]/10 hover:text-[#ff00f7]",
+      link: "bg-transparent text-zinc-600 underline-offset-4 hover:text-[#00ccff] hover:underline",
     };
 
     const sizes = {

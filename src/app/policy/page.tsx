@@ -4,19 +4,19 @@ import React from "react";
 
 export default function PolicyPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden text-white">
+    <div className="relative min-h-screen overflow-hidden text-zinc-900">
       <section className="container mx-auto px-4 py-24">
         <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends">
           <h1 className="mb-6 text-4xl font-bold text-gradient-bends sm:text-5xl">
             Policies
           </h1>
-          <p className="mb-8 text-base text-white/80">
+          <p className="mb-8 text-base text-zinc-600">
             Quick rundown of how we handle stuff on Braindance. Nothing sneaky, just
             what you&apos;d expect if we ran this thing like we&apos;d want it run for
             us.
           </p>
 
-          <div className="space-y-10 text-sm text-white/80 md:text-base">
+          <div className="space-y-10 text-sm text-zinc-600 md:text-base">
             <div>
               <h2 className="mb-2 text-lg font-semibold text-[#00ccff]">
                 Data usage
@@ -70,7 +70,7 @@ export default function PolicyPage() {
             </div>
 
             <div>
-              <h2 className="mb-2 text-lg font-semibold text-white">
+              <h2 className="mb-2 text-lg font-semibold text-gradient-bends">
                 Questions?
               </h2>
               <p>

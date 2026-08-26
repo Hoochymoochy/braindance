@@ -40,7 +40,7 @@ export default function EmailManager() {
   };
 
   return (
-    <div className="glass-bends max-w-xl space-y-6 rounded-xl p-6 text-white">
+    <div className="glass-bends max-w-xl space-y-6 rounded-xl p-6 text-zinc-900">
       <h2 className="text-xl font-semibold text-gradient-bends">
         Send Custom Email Invite
       </h2>
@@ -56,7 +56,7 @@ export default function EmailManager() {
         <button
           type="button"
           onClick={addEmail}
-          className="rounded bg-[#3700ff] px-4 text-white transition hover:bg-[#ff00f7]/85"
+          className="rounded bg-[#3700ff] px-4 text-zinc-950 transition hover:bg-[#ff00f7]/85"
         >
           Add
         </button>
@@ -89,7 +89,7 @@ export default function EmailManager() {
 
       <button
         onClick={sendEmails}
-        className="rounded bg-[#3700ff] px-6 py-2 text-white transition hover:bg-[#ff00f7]/85"
+        className="rounded bg-[#3700ff] px-6 py-2 text-zinc-950 transition hover:bg-[#ff00f7]/85"
       >
         Send Message
       </button>

@@ -39,7 +39,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 text-white">
+    <div className="flex min-h-screen items-center justify-center px-4 text-zinc-900">
       <div className="glass-bends w-full max-w-md rounded-2xl p-8 shadow-lg transition duration-300">
         <h2 className="mb-6 text-center text-3xl font-bold text-gradient-bends">
           Host Login
@@ -72,12 +72,12 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="w-full rounded-xl border border-[#3700ff]/50 bg-[#3700ff]/80 px-4 py-2 text-white transition duration-300 hover:bg-[#ff00f7]/75"
+            className="w-full rounded-xl border border-[#3700ff]/50 bg-[#3700ff]/80 px-4 py-2 text-zinc-950 transition duration-300 hover:bg-[#ff00f7]/75"
           >
             Log In
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-white/55">
+        <p className="mt-4 text-center text-sm text-zinc-500">
           Don&apos;t have an account?{" "}
           <a
             href="/host/sign-up"

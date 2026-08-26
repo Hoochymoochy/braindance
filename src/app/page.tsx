@@ -70,7 +70,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <button
-                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
+                className="rounded-md bg-[#3700ff] px-5 py-2 text-zinc-950 shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
                 onClick={() =>
                   eventsRef.current?.scrollIntoView({ behavior: "smooth" })
                 }
