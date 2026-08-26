@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   TrendingUp,
@@ -13,12 +13,6 @@ import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
 import { getStreams } from "@/app/lib/events/stream";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
-import dynamic from "next/dynamic";
-
-const ColorBends = dynamic(() => import("@/components/ColorBends"), {
-  ssr: false,
-  loading: () => null,
-});
 
 type DjSet = {
   video_id: string;
@@ -66,8 +60,6 @@ const PAGE_SIZE = 9;
 
 export default function EventsPage() {
   const router = useRouter();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
@@ -76,38 +68,6 @@ export default function EventsPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState({ genre: "", context: "", energy: "" });
   const [isFiltering, setIsFiltering] = useState(false);
-  // Smooth parallax effect based on mouse position for 4K depth
-  useEffect(() => {
-    let animationFrameId: number;
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      // Calculate parallax based on distance from center
-      targetX = (e.clientX - centerX) * 0.015;
-      targetY = (e.clientY - centerY) * 0.015;
-    };
-
-    const animate = () => {
-      // Smooth easing for 4K-like motion
-      currentX += (targetX - currentX) * 0.08;
-      currentY += (targetY - currentY) * 0.08;
-      setParallaxOffset({ x: currentX, y: currentY });
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    animationFrameId = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
 
   useEffect(() => {
     getEvents();
@@ -215,8 +175,6 @@ export default function EventsPage() {
     setTimeout(() => setIsFiltering(false), 300);
   };
 
-  const BEND_COLORS = ["#00ccff", "#ff00f7", "#3700ff", "#7a7a7a"] as const;
-
   const skeletons = (n: number) =>
     Array.from({ length: n }).map((_, i) => (
       <div
@@ -232,39 +190,7 @@ export default function EventsPage() {
     ));
 
   return (
-    <div ref={containerRef} className="relative flex min-h-screen flex-col overflow-hidden text-white">
-      {/* BLACK OVERLAY - Fixed depth layer */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black/50"
-        aria-hidden
-      />
-
-      {/* ANIMATED BACKGROUND with 4K parallax depth */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-20"
-        aria-hidden
-        style={{
-          transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
-          transition: "transform 0.45s var(--ease-bends-soft)",
-        }}
-      >
-        <div className="absolute inset-0">
-          <ColorBends
-            rotation={65}
-            speed={0.25}
-            colors={[...BEND_COLORS]}
-            transparent={false}
-            autoRotate={0.3}
-            scale={1.5}
-            frequency={1}
-            warpStrength={0}
-            mouseInfluence={0}
-            parallax={0}
-            noise={0}
-          />
-        </div>
-      </div>
-
+    <div className="relative flex min-h-screen flex-col overflow-hidden text-white">
       {/* CONTENT LAYER */}
       <main className="relative z-10 flex-1">
         <section className="mx-auto max-w-7xl px-4 py-10 pb-16">

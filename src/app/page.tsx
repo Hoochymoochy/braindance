@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
-import ColorBends from "@/components/ColorBends";
 
 type DjSet = {
   video_id: string;
@@ -21,47 +20,10 @@ type DjSetsResponse = {
   };
 };
 
-const BEND_COLORS = ["#00ccff", "#ff00f7", "#3700ff", "#7a7a7a"] as const;
-
 export default function Home() {
   const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
   const [streamsLoading, setStreamsLoading] = useState(true);
-  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const eventsRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Smooth parallax effect based on mouse position for 4K depth
-  useEffect(() => {
-    let animationFrameId: number;
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      // Calculate parallax based on distance from center
-      targetX = (e.clientX - centerX) * 0.015;
-      targetY = (e.clientY - centerY) * 0.015;
-    };
-
-    const animate = () => {
-      // Smooth easing for 4K-like motion
-      currentX += (targetX - currentX) * 0.08;
-      currentY += (targetY - currentY) * 0.08;
-      setParallaxOffset({ x: currentX, y: currentY });
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    animationFrameId = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
 
   useEffect(() => {
     const getFeaturedStreams = async () => {
@@ -92,40 +54,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-hidden text-white">
-      {/* BLACK OVERLAY - Fixed depth layer */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black/50"
-        aria-hidden
-      />
-
-      {/* ANIMATED BACKGROUND with 4K parallax depth */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-20"
-        aria-hidden
-        style={{
-          transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
-          transition: "transform 0.45s var(--ease-bends-soft)",
-        }}
-      >
-        <div className="absolute inset-0">
-          <ColorBends
-            rotation={65}
-            speed={0.25}
-            colors={[...BEND_COLORS]}
-            transparent={false}
-            autoRotate={0.3}
-            scale={1.5}
-            frequency={1}
-            warpStrength={0}
-            mouseInfluence={0}
-            parallax={0}
-            noise={0}
-          />
-        </div>
-      </div>
-
-      {/* CONTENT LAYER */}
+    <div className="relative min-h-screen overflow-hidden text-white">
       <div className="relative z-10">
         {/* HERO */}
         <section className="container mx-auto px-4 py-24 text-center">

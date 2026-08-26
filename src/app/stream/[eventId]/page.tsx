@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import dynamic from "next/dynamic";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import {
   StreamTracklistSidebar,
@@ -19,11 +18,6 @@ import {
   youtubeVideoIdFromUrl,
   YOUTUBE_IFRAME_ALLOW,
 } from "@/app/lib/utils/youtube";
-
-const ColorBends = dynamic(() => import("@/components/ColorBends"), {
-  ssr: false,
-  loading: () => null,
-});
 
 interface Event {
   title: string;
@@ -121,13 +115,10 @@ function formatDuration(seconds: number): string {
   return `${m} min`;
 }
 
-const BEND_COLORS = ["#00ccff", "#ff00f7", "#3700ff", "#7a7a7a"] as const;
-
 export default function BraindanceUserStream() {
   const params = useParams();
   const eventId = params?.eventId as string;
 
-  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
   const [streamLoading, setStreamLoading] = useState(true);
   const [stream, setStreams] = useState<string>("");
   const [views, setViews] = useState(0);
@@ -155,36 +146,6 @@ export default function BraindanceUserStream() {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       value
     );
-
-  useEffect(() => {
-    let animationFrameId: number;
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      targetX = (e.clientX - centerX) * 0.015;
-      targetY = (e.clientY - centerY) * 0.015;
-    };
-
-    const animate = () => {
-      currentX += (targetX - currentX) * 0.08;
-      currentY += (targetY - currentY) * 0.08;
-      setParallaxOffset({ x: currentX, y: currentY });
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    animationFrameId = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
 
   const fetchEventData = useCallback(async () => {
     if (!eventId) {
@@ -463,36 +424,6 @@ export default function BraindanceUserStream() {
 
   return (
     <div className="relative min-h-screen overflow-hidden text-white">
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 bg-black/60"
-        aria-hidden
-      />
-
-      <div
-        className="pointer-events-none fixed inset-0 -z-20"
-        aria-hidden
-        style={{
-          transform: `translate3d(${parallaxOffset.x}px, ${parallaxOffset.y}px, 0)`,
-          transition: "transform 0.45s var(--ease-bends-soft)",
-        }}
-      >
-        <div className="absolute inset-0">
-          <ColorBends
-            rotation={65}
-            speed={0.25}
-            colors={[...BEND_COLORS]}
-            transparent={false}
-            autoRotate={0.3}
-            scale={1.5}
-            frequency={1}
-            warpStrength={0}
-            mouseInfluence={0}
-            parallax={0}
-            noise={0}
-          />
-        </div>
-      </div>
-
       <div className="relative z-10 mx-auto max-w-6xl p-5 md:p-8">
         <main className="mt-5">
           {showTracklist ? (

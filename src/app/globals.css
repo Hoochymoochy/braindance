@@ -125,33 +125,7 @@
   }
 
   .page-bends-bg {
-    /* Tinted base so mesh radials stay visible through glass layers */
-    background-color: rgba(2, 2, 12, 0.9);
-    background-repeat: no-repeat;
-    background-size:
-      140% 120%,
-      130% 110%,
-      130% 110%;
-    background-position:
-      0% 0%,
-      100% 0%,
-      50% 100%;
-    background-image:
-      radial-gradient(
-        ellipse 120% 90% at 10% 0%,
-        rgba(0, 204, 255, 0.22) 0%,
-        transparent 58%
-      ),
-      radial-gradient(
-        ellipse 100% 70% at 92% 12%,
-        rgba(255, 0, 247, 0.16) 0%,
-        transparent 52%
-      ),
-      radial-gradient(
-        ellipse 90% 55% at 50% 100%,
-        rgba(55, 0, 255, 0.22) 0%,
-        transparent 58%
-      );
+    background-color: #010108;
   }
 
   .input-bends {
@@ -427,5 +401,6 @@ body {
   }
   body {
     @apply text-foreground antialiased;
+    background-color: #010108;
   }
 }
