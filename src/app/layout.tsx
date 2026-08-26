@@ -13,7 +13,7 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-        <body className="min-h-screen bg-[#010108] text-white font-sans">
+        <body className="min-h-screen bg-[var(--page-bg)] text-zinc-900 font-sans">
         {/* Re-enable to prompt for browser location on load (see LocationGate.tsx) */}
         {/* <LocationGate /> */}
         <Header />
@@ -33,6 +33,6 @@ export const metadata = {
     icon: "/brain.svg",
   },
   other: {
-    "color-scheme": "dark",
+    "color-scheme": "light",
   },
 };

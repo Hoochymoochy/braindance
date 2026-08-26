@@ -5,18 +5,18 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/15 pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-black/10 pb-[env(safe-area-inset-bottom)]"
       style={{
         background: `linear-gradient(
           0deg,
-          rgba(0, 0, 0, 0.32) 0%,
-          rgba(55, 0, 255, 0.09) 50%,
-          rgba(255, 0, 247, 0.06) 100%
+          rgba(255, 255, 255, 0.92) 0%,
+          rgba(248, 248, 252, 0.88) 50%,
+          rgba(240, 240, 245, 0.85) 100%
         )`,
         backdropFilter: "blur(18px) saturate(1.1)",
         WebkitBackdropFilter: "blur(18px) saturate(1.1)",
-        boxShadow: `0 0 40px rgba(0, 204, 255, 0.05),
-          inset 0 -1px 0 rgba(255, 255, 255, 0.06)`,
+        boxShadow: `0 0 40px rgba(0, 204, 255, 0.04),
+          inset 0 1px 0 rgba(0, 0, 0, 0.06)`,
       }}
       role="contentinfo"
     >
@@ -25,19 +25,19 @@ export default function Footer() {
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 sm:justify-start">
             <Link
               href="/policy"
-              className="text-sm text-white/65 transition-colors duration-bends-fast ease-bends hover:text-[#00ccff]"
+              className="text-sm text-zinc-600 transition-colors duration-bends-fast ease-bends hover:text-[#00ccff]"
             >
               Policy
             </Link>
             <Link
               href="/feedback"
-              className="text-sm text-white/65 transition-colors duration-bends-fast ease-bends hover:text-[#ff00f7]"
+              className="text-sm text-zinc-600 transition-colors duration-bends-fast ease-bends hover:text-[#ff00f7]"
             >
               Feedback
             </Link>
             <Link
               href="/contact"
-              className="text-sm text-white/65 transition-colors duration-bends-fast ease-bends hover:text-[#3700ff]"
+              className="text-sm text-zinc-600 transition-colors duration-bends-fast ease-bends hover:text-[#3700ff]"
             >
               Contact
             </Link>

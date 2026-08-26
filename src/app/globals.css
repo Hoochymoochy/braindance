@@ -125,7 +125,7 @@
   }
 
   .page-bends-bg {
-    background-color: #010108;
+    background-color: var(--page-bg);
   }
 
   .input-bends {
@@ -137,32 +137,32 @@
   .glass-bends {
     background: linear-gradient(
       145deg,
-      rgba(0, 204, 255, 0.11) 0%,
-      rgba(55, 0, 255, 0.08) 42%,
-      rgba(255, 0, 247, 0.06) 100%
+      rgba(255, 255, 255, 0.82) 0%,
+      rgba(248, 248, 252, 0.72) 42%,
+      rgba(240, 240, 245, 0.78) 100%
     );
     backdrop-filter: blur(16px) saturate(1.15);
     -webkit-backdrop-filter: blur(16px) saturate(1.15);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow:
-      0 8px 32px rgba(55, 0, 255, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      0 0 48px rgba(0, 204, 255, 0.05);
+      0 8px 32px rgba(55, 0, 255, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 48px rgba(0, 204, 255, 0.04);
   }
 
   .glass-bends-card {
     background: linear-gradient(
       155deg,
-      rgba(122, 122, 122, 0.05) 0%,
-      rgba(55, 0, 255, 0.07) 50%,
-      rgba(0, 204, 255, 0.08) 100%
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(248, 248, 252, 0.78) 50%,
+      rgba(240, 240, 245, 0.82) 100%
     );
     backdrop-filter: blur(14px) saturate(1.1);
     -webkit-backdrop-filter: blur(14px) saturate(1.1);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow:
-      0 4px 24px rgba(55, 0, 255, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      0 4px 24px rgba(55, 0, 255, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
   }
 
   .border-card {
@@ -287,6 +287,7 @@ body {
   --ease-bends-soft: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-bends: 320ms;
   --duration-bends-fast: 200ms;
+  --page-bg: #e8e8ec;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -397,10 +398,10 @@ body {
   }
   html {
     @apply font-sans;
-    background-color: #010108;
+    background-color: var(--page-bg);
   }
   body {
     @apply text-foreground antialiased;
-    background-color: #010108;
+    background-color: var(--page-bg);
   }
 }

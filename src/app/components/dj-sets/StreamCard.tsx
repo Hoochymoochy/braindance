@@ -27,7 +27,7 @@ export function StreamCard({
   return (
     <Link
       href={`/stream/${set.video_id}`}
-      className="group glass-bends-card relative flex cursor-pointer flex-col overflow-hidden rounded-2xl text-white transition-[transform,box-shadow,border-color] duration-bends ease-bends motion-reduce:transition-none hover:-translate-y-1 hover:border-[#00ccff]/35 hover:shadow-[0_0_28px_rgba(0,204,255,0.12)] motion-enter"
+      className="group glass-bends-card relative flex cursor-pointer flex-col overflow-hidden rounded-2xl text-zinc-900 transition-[transform,box-shadow,border-color] duration-bends ease-bends motion-reduce:transition-none hover:-translate-y-1 hover:border-[#00ccff]/35 hover:shadow-[0_0_28px_rgba(0,204,255,0.12)] motion-enter"
       style={{ animationDelay: `${index * 45}ms` }}
     >
       <div className="relative w-full aspect-video overflow-hidden bg-black">
@@ -47,7 +47,7 @@ export function StreamCard({
       </div>
 
       <div className="flex flex-col gap-2 px-4 py-3">
-        <p className="line-clamp-2 text-sm font-semibold text-white/95">
+        <p className="line-clamp-2 text-sm font-semibold text-zinc-900">
           {set.title}
         </p>
 

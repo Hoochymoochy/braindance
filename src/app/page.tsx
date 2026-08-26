@@ -54,18 +54,18 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-white">
+    <div className="relative min-h-screen overflow-hidden text-zinc-900">
       <div className="relative z-10">
         {/* HERO */}
         <section className="container mx-auto px-4 py-24 text-center">
-          <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg bg-white/5 border border-white/10">
+          <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg border border-black/8">
             <div className="mb-4 text-sm uppercase tracking-wider text-[#00ccff]/90">
               Welcome to Braindance
             </div>
             <h1 className="mb-6 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-4xl font-bold text-transparent sm:text-5xl md:text-6xl">
               Stream DJ sets. Discover new mixes.
             </h1>
-            <p className="mb-8 text-base text-white/80 md:text-lg">
+            <p className="mb-8 text-base text-zinc-600 md:text-lg">
               Find fresh DJ sets and classic mixes in one place. Easy streaming, no fuss.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -79,7 +79,7 @@ export default function Home() {
               </button>
               <Link
                 href="/events"
-                className="rounded-md border border-white/40 bg-white/5 px-5 py-2 text-white backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
+                className="rounded-md border border-zinc-300/80 bg-white/60 px-5 py-2 text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
               >
                 Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
               </Link>
@@ -89,14 +89,14 @@ export default function Home() {
 
         {/* STORY */}
         <section className="container mx-auto px-4 py-8 md:py-12">
-          <div className="mx-auto max-w-4xl rounded-2xl p-8 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 md:p-10">
+          <div className="mx-auto max-w-4xl rounded-2xl p-8 glass-bends-card backdrop-blur-lg border border-black/8 md:p-10">
             <div className="mb-4 text-sm uppercase tracking-wider text-[#00ccff]/90">
               About us
             </div>
             <h2 className="mb-5 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
               All your DJ sets in one place
             </h2>
-            <p className="text-base leading-relaxed text-white/80 md:text-lg">
+            <p className="text-base leading-relaxed text-zinc-600 md:text-lg">
               We stream DJ mixes and sets. Browse what&apos;s popular, discover new artists, and build your library.
             </p>
           </div>
@@ -132,15 +132,15 @@ export default function Home() {
           ].map(({ Icon, title, description, accent, iconBg }) => (
             <div
               key={title}
-              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg bg-white/5 border border-white/10 transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-white/8 hover:shadow-[0_0_28px_rgba(0,204,255,0.15)]"
+              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg border border-black/8 transition-[background-color,box-shadow] duration-bends ease-bends hover:shadow-[0_0_28px_rgba(0,204,255,0.15)]"
             >
               <div
-                className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 ${iconBg}`}
+                className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-black/8 ${iconBg}`}
               >
                 <Icon className={`h-5 w-5 ${accent}`} />
               </div>
               <h3 className={`mb-2 text-lg font-bold ${accent}`}>{title}</h3>
-              <p className="text-sm text-white/75">{description}</p>
+              <p className="text-sm text-zinc-600">{description}</p>
             </div>
           ))}
         </section>

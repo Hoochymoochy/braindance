@@ -2,12 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  TrendingUp,
-  SlidersHorizontal,
-  Shuffle,
-  ChevronDown,
-} from "lucide-react";
+import { TrendingUp, Shuffle, ChevronDown } from "lucide-react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
@@ -23,9 +18,6 @@ type DjSet = {
   url: string;
   view_count?: number;
   duration_seconds?: number;
-  genres?: string[];
-  contexts?: string[];
-  energy?: string;
 };
 
 type DjSetsResponse = {
@@ -59,8 +51,6 @@ function SectionHeader({
 }
 
 const PAGE_SIZE = 9;
-/** Set true to show genre/context/energy filters again. */
-const SHOW_DJ_FILTERS = false;
 
 export default function EventsPage() {
   const router = useRouter();
@@ -71,8 +61,6 @@ export default function EventsPage() {
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [filter, setFilter] = useState({ genre: "", context: "", energy: "" });
-  const [isFiltering, setIsFiltering] = useState(false);
 
   useEffect(() => {
     getEvents();
@@ -130,67 +118,22 @@ export default function EventsPage() {
     }
   };
 
-  const genreOptions = useMemo(() => {
-    const s = new Set<string>();
-    allDjSets.forEach((set) => set.genres?.forEach((g) => s.add(g)));
-    return Array.from(s).sort();
-  }, [allDjSets]);
-
-  const contextOptions = useMemo(() => {
-    const s = new Set<string>();
-    allDjSets.forEach((set) => set.contexts?.forEach((c) => s.add(c)));
-    return Array.from(s).sort();
-  }, [allDjSets]);
-
-  const filteredDjSets = useMemo(
-    () =>
-      allDjSets.filter((set) => {
-        return (
-          (!filter.genre || set.genres?.includes(filter.genre)) &&
-          (!filter.context || set.contexts?.includes(filter.context)) &&
-          (!filter.energy || set.energy === filter.energy)
-        );
-      }),
-    [allDjSets, filter.genre, filter.context, filter.energy]
-  );
-
   const visibleDjSets = useMemo(
-    () => filteredDjSets.slice(0, visibleCount),
-    [filteredDjSets, visibleCount]
+    () => allDjSets.slice(0, visibleCount),
+    [allDjSets, visibleCount]
   );
 
-  const hasMore = visibleCount < filteredDjSets.length;
-
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [filter.genre, filter.context, filter.energy]);
+  const hasMore = visibleCount < allDjSets.length;
 
   const loadMore = () => {
     setVisibleCount((c) => c + PAGE_SIZE);
   };
 
   const goRandomSet = () => {
-    const hasActiveFilters = filter.genre || filter.context || filter.energy;
-    const pool = hasActiveFilters
-      ? filteredDjSets
-      : randomPool.length > 0
-        ? randomPool
-        : allDjSets;
+    const pool = randomPool.length > 0 ? randomPool : allDjSets;
     if (pool.length === 0) return;
     const pick = pool[Math.floor(Math.random() * pool.length)];
     router.push(`/stream/${pick.video_id}`);
-  };
-
-  const handleFilterChange = (newFilter: typeof filter) => {
-    setIsFiltering(true);
-    setFilter(newFilter);
-    setTimeout(() => setIsFiltering(false), 300);
-  };
-
-  const handleResetFilters = () => {
-    setIsFiltering(true);
-    setFilter({ genre: "", context: "", energy: "" });
-    setTimeout(() => setIsFiltering(false), 300);
   };
 
   const skeletons = (n: number) =>
@@ -208,8 +151,7 @@ export default function EventsPage() {
     ));
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden text-white">
-      {/* CONTENT LAYER */}
+    <div className="relative flex min-h-screen flex-col overflow-hidden text-zinc-900">
       <main className="relative z-10 flex-1">
         <section className="mx-auto max-w-7xl px-4 py-10 pb-16">
           <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
@@ -225,80 +167,11 @@ export default function EventsPage() {
               disabled={
                 loading || (randomPool.length === 0 && allDjSets.length === 0)
               }
-              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/18 bg-black/35 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-white hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
             >
               <Shuffle className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" />
               <span className="font-medium text-[#00ccff]">Random set</span>
             </button>
-
-            {SHOW_DJ_FILTERS && (
-              <>
-                <div className="flex shrink-0 items-center gap-2 text-sm font-medium text-[#00ccff]">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filters
-                </div>
-
-                <select
-                  value={filter.genre}
-                  onChange={(e) =>
-                    handleFilterChange({ ...filter, genre: e.target.value })
-                  }
-                  className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
-                >
-                  <option value="">All Genres</option>
-                  {genreOptions.map((g) => (
-                    <option key={g} value={g}>
-                      {g.charAt(0).toUpperCase() + g.slice(1)}
-                    </option>
-                  ))}
-                  {genreOptions.length === 0 && !loading && (
-                    <>
-                      <option value="techno">Techno</option>
-                      <option value="house">House</option>
-                      <option value="hardstyle">Hardstyle</option>
-                    </>
-                  )}
-                </select>
-
-                <select
-                  value={filter.context}
-                  onChange={(e) =>
-                    handleFilterChange({ ...filter, context: e.target.value })
-                  }
-                  className="min-w-[150px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
-                >
-                  <option value="">All Contexts</option>
-                  {contextOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {c.charAt(0).toUpperCase() + c.slice(1)}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={filter.energy}
-                  onChange={(e) =>
-                    handleFilterChange({ ...filter, energy: e.target.value })
-                  }
-                  className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
-                >
-                  <option value="">All Energy</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-
-                {(filter.genre || filter.context || filter.energy) && (
-                  <button
-                    type="button"
-                    onClick={handleResetFilters}
-                    className="ml-auto cursor-pointer text-xs text-[#ff00f7] transition-colors duration-bends-fast ease-bends hover:text-[#00ccff] hover:underline"
-                  >
-                    Reset
-                  </button>
-                )}
-              </>
-            )}
           </div>
 
           <div className="mb-12">
@@ -325,9 +198,9 @@ export default function EventsPage() {
           <div>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
               <SectionHeader title="Current DJ Sets" />
-              {!loading && filteredDjSets.length > 0 && (
+              {!loading && allDjSets.length > 0 && (
                 <p className="tabular-nums text-xs text-[#00ccff]/65">
-                  Showing {visibleDjSets.length} of {filteredDjSets.length}
+                  Showing {visibleDjSets.length} of {allDjSets.length}
                 </p>
               )}
             </div>
@@ -343,25 +216,12 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/15 bg-black/40 px-6 py-3 text-sm font-medium text-white/90 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-[#3700ff]/15 hover:shadow-[0_0_20px_rgba(0,204,255,0.1)] active:opacity-90"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-300/70 bg-white/70 px-6 py-3 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-[#3700ff]/10 hover:shadow-[0_0_20px_rgba(0,204,255,0.1)] active:opacity-90"
                 >
                   Load more
                   <ChevronDown className="w-4 h-4" />
                 </button>
               </div>
-            )}
-            {!loading && SHOW_DJ_FILTERS && filteredDjSets.length === 0 && allDjSets.length > 0 && (
-              <p className="mx-auto max-w-md py-10 text-center text-sm text-white/55">
-                No sets match these filters. Reset filters or try{" "}
-                <button
-                  type="button"
-                  onClick={goRandomSet}
-                  className="cursor-pointer text-[#ff00f7] transition-colors duration-bends-fast ease-bends hover:text-[#00ccff] hover:underline"
-                >
-                  Random set
-                </button>
-                .
-              </p>
             )}
           </div>
         </section>
