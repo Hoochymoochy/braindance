@@ -59,6 +59,8 @@ function SectionHeader({
 }
 
 const PAGE_SIZE = 9;
+/** Set true to show genre/context/energy filters again. */
+const SHOW_DJ_FILTERS = false;
 
 export default function EventsPage() {
   const router = useRouter();
@@ -216,17 +218,7 @@ export default function EventsPage() {
             </h1>
           </div>
 
-          <div
-            className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4 transition-opacity duration-bends ease-bends motion-reduce:transition-none"
-            style={{
-              opacity: isFiltering ? 0.92 : 1,
-            }}
-          >
-            <div className="flex shrink-0 items-center gap-2 text-sm font-medium text-[#00ccff]">
-              <SlidersHorizontal className="h-4 w-4" />
-              Filters
-            </div>
-
+          <div className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4">
             <button
               type="button"
               onClick={goRandomSet}
@@ -239,62 +231,73 @@ export default function EventsPage() {
               <span className="font-medium text-[#00ccff]">Random set</span>
             </button>
 
-            <select
-              value={filter.genre}
-              onChange={(e) => handleFilterChange({ ...filter, genre: e.target.value })}
-              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
-            >
-              <option value="">All Genres</option>
-              {genreOptions.map((g) => (
-                <option key={g} value={g}>
-                  {g.charAt(0).toUpperCase() + g.slice(1)}
-                </option>
-              ))}
-              {genreOptions.length === 0 && !loading && (
-                <>
-                  <option value="techno">Techno</option>
-                  <option value="house">House</option>
-                  <option value="hardstyle">Hardstyle</option>
-                </>
-              )}
-            </select>
+            {SHOW_DJ_FILTERS && (
+              <>
+                <div className="flex shrink-0 items-center gap-2 text-sm font-medium text-[#00ccff]">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filters
+                </div>
 
-            <select
-              value={filter.context}
-              onChange={(e) =>
-                handleFilterChange({ ...filter, context: e.target.value })
-              }
-              className="min-w-[150px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
-            >
-              <option value="">All Contexts</option>
-              {contextOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
-                </option>
-              ))}
-            </select>
+                <select
+                  value={filter.genre}
+                  onChange={(e) =>
+                    handleFilterChange({ ...filter, genre: e.target.value })
+                  }
+                  className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+                >
+                  <option value="">All Genres</option>
+                  {genreOptions.map((g) => (
+                    <option key={g} value={g}>
+                      {g.charAt(0).toUpperCase() + g.slice(1)}
+                    </option>
+                  ))}
+                  {genreOptions.length === 0 && !loading && (
+                    <>
+                      <option value="techno">Techno</option>
+                      <option value="house">House</option>
+                      <option value="hardstyle">Hardstyle</option>
+                    </>
+                  )}
+                </select>
 
-            <select
-              value={filter.energy}
-              onChange={(e) =>
-                handleFilterChange({ ...filter, energy: e.target.value })
-              }
-              className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
-            >
-              <option value="">All Energy</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
+                <select
+                  value={filter.context}
+                  onChange={(e) =>
+                    handleFilterChange({ ...filter, context: e.target.value })
+                  }
+                  className="min-w-[150px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+                >
+                  <option value="">All Contexts</option>
+                  {contextOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c.charAt(0).toUpperCase() + c.slice(1)}
+                    </option>
+                  ))}
+                </select>
 
-            {(filter.genre || filter.context || filter.energy) && (
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="ml-auto cursor-pointer text-xs text-[#ff00f7] transition-colors duration-bends-fast ease-bends hover:text-[#00ccff] hover:underline"
-              >
-                Reset
-              </button>
+                <select
+                  value={filter.energy}
+                  onChange={(e) =>
+                    handleFilterChange({ ...filter, energy: e.target.value })
+                  }
+                  className="min-w-[140px] cursor-pointer rounded-md border border-white/18 bg-black/20 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-[border-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/35 focus:border-[#00ccff]/45 focus:outline-none focus:ring-1 focus:ring-[#00ccff]/25"
+                >
+                  <option value="">All Energy</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+
+                {(filter.genre || filter.context || filter.energy) && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="ml-auto cursor-pointer text-xs text-[#ff00f7] transition-colors duration-bends-fast ease-bends hover:text-[#00ccff] hover:underline"
+                  >
+                    Reset
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -305,7 +308,7 @@ export default function EventsPage() {
                 title="Featured This Week"
               />
             </div>
-            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {loading && skeletons(3)}
               {!loading &&
                 featuredWeekly.map((set, i) => (
@@ -328,7 +331,7 @@ export default function EventsPage() {
                 </p>
               )}
             </div>
-            <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-bends ease-bends motion-reduce:transition-none ${isFiltering ? "opacity-75" : "opacity-100"}`}>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {loading && skeletons(6)}
               {!loading &&
                 visibleDjSets.map((set, i) => (
@@ -347,7 +350,7 @@ export default function EventsPage() {
                 </button>
               </div>
             )}
-            {!loading && filteredDjSets.length === 0 && allDjSets.length > 0 && (
+            {!loading && SHOW_DJ_FILTERS && filteredDjSets.length === 0 && allDjSets.length > 0 && (
               <p className="mx-auto max-w-md py-10 text-center text-sm text-white/55">
                 No sets match these filters. Reset filters or try{" "}
                 <button
