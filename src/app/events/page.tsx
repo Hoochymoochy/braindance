@@ -30,6 +30,8 @@ type DjSet = {
 
 type DjSetsResponse = {
   currentSets?: DjSet[];
+  /** Full catalog (duration-filtered only); used for Random, includes sets older than 90 days. */
+  allSets?: DjSet[];
   featured?: {
     daily?: DjSet[];
     weekly?: DjSet[];
@@ -63,6 +65,7 @@ export default function EventsPage() {
   const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
+  const [randomPool, setRandomPool] = useState<DjSet[]>([]);
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -106,11 +109,19 @@ export default function EventsPage() {
       const data: DjSetsResponse = await res.json();
 
       setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
+      setRandomPool(
+        Array.isArray(data.allSets)
+          ? data.allSets
+          : Array.isArray(data.currentSets)
+            ? data.currentSets
+            : []
+      );
       setFeaturedWeekly(
         Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
       );
     } catch {
       setAllDjSets([]);
+      setRandomPool([]);
       setFeaturedWeekly([]);
     } finally {
       setLoading(false);
@@ -157,7 +168,12 @@ export default function EventsPage() {
   };
 
   const goRandomSet = () => {
-    const pool = filteredDjSets.length > 0 ? filteredDjSets : allDjSets;
+    const hasActiveFilters = filter.genre || filter.context || filter.energy;
+    const pool = hasActiveFilters
+      ? filteredDjSets
+      : randomPool.length > 0
+        ? randomPool
+        : allDjSets;
     if (pool.length === 0) return;
     const pick = pool[Math.floor(Math.random() * pool.length)];
     router.push(`/stream/${pick.video_id}`);
@@ -214,7 +230,9 @@ export default function EventsPage() {
             <button
               type="button"
               onClick={goRandomSet}
-              disabled={loading || allDjSets.length === 0}
+              disabled={
+                loading || (randomPool.length === 0 && allDjSets.length === 0)
+              }
               className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/18 bg-black/35 px-3 py-1.5 text-sm font-medium text-white/95 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
             >
               <Shuffle className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" />

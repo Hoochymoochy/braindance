@@ -44,6 +44,8 @@ type BackendDjSetsListResponse =
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_DURATION_SECONDS = 30 * 60;
+/** Sets older than this are hidden from list/featured but stay in `allSets` for Random. */
+const MAX_LIST_AGE_DAYS = 90;
 
 /** Keep legacy rows that never got duration_seconds; only drop known-short videos. */
 function passesDurationFilter(item: DjSet): boolean {
@@ -217,22 +219,29 @@ export async function GET(request: NextRequest) {
       (item) => Boolean(item.video_id) && passesDurationFilter(item)
     );
 
+    const listSets = filtered.filter((item) =>
+      withinDays(item.published_at, MAX_LIST_AGE_DAYS)
+    );
+
     const backendFeatured = Array.isArray(backendPayload)
       ? null
       : (backendPayload.featured ?? null);
 
+    const backendWeekly = backendFeatured?.weekly?.filter((item) =>
+      withinDays(item.published_at, MAX_LIST_AGE_DAYS)
+    );
+
     const payload = {
       updatedAt,
-      count: Array.isArray(backendPayload)
-        ? filtered.length
-        : (backendPayload.count ?? filtered.length),
-      currentSets: filtered,
+      count: listSets.length,
+      currentSets: listSets,
+      allSets: filtered,
       featured: {
-        daily: topViewed(filtered, 1, 4),
+        daily: topViewed(listSets, 1, 4),
         weekly:
-          backendFeatured?.weekly?.length
-            ? backendFeatured.weekly
-            : topViewed(filtered, 7, 6),
+          backendWeekly?.length
+            ? backendWeekly
+            : topViewed(listSets, 7, 6),
       },
       backendSource: source,
     };
@@ -241,6 +250,7 @@ export async function GET(request: NextRequest) {
       backendSource: source,
       itemsRaw: items.length,
       itemsAfterDurationFilter: filtered.length,
+      itemsAfterAgeFilter: listSets.length,
       count: payload.count,
     });
     return NextResponse.json(payload);
@@ -252,6 +262,7 @@ export async function GET(request: NextRequest) {
         updatedAt: null,
         count: 0,
         currentSets: [],
+        allSets: [],
         featured: { daily: [], weekly: [] },
         error: detail,
       },
