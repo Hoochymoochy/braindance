@@ -151,7 +151,7 @@ export default function EventsPage() {
     ));
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden text-zinc-900">
+    <div className="relative flex min-h-svh flex-col overflow-x-clip text-zinc-900">
       <main className="relative z-10 flex-1">
         <section className="mx-auto max-w-7xl px-4 py-10 pb-16">
           <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">

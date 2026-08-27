@@ -19,7 +19,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <Header />
       <main
         className={cn(
-          "min-h-screen pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
+          "min-h-svh pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
           showMobileFooter
             ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
             : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"

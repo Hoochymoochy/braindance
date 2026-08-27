@@ -399,9 +399,12 @@ body {
   html {
     @apply font-sans;
     background-color: var(--page-bg);
+    overflow-x: clip;
+    overscroll-behavior: none;
   }
   body {
     @apply text-foreground antialiased;
     background-color: var(--page-bg);
+    overscroll-behavior: none;
   }
 }

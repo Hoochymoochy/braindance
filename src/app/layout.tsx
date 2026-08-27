@@ -11,8 +11,8 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 // import LocationGate from "@/app/components/LocationGate";
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-        <body className="min-h-screen bg-[var(--page-bg)] text-zinc-900 font-sans">
+    <html lang="en" className={cn("overflow-x-clip overscroll-none font-sans", geist.variable)}>
+        <body className="min-h-svh overflow-x-clip bg-[var(--page-bg)] text-zinc-900 font-sans overscroll-none">
         {/* Re-enable to prompt for browser location on load (see LocationGate.tsx) */}
         {/* <LocationGate /> */}
         <AppShell>{children}</AppShell>

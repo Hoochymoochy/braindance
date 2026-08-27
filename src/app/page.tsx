@@ -54,7 +54,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-zinc-900">
+    <div className="relative text-zinc-900">
       <div className="relative z-10">
         {/* HERO */}
         <section className="container mx-auto px-4 py-24 text-center">
@@ -70,7 +70,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <button
-                className="rounded-md bg-[#3700ff] px-5 py-2 text-zinc-950 shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90 hover:shadow-lg hover:shadow-[#ff00f7]/30"
+                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90 hover:shadow-[0_4px_14px_rgba(0,0,0,0.45)]"
                 onClick={() =>
                   eventsRef.current?.scrollIntoView({ behavior: "smooth" })
                 }

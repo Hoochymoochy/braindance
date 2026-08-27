@@ -1,6 +1,7 @@
 "use client";
 
-import { Music2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, Music2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type TrackRow = {
@@ -37,6 +38,8 @@ function ScrollableLine({
   );
 }
 
+const lgQuery = "(min-width: 1024px)";
+
 export function StreamTracklistSidebar({
   tracks,
   emptyHint,
@@ -46,10 +49,20 @@ export function StreamTracklistSidebar({
   emptyHint?: string;
   className?: string;
 }) {
+  const [minimized, setMinimized] = useState(false);
+
+  const toggleMinimized = () => {
+    if (window.matchMedia(lgQuery).matches) return;
+    setMinimized((prev) => !prev);
+  };
+
   return (
     <div
       className={cn(
         "glass-bends-card relative flex min-h-0 w-full flex-col overflow-hidden rounded-lg",
+        minimized
+          ? "min-h-0 max-h-none"
+          : "min-h-[10rem] max-h-[min(65vh,520px)] lg:max-h-none lg:min-h-0",
         className
       )}
     >
@@ -58,20 +71,35 @@ export function StreamTracklistSidebar({
         aria-hidden
       />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
-        <div className="flex shrink-0 items-center gap-2 border-b border-black/8 px-4 py-3">
+        <button
+          type="button"
+          className="flex shrink-0 items-center gap-2 border-b border-black/8 px-4 py-3 text-left lg:pointer-events-none lg:cursor-default"
+          onClick={toggleMinimized}
+          aria-expanded={!minimized}
+          aria-controls="stream-tracklist"
+        >
           <Music2 className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" aria-hidden />
-          <h3 className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
+          <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
             Tracklist
-          </h3>
+          </span>
           <span className="ml-auto bg-gradient-to-r from-[#00ccff]/80 to-[#ff00f7]/80 bg-clip-text text-xs tabular-nums text-transparent">
             {tracks.length}
           </span>
-        </div>
+          <ChevronDown
+            className={cn(
+              "h-3.5 w-3.5 shrink-0 text-zinc-500 transition-transform duration-bends-fast ease-bends lg:hidden",
+              !minimized && "rotate-180"
+            )}
+            aria-hidden
+          />
+        </button>
 
         <div
+          id="stream-tracklist"
           className={cn(
-            "min-h-0 flex-1 overflow-y-auto px-2 py-2",
-            scrollbarHidden
+            "min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-2",
+            scrollbarHidden,
+            minimized && "max-lg:hidden"
           )}
         >
         {tracks.length === 0 ? (

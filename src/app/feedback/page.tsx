@@ -16,7 +16,7 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-zinc-900">
+    <div className="relative text-zinc-900">
       <section className="container mx-auto px-4 py-24">
         <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends">
           <h1 className="mb-6 text-4xl font-bold text-gradient-bends sm:text-5xl">

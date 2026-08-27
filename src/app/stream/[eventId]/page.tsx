@@ -423,7 +423,7 @@ export default function BraindanceUserStream() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-zinc-900">
+    <div className="relative text-zinc-900">
       <div className="relative z-10 mx-auto max-w-6xl p-5 md:p-8">
         <main className="mt-5">
           {showTracklist ? (
@@ -478,7 +478,7 @@ export default function BraindanceUserStream() {
                   <StreamTracklistSidebar
                     tracks={sidebarTracks}
                     emptyHint={tracklistEmptyHint}
-                    className="min-h-[10rem] max-h-[min(65vh,520px)] flex-1 lg:h-full lg:max-h-none lg:min-h-0"
+                    className="flex-1 lg:h-full"
                   />
                 </aside>
               </div>
