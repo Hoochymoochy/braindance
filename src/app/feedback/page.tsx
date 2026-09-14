@@ -28,7 +28,7 @@ export default function FeedbackPage() {
           </p>
 
           {submitted ? (
-            <div className="text-center text-[#ff00f7]">
+            <div className="text-center text-brand-via">
               <MessageSquare className="mx-auto mb-4 h-10 w-10" />
               <h2 className="mb-2 text-2xl font-bold">Got it</h2>
               <p className="text-zinc-600">
@@ -47,7 +47,7 @@ export default function FeedbackPage() {
               />
               <button
                 type="submit"
-                className="flex items-center gap-2 self-end rounded-md bg-[#3700ff] px-5 py-2 text-zinc-950 shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90"
+                className="flex items-center gap-2 self-end rounded-md bg-brand-to px-5 py-2 text-zinc-950 shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-brand-via/90"
               >
                 Send <Send className="h-4 w-4" />
               </button>

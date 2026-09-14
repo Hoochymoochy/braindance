@@ -18,14 +18,14 @@ export const BrainLogo: React.FC<BrainLogoProps> = ({
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       <div className="relative">
-        <Brain size={size} className="text-[#00ccff]" />
-        <div className="absolute inset-0 blur-sm opacity-50 text-[#ff00f7]">
+        <Brain size={size} className="text-brand-from" />
+        <div className="absolute inset-0 blur-sm opacity-50 text-brand-via">
           <Brain size={size} />
         </div>
       </div>
 
       {withText && (
-        <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-xl font-bold text-transparent">
+        <span className="bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-xl font-bold text-transparent">
           braindance
         </span>
       )}
@@ -42,9 +42,9 @@ export const AnimatedBrainLogo: React.FC<BrainLogoProps> = ({
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       <div className="relative">
-        <Brain size={size} className="animate-pulse text-[#00ccff]" />
+        <Brain size={size} className="animate-pulse text-brand-from" />
         <div
-          className="absolute inset-0 animate-pulse blur-sm opacity-50 text-[#ff00f7]"
+          className="absolute inset-0 animate-pulse blur-sm opacity-50 text-brand-via"
           style={{ animationDelay: "0.5s" }}
         >
           <Brain size={size} />
@@ -52,7 +52,7 @@ export const AnimatedBrainLogo: React.FC<BrainLogoProps> = ({
       </div>
 
       {withText && (
-        <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-xl font-bold text-transparent">
+        <span className="bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-xl font-bold text-transparent">
           braindance
         </span>
       )}

@@ -67,7 +67,7 @@ export function StreamTracklistSidebar({
       )}
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#00ccff]/[0.14] via-[#ff00f7]/[0.06] to-[#3700ff]/[0.14]"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-from/[0.14] via-brand-via/[0.06] to-brand-to/[0.14]"
         aria-hidden
       />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
@@ -78,11 +78,11 @@ export function StreamTracklistSidebar({
           aria-expanded={!minimized}
           aria-controls="stream-tracklist"
         >
-          <Music2 className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" aria-hidden />
-          <span className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
+          <Music2 className="h-3.5 w-3.5 shrink-0 text-brand-from" aria-hidden />
+          <span className="bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
             Tracklist
           </span>
-          <span className="ml-auto bg-gradient-to-r from-[#00ccff]/80 to-[#ff00f7]/80 bg-clip-text text-xs tabular-nums text-transparent">
+          <span className="ml-auto bg-gradient-to-r from-brand-from/80 to-brand-via/80 bg-clip-text text-xs tabular-nums text-transparent">
             {tracks.length}
           </span>
           <ChevronDown
@@ -115,7 +115,7 @@ export function StreamTracklistSidebar({
                 className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-black/8 hover:bg-black/[0.03]"
               >
                 <div className="flex gap-2">
-                  <span className="shrink-0 bg-gradient-to-b from-[#00ccff] to-[#3700ff] bg-clip-text font-mono text-xs tabular-nums text-transparent">
+                  <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
                     {t.timestamp}
                   </span>
                   <div className="min-w-0 flex-1">

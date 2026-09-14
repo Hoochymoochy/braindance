@@ -40,7 +40,7 @@ function SectionHeader({
   return (
     <div className="mt-4 flex flex-col gap-1">
       {eyebrow && (
-        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#00ccff]/80">
+        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-brand-from/80">
           <TrendingUp className="h-3 w-3" />
           {eyebrow}
         </span>
@@ -140,13 +140,7 @@ export default function EventsPage() {
     Array.from({ length: n }).map((_, i) => (
       <div
         key={i}
-        className="glass-bends-card h-64 rounded-2xl"
-        style={{
-          background:
-            "linear-gradient(110deg,rgba(0,204,255,0.08) 25%,rgba(55,0,255,0.1) 50%,rgba(255,0,247,0.08) 75%), rgba(0,0,0,0.2)",
-          backgroundSize: "200% 100%",
-          animation: "fs-shimmer 1.4s infinite",
-        }}
+        className="skeleton-shimmer glass-bends-card h-64 rounded-2xl"
       />
     ));
 
@@ -167,10 +161,10 @@ export default function EventsPage() {
               disabled={
                 loading || (randomPool.length === 0 && allDjSets.length === 0)
               }
-              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-white hover:shadow-[0_0_24px_rgba(0,204,255,0.12)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/35 disabled:pointer-events-none disabled:opacity-40"
+              className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/35 disabled:pointer-events-none disabled:opacity-40"
             >
-              <Shuffle className="h-3.5 w-3.5 shrink-0 text-[#00ccff]" />
-              <span className="font-medium text-[#00ccff]">Random set</span>
+              <Shuffle className="h-3.5 w-3.5 shrink-0 text-brand-from" />
+              <span className="font-medium text-brand-from">Random set</span>
             </button>
           </div>
 
@@ -199,7 +193,7 @@ export default function EventsPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
               <SectionHeader title="Current DJ Sets" />
               {!loading && allDjSets.length > 0 && (
-                <p className="tabular-nums text-xs text-[#00ccff]/65">
+                <p className="tabular-nums text-xs text-brand-from/65">
                   Showing {visibleDjSets.length} of {allDjSets.length}
                 </p>
               )}
@@ -216,7 +210,7 @@ export default function EventsPage() {
                 <button
                   type="button"
                   onClick={loadMore}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-300/70 bg-white/70 px-6 py-3 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-[#00ccff]/40 hover:bg-[#3700ff]/10 hover:shadow-[0_0_20px_rgba(0,204,255,0.1)] active:opacity-90"
+                  className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-300/70 bg-white/70 px-6 py-3 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-brand-to/10 active:opacity-90"
                 >
                   Load more
                   <ChevronDown className="w-4 h-4" />
@@ -232,13 +226,6 @@ export default function EventsPage() {
         upcomingEvents={upcomingEvents}
         hideStuff={{}}
       />
-
-      <style>{`
-        @keyframes fs-shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
     </div>
   );
 }

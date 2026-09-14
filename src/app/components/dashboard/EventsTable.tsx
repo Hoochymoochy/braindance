@@ -65,7 +65,7 @@ export default function EventsTable({
       <h2 className="mb-6 text-2xl font-bold text-gradient-bends">{title}</h2>
       <div className="glass-bends-card overflow-hidden rounded-2xl">
         <table className="min-w-full text-sm text-zinc-900">
-          <thead className="border-b border-black/8 bg-white/50 text-xs uppercase text-[#00ccff]/85">
+          <thead className="border-b border-black/8 bg-white/50 text-xs uppercase text-brand-from/85">
             <tr>
               <th className="py-3 px-5 text-left">Event</th>
               {eventType === "passed" ? (
@@ -102,7 +102,7 @@ export default function EventsTable({
               events.map((event) => (
                 <tr
                   key={event.id}
-                  className="border-t border-black/8 transition hover:bg-[#3700ff]/10"
+                  className="border-t border-black/8 transition hover:bg-brand-to/10"
                 >
                   <td className="py-4 px-5 font-semibold">{event.title}</td>
 
@@ -125,7 +125,7 @@ export default function EventsTable({
                     <td className="py-4 px-5 text-center">
                       <button
                         onClick={() => onStart(event.id)}
-                        className="rounded-xl bg-[#3700ff]/35 px-4 py-2 text-xs font-medium text-zinc-950 transition hover:bg-[#ff00f7]/35"
+                        className="rounded-xl bg-brand-to/35 px-4 py-2 text-xs font-medium text-zinc-950 transition hover:bg-brand-via/35"
                       >
                         Join Stream
                       </button>
@@ -138,7 +138,7 @@ export default function EventsTable({
                         className="rounded p-2 transition hover:bg-black/5"
                         onClick={() => toggleMenu(event.id)}
                       >
-                        <MoreVertical className="h-5 w-5 text-[#00ccff]/80" />
+                        <MoreVertical className="h-5 w-5 text-brand-from/80" />
                       </button>
 
                       {openMenuId === event.id && (
@@ -148,7 +148,7 @@ export default function EventsTable({
                               onEdit?.(event.id);
                               setOpenMenuId(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-zinc-800 hover:bg-[#3700ff]/10"
+                            className="w-full px-4 py-2 text-left text-sm text-zinc-800 hover:bg-brand-to/10"
                           >
                             ✏️ Edit
                           </button>
@@ -157,7 +157,7 @@ export default function EventsTable({
                               onStart(event.id);
                               setOpenMenuId(null);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-zinc-800 hover:bg-[#3700ff]/10"
+                            className="w-full px-4 py-2 text-left text-sm text-zinc-800 hover:bg-brand-to/10"
                           >
                             🚀 Start
                           </button>

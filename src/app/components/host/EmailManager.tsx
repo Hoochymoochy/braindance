@@ -56,7 +56,7 @@ export default function EmailManager() {
         <button
           type="button"
           onClick={addEmail}
-          className="rounded bg-[#3700ff] px-4 text-zinc-950 transition hover:bg-[#ff00f7]/85"
+          className="rounded bg-brand-to px-4 text-zinc-950 transition hover:bg-brand-via/85"
         >
           Add
         </button>
@@ -64,7 +64,7 @@ export default function EmailManager() {
 
       {emails.length > 0 && (
         <div className="glass-bends-card space-y-1 rounded-lg p-3">
-          <p className="font-medium text-[#00ccff]/90">Recipients:</p>
+          <p className="font-medium text-brand-from/90">Recipients:</p>
           {emails.map((email) => (
             <div key={email} className="flex justify-between text-sm">
               <span>{email}</span>
@@ -89,7 +89,7 @@ export default function EmailManager() {
 
       <button
         onClick={sendEmails}
-        className="rounded bg-[#3700ff] px-6 py-2 text-zinc-950 transition hover:bg-[#ff00f7]/85"
+        className="rounded bg-brand-to px-6 py-2 text-zinc-950 transition hover:bg-brand-via/85"
       >
         Send Message
       </button>

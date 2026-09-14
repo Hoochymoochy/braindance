@@ -52,19 +52,19 @@ export const EventsLayout: React.FC<EventsLayoutProps> = ({
     <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
       {renderSection(
         "Top Events",
-        "bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff]",
+        "bg-gradient-to-r from-brand-from via-brand-via to-brand-to",
         topEvents,
         true
       )}
       {renderSection(
         "Live Events",
-        "bg-gradient-to-r from-[#ff00f7] to-[#00ccff]",
+        "bg-gradient-to-r from-brand-via to-brand-from",
         liveEvents,
         true
       )}
       {renderSection(
         "Upcoming Events",
-        "bg-gradient-to-r from-[#3700ff] to-[#00ccff]",
+        "bg-gradient-to-r from-brand-to to-brand-from",
         upcomingEvents
       )}
     </div>

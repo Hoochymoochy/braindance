@@ -18,7 +18,7 @@ export default function PolicyPage() {
 
           <div className="space-y-10 text-sm text-zinc-600 md:text-base">
             <div>
-              <h2 className="mb-2 text-lg font-semibold text-[#00ccff]">
+              <h2 className="mb-2 text-lg font-semibold text-brand-from">
                 Data usage
               </h2>
               <p>
@@ -29,7 +29,7 @@ export default function PolicyPage() {
             </div>
 
             <div>
-              <h2 className="mb-2 text-lg font-semibold text-[#ff00f7]">
+              <h2 className="mb-2 text-lg font-semibold text-brand-via">
                 Email & contact
               </h2>
               <p>
@@ -39,7 +39,7 @@ export default function PolicyPage() {
             </div>
 
             <div>
-              <h2 className="mb-2 text-lg font-semibold text-[#3700ff]">
+              <h2 className="mb-2 text-lg font-semibold text-brand-to">
                 Privacy & security
               </h2>
               <p>
@@ -50,7 +50,7 @@ export default function PolicyPage() {
             </div>
 
             <div>
-              <h2 className="mb-2 text-lg font-semibold text-[#00ccff]/90">
+              <h2 className="mb-2 text-lg font-semibold text-brand-from/90">
                 Content
               </h2>
               <p>
@@ -60,7 +60,7 @@ export default function PolicyPage() {
             </div>
 
             <div>
-              <h2 className="mb-2 text-lg font-semibold text-[#ff00f7]/90">
+              <h2 className="mb-2 text-lg font-semibold text-brand-via/90">
                 What we&apos;re trying to do
               </h2>
               <p>

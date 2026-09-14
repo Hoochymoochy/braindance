@@ -120,14 +120,14 @@ export default function PhotoUpload() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10 text-zinc-900">
-      <div className="glass-bends w-full max-w-md transform rounded-lg p-6 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_28px_rgba(0,204,255,0.12)]">
+      <div className="glass-bends hover-glow-brand w-full max-w-md transform rounded-lg p-6 transition-all duration-300 hover:scale-[1.01]">
         
         {/* Photo Counter */}
         <div className="text-center mb-4">
           <div className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition-all duration-300 ${
             isAtLimit 
-              ? "border-[#ff00f7]/45 bg-[#ff00f7]/15 text-[#ff00f7]" 
-              : "border-[#00ccff]/35 bg-[#00ccff]/10 text-[#00ccff]"
+              ? "border-brand-via/45 bg-brand-via/15 text-brand-via" 
+              : "border-brand-from/35 bg-brand-from/10 text-brand-from"
           }`}>
             <span className="mr-2">{isAtLimit ? "🔥" : "📸"}</span>
             {acceptedCount} / {maxPhotos} photos
@@ -135,7 +135,7 @@ export default function PhotoUpload() {
         </div>
 
         <h1
-          className={`mb-6 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-center text-2xl font-bold text-transparent transition-all duration-300 ${
+          className={`mb-6 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-center text-2xl font-bold text-transparent transition-all duration-300 ${
             isAtLimit ? "" : "animate-pulse"
           }`}
         >
@@ -144,10 +144,10 @@ export default function PhotoUpload() {
 
         {/* Gallery Full Message */}
         {isAtLimit && (
-          <div className="glass-bends-card mb-6 animate-fade-in rounded-lg border border-[#ff00f7]/25 p-4">
+          <div className="glass-bends-card mb-6 animate-fade-in rounded-lg border border-brand-via/25 p-4">
             <div className="text-center">
               <div className="mb-2 text-3xl">🎊</div>
-              <p className="mb-1 font-medium text-[#ff00f7]">Photo gallery is complete!</p>
+              <p className="mb-1 font-medium text-brand-via">Photo gallery is complete!</p>
               <p className="text-sm text-zinc-600">
                 The party has reached the maximum of {maxPhotos} photos for this event.
               </p>
@@ -160,8 +160,8 @@ export default function PhotoUpload() {
           <div
             className={`relative mb-4 cursor-pointer rounded-lg border-2 border-dashed p-6 transition-all duration-300 ${
               isDragOver
-                ? "scale-105 border-[#00ccff] bg-[#00ccff]/10"
-                : "border-white/15 hover:border-[#00ccff]/50 hover:bg-[#3700ff]/10"
+                ? "scale-105 border-brand-from bg-brand-from/10"
+                : "border-white/15 hover:border-brand-from/50 hover:bg-brand-to/10"
             }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -184,7 +184,7 @@ export default function PhotoUpload() {
               >
                 {isDragOver ? "⬇️" : "📁"}
               </div>
-              <p className="mb-1 text-sm text-[#00ccff]/90">
+              <p className="mb-1 text-sm text-brand-from/90">
                 {isDragOver ? "Drop your photo here!" : "Click to select or drag & drop"}
               </p>
               <p className="text-gray-500 text-xs">PNG, JPG, GIF up to 10MB</p>
@@ -197,7 +197,7 @@ export default function PhotoUpload() {
           <div className="mb-4 space-y-3">
             <button
               onClick={() => window.location.reload()}
-              className="flex w-full transform items-center justify-center rounded-md bg-[#3700ff] px-4 py-3 font-semibold text-zinc-950 transition-all duration-300 hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.2)] active:scale-95"
+              className="shadow-glow-brand flex w-full transform items-center justify-center rounded-md bg-brand-to px-4 py-3 font-semibold text-zinc-950 transition-all duration-300 hover:scale-105 hover:bg-brand-via/85 active:scale-95"
             >
               <span className="mr-2">🔄</span>
               Refresh Gallery
@@ -218,7 +218,7 @@ export default function PhotoUpload() {
               Preview:
             </p>
             <div className="relative group">
-              <div className="group-hover:scale-[1.02] relative h-48 w-full overflow-hidden rounded-md border border-[#00ccff]/25 shadow-[0_0_12px_rgba(0,204,255,0.12)] transition-transform duration-300">
+              <div className="group-hover:scale-[1.02] shadow-glow-brand relative h-48 w-full overflow-hidden rounded-md border border-brand-from/25 transition-transform duration-300">
                 <Image
                   src={URL.createObjectURL(file)}
                   alt="Preview"
@@ -245,13 +245,13 @@ export default function PhotoUpload() {
         {/* Upload Progress Bar */}
         {status === "uploading" && !isAtLimit && (
           <div className="mb-4">
-            <div className="mb-1 flex justify-between text-xs text-[#00ccff]/85">
+            <div className="mb-1 flex justify-between text-xs text-brand-from/85">
               <span>Uploading...</span>
               <span>{Math.round(uploadProgress)}%</span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-black/40">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] transition-all duration-300 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-brand-from via-brand-via to-brand-to transition-all duration-300 ease-out"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
@@ -266,7 +266,7 @@ export default function PhotoUpload() {
             className={`w-full py-3 font-semibold rounded-md transition-all duration-300 transform ${
               !file || status === "uploading"
                 ? "cursor-not-allowed bg-gray-600 text-gray-400 opacity-50"
-                : "bg-[#3700ff] text-zinc-950 hover:scale-105 hover:bg-[#ff00f7]/85 hover:shadow-[0_0_20px_rgba(0,204,255,0.15)] active:scale-95"
+                : "bg-brand-to text-zinc-950 hover:scale-105 hover:bg-brand-via/85 shadow-glow-brand active:scale-95"
             }`}
           >
             {status === "uploading" ? (

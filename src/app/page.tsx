@@ -59,10 +59,10 @@ export default function Home() {
         {/* HERO */}
         <section className="container mx-auto px-4 py-24 text-center">
           <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg border border-black/8">
-            <div className="mb-4 text-sm uppercase tracking-wider text-[#00ccff]/90">
+            <div className="mb-4 text-sm uppercase tracking-wider text-brand-from/90">
               Welcome to Braindance
             </div>
-            <h1 className="mb-6 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-4xl font-bold text-transparent sm:text-5xl md:text-6xl">
+            <h1 className="mb-6 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-4xl font-bold text-transparent sm:text-5xl md:text-6xl">
               Stream DJ sets. Discover new mixes.
             </h1>
             <p className="mb-8 text-base text-zinc-600 md:text-lg">
@@ -70,7 +70,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <button
-                className="rounded-md bg-[#3700ff] px-5 py-2 text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-[#ff00f7]/90 hover:shadow-[0_4px_14px_rgba(0,0,0,0.45)]"
+                className="rounded-md bg-brand-to px-5 py-2 text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-brand-via/90 hover:shadow-[0_4px_14px_rgba(0,0,0,0.45)] dark:text-zinc-950"
                 onClick={() =>
                   eventsRef.current?.scrollIntoView({ behavior: "smooth" })
                 }
@@ -79,7 +79,7 @@ export default function Home() {
               </button>
               <Link
                 href="/events"
-                className="rounded-md border border-zinc-300/80 bg-white/60 px-5 py-2 text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends-fast ease-bends hover:border-[#00ccff]/60 hover:bg-[#00ccff]/10 hover:shadow-lg hover:shadow-[#00ccff]/20"
+                className="rounded-md border border-zinc-300/80 bg-white/60 px-5 py-2 text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends-fast ease-bends hover:border-brand-from/60 hover:bg-brand-from/10 hover:shadow-lg hover:shadow-brand-from/20"
               >
                 Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
               </Link>
@@ -90,10 +90,10 @@ export default function Home() {
         {/* STORY */}
         <section className="container mx-auto px-4 py-8 md:py-12">
           <div className="mx-auto max-w-4xl rounded-2xl p-8 glass-bends-card backdrop-blur-lg border border-black/8 md:p-10">
-            <div className="mb-4 text-sm uppercase tracking-wider text-[#00ccff]/90">
+            <div className="mb-4 text-sm uppercase tracking-wider text-brand-from/90">
               About us
             </div>
-            <h2 className="mb-5 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
+            <h2 className="mb-5 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
               All your DJ sets in one place
             </h2>
             <p className="text-base leading-relaxed text-zinc-600 md:text-lg">
@@ -110,29 +110,29 @@ export default function Home() {
               title: "Stream Anytime",
               description:
                 "Watch DJ sets whenever you want. No ads, no hassle.",
-              accent: "text-[#ff00f7]",
-              iconBg: "bg-[#ff00f7]/15",
+              accent: "text-brand-via",
+              iconBg: "bg-brand-via/15",
             },
             {
               Icon: Waves,
               title: "Discover Artists",
               description:
                 "Find new DJs and revisit classics. All in one place.",
-              accent: "text-[#00ccff]",
-              iconBg: "bg-[#00ccff]/15",
+              accent: "text-brand-from",
+              iconBg: "bg-brand-from/15",
             },
             {
               Icon: Globe2,
               title: "Stay Current",
               description:
                 "See what's trending and what people are watching right now.",
-              accent: "text-[#3700ff]",
-              iconBg: "bg-[#3700ff]/20",
+              accent: "text-brand-to",
+              iconBg: "bg-brand-to/20",
             },
           ].map(({ Icon, title, description, accent, iconBg }) => (
             <div
               key={title}
-              className="rounded-xl p-6 glass-bends-card backdrop-blur-lg border border-black/8 transition-[background-color,box-shadow] duration-bends ease-bends hover:shadow-[0_0_28px_rgba(0,204,255,0.15)]"
+              className="hover-glow-brand rounded-xl p-6 glass-bends-card backdrop-blur-lg border border-black/8 transition-[background-color,box-shadow] duration-bends ease-bends"
             >
               <div
                 className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-black/8 ${iconBg}`}
@@ -149,17 +149,17 @@ export default function Home() {
         <section className="container mx-auto space-y-6 px-4 py-8">
           <div className="mb-7 flex items-end justify-between">
             <div className="flex flex-col gap-1">
-              <span className="inline-flex items-center gap-2 space-y-2 text-[0.7rem] font-medium uppercase tracking-widest text-[#00ccff]/80">
+              <span className="inline-flex items-center gap-2 space-y-2 text-[0.7rem] font-medium uppercase tracking-widest text-brand-from/80">
                 <TrendingUp className="h-3 w-3" />
                 Top weekly views
               </span>
-              <h2 className="m-0 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-tight text-transparent">
+              <h2 className="m-0 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-tight text-transparent">
                 Featured Streams
               </h2>
             </div>
             <Link
               href="/events"
-              className="group inline-flex items-center gap-1.5 text-[0.8rem] text-[#00ccff]/75 no-underline transition-colors duration-bends-fast ease-bends hover:text-[#00ccff]"
+              className="group inline-flex items-center gap-1.5 text-[0.8rem] text-brand-from/75 no-underline transition-colors duration-bends-fast ease-bends hover:text-brand-from"
             >
               View all
               <span className="inline-block transition-transform duration-bends-fast ease-bends group-hover:translate-x-0.5">
@@ -176,13 +176,7 @@ export default function Home() {
               [0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="glass-bends-card h-64 rounded-2xl"
-                  style={{
-                    background:
-                      "linear-gradient(110deg,rgba(0,204,255,0.08) 25%,rgba(55,0,255,0.1) 50%,rgba(255,0,247,0.08) 75%), rgba(0,0,0,0.2)",
-                    backgroundSize: "200% 100%",
-                    animation: "fs-shimmer 1.4s infinite",
-                  }}
+                  className="skeleton-shimmer glass-bends-card h-64 rounded-2xl"
                 />
               ))}
 
@@ -198,13 +192,6 @@ export default function Home() {
               ))}
           </div>
         </section>
-
-        <style>{`
-        @keyframes fs-shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
       </div>
     </div>
   );

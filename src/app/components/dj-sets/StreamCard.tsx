@@ -27,7 +27,7 @@ export function StreamCard({
   return (
     <Link
       href={`/stream/${set.video_id}`}
-      className="group glass-bends-card relative flex cursor-pointer flex-col overflow-hidden rounded-2xl text-zinc-900 transition-[transform,box-shadow,border-color] duration-bends ease-bends motion-reduce:transition-none hover:-translate-y-1 hover:border-[#00ccff]/35 hover:shadow-[0_0_28px_rgba(0,204,255,0.12)] motion-enter"
+      className="group hover-glow-brand glass-bends-card relative flex cursor-pointer flex-col overflow-hidden rounded-2xl text-zinc-900 transition-[transform,box-shadow,border-color] duration-bends ease-bends motion-reduce:transition-none hover:-translate-y-1 hover:border-brand-from/35 motion-enter"
       style={{ animationDelay: `${index * 45}ms` }}
     >
       <div className="relative w-full aspect-video overflow-hidden bg-black">
@@ -40,7 +40,7 @@ export function StreamCard({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/30 to-black" />
+          <div className="h-full w-full bg-gradient-to-br from-brand-to/30 to-black" />
         )}
 
         <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
@@ -51,9 +51,9 @@ export function StreamCard({
           {set.title}
         </p>
 
-        <div className="flex items-center gap-2 text-xs text-[#00ccff]/75">
+        <div className="flex items-center gap-2 text-xs text-brand-from/75">
           <span className="truncate">{set.channel}</span>
-          <span className="h-1 w-1 shrink-0 rounded-full bg-[#ff00f7]/50" />
+          <span className="h-1 w-1 shrink-0 rounded-full bg-brand-via/50" />
           <span>{formatViews(set.view_count ?? 0)} views</span>
         </div>
       </div>

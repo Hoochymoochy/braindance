@@ -53,14 +53,14 @@ function StreamLoadingScreen() {
   return (
     <div className="fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center gap-8 px-6 bg-black/80 backdrop-blur-sm">
       <div
-        className="h-14 w-14 animate-spin rounded-full border-2 border-[#3700ff]/30 border-t-[#00ccff] border-r-[#ff00f7]/70"
+        className="h-14 w-14 animate-spin rounded-full border-2 border-brand-to/30 border-t-brand-from border-r-brand-via/70"
         aria-hidden
       />
       <div className="space-y-2 text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.35em] text-[#00ccff]/90">
+        <p className="text-xs font-medium uppercase tracking-[0.35em] text-brand-from/90">
           Braindance
         </p>
-        <p className="bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-lg font-semibold text-transparent">
+        <p className="bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-lg font-semibold text-transparent">
           Loading stream…
         </p>
         <p className="mx-auto max-w-xs text-sm text-[#7a7a7a]">
@@ -389,11 +389,11 @@ export default function BraindanceUserStream() {
               className="object-cover opacity-55"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-[#3700ff]/40 to-[#00ccff]/20" />
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-to/40 to-brand-from/20" />
           )}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <div className="rounded-full bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] p-[2px] shadow-[0_0_24px_rgba(255,0,247,0.35)]">
+            <div className="rounded-full bg-gradient-to-r from-brand-from via-brand-via to-brand-to p-[2px] shadow-glow-brand-via">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/65 backdrop-blur-md">
                 <span className="ml-0.5 text-xl text-zinc-900" aria-hidden>
                   ▶
@@ -452,7 +452,7 @@ export default function BraindanceUserStream() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                            <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
                           )}
                         </div>
                         <div className="min-w-0 text-sm">
@@ -508,7 +508,7 @@ export default function BraindanceUserStream() {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-[#3700ff]/50 to-[#00ccff]/20" />
+                          <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
                         )}
                       </div>
                       <div className="min-w-0 text-sm">
@@ -555,11 +555,11 @@ export default function BraindanceUserStream() {
         {merchItems.length > 0 && (
           <section className="glass-bends-card relative mt-8 overflow-hidden rounded-xl p-5">
             <div
-              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#00ccff]/[0.14] via-[#ff00f7]/[0.06] to-[#3700ff]/[0.14]"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-from/[0.14] via-brand-via/[0.06] to-brand-to/[0.14]"
               aria-hidden
             />
             <div className="relative z-10">
-              <h3 className="mb-4 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
+              <h3 className="mb-4 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
                 Links
               </h3>
               <ul className="space-y-3">
@@ -572,7 +572,7 @@ export default function BraindanceUserStream() {
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-[#3700ff] underline-offset-2 transition-[background-image,color] duration-bends-fast ease-bends hover:bg-gradient-to-r hover:from-[#00ccff] hover:via-[#ff00f7] hover:to-[#3700ff] hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#00ccff]/40"
+                      className="text-sm text-brand-to underline-offset-2 transition-[background-image,color] duration-bends-fast ease-bends hover:bg-gradient-to-r hover:from-brand-from hover:via-brand-via hover:to-brand-to hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
                     >
                       {item.title}
                     </a>

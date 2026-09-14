@@ -39,7 +39,7 @@ const StreamGuide: React.FC = () => {
             <li>
               <strong>Activate YouTube Streaming</strong><br />
               Go to{" "}
-              <Link href="https://studio.youtube.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
+              <Link href="https://studio.youtube.com/" className="text-brand-from underline hover:text-brand-via" target="_blank">
                 YouTube Studio
               </Link>, click <code>Go Live</code>, and wait 24h if it&apos;s your first time.
             </li>
@@ -47,7 +47,7 @@ const StreamGuide: React.FC = () => {
             <li>
               <strong>Set Up OBS</strong><br />
               Download from{" "}
-              <Link href="https://obsproject.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
+              <Link href="https://obsproject.com/" className="text-brand-from underline hover:text-brand-via" target="_blank">
                 obsproject.com
               </Link>, add webcam + mic, and paste your YouTube stream key in OBS → Settings → Stream.
             </li>
@@ -65,11 +65,11 @@ const StreamGuide: React.FC = () => {
 
           <div className="pt-2 text-sm text-zinc-500">
             Bonus overlays? Try{" "}
-            <Link href="https://www.canva.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
+            <Link href="https://www.canva.com/" className="text-brand-from underline hover:text-brand-via" target="_blank">
               Canva
             </Link>{" "}
             or{" "}
-            <Link href="https://streamelements.com/" className="text-[#00ccff] underline hover:text-[#ff00f7]" target="_blank">
+            <Link href="https://streamelements.com/" className="text-brand-from underline hover:text-brand-via" target="_blank">
               StreamElements
             </Link>.
           </div>

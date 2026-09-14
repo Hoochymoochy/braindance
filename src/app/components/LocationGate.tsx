@@ -94,7 +94,7 @@ export default function LocationGate() {
   if (!locationReady && fallbackVisible) {
     return (
       <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 p-8 text-center">
-        <h2 className="mb-4 bg-gradient-to-r from-[#00ccff] via-[#ff00f7] to-[#3700ff] bg-clip-text text-2xl font-bold text-transparent">
+        <h2 className="mb-4 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-2xl font-bold text-transparent">
           📍 Enable Location
         </h2>
         <p className="mb-6 text-zinc-700">
@@ -102,7 +102,7 @@ export default function LocationGate() {
         </p>
         <button
           onClick={requestGeo}
-          className="rounded-full bg-[#3700ff] px-6 py-3 text-lg font-semibold text-zinc-950 shadow-lg transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-[#ff00f7]/90 active:opacity-90"
+          className="rounded-full bg-brand-to px-6 py-3 text-lg font-semibold text-zinc-950 shadow-lg transition-[background-color,box-shadow] duration-bends ease-bends hover:bg-brand-via/90 active:opacity-90"
         >
           Enable Location
         </button>

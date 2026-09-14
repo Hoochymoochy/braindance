@@ -47,7 +47,7 @@ export default function Login() {
         {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-lg font-medium text-[#00ccff]/95">
+            <label className="block text-lg font-medium text-brand-from/95">
               Email
             </label>
             <input
@@ -59,7 +59,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-lg font-medium text-[#00ccff]/95">
+            <label className="block text-lg font-medium text-brand-from/95">
               Password
             </label>
             <input
@@ -72,7 +72,7 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="w-full rounded-xl border border-[#3700ff]/50 bg-[#3700ff]/80 px-4 py-2 text-zinc-950 transition duration-300 hover:bg-[#ff00f7]/75"
+            className="w-full rounded-xl border border-brand-to/50 bg-brand-to/80 px-4 py-2 text-zinc-950 transition duration-300 hover:bg-brand-via/75"
           >
             Log In
           </button>
@@ -81,7 +81,7 @@ export default function Login() {
           Don&apos;t have an account?{" "}
           <a
             href="/host/sign-up"
-            className="text-[#00ccff] transition-colors hover:text-[#ff00f7] hover:underline"
+            className="text-brand-from transition-colors hover:text-brand-via hover:underline"
           >
             Sign up
           </a>

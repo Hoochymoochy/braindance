@@ -25,15 +25,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ccff]/40 disabled:opacity-50";
+      "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-from/40 disabled:opacity-50";
 
     const variants = {
-      default: "bg-[#00ccff] text-black shadow-sm hover:bg-[#ff00f7]/90",
+      default: "bg-brand-from text-black shadow-sm hover:bg-brand-via/90",
       outline:
-        "border border-zinc-300 bg-transparent text-zinc-700 hover:border-[#00ccff] hover:text-[#00ccff]",
+        "border border-zinc-300 bg-transparent text-zinc-700 hover:border-brand-from hover:text-brand-from",
       ghost:
-        "bg-transparent text-zinc-600 hover:bg-[#3700ff]/10 hover:text-[#ff00f7]",
-      link: "bg-transparent text-zinc-600 underline-offset-4 hover:text-[#00ccff] hover:underline",
+        "bg-transparent text-zinc-600 hover:bg-brand-to/10 hover:text-brand-via",
+      link: "bg-transparent text-zinc-600 underline-offset-4 hover:text-brand-from hover:underline",
     };
 
     const sizes = {

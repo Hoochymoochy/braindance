@@ -46,7 +46,7 @@ export default function SignUp() {
 
         <form onSubmit={handleSignUp} className="space-y-6">
           <div>
-            <label className="block text-xl font-medium text-[#00ccff]/95">
+            <label className="block text-xl font-medium text-brand-from/95">
               Email
             </label>
             <input
@@ -58,7 +58,7 @@ export default function SignUp() {
             />
           </div>
           <div>
-            <label className="block text-xl font-medium text-[#00ccff]/95">
+            <label className="block text-xl font-medium text-brand-from/95">
               Password
             </label>
             <input
@@ -70,7 +70,7 @@ export default function SignUp() {
             />
           </div>
           <div>
-            <label className="block text-xl font-medium text-[#00ccff]/95">
+            <label className="block text-xl font-medium text-brand-from/95">
               Confirm Password
             </label>
             <input
@@ -83,7 +83,7 @@ export default function SignUp() {
           </div>
           <button
             type="submit"
-            className="w-full rounded-xl border border-[#3700ff]/50 bg-[#3700ff]/80 px-4 py-2 font-semibold text-zinc-950 transition duration-300 hover:bg-[#ff00f7]/75"
+            className="w-full rounded-xl border border-brand-to/50 bg-brand-to/80 px-4 py-2 font-semibold text-zinc-950 transition duration-300 hover:bg-brand-via/75"
           >
             Sign Up
           </button>
@@ -93,7 +93,7 @@ export default function SignUp() {
           Already have an account?{" "}
           <a
             href="/host/login"
-            className="text-[#ff00f7] transition-colors hover:text-[#00ccff]"
+            className="text-brand-via transition-colors hover:text-brand-from"
           >
             Log in
           </a>

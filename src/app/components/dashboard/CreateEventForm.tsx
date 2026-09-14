@@ -117,8 +117,8 @@ export default function CreateEventForm({
               onClick={() => inputRef.current?.click()}
               className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed p-6 text-center transition-colors ${
                 dragActive
-                  ? "border-[#ff00f7] bg-[#ff00f7]/10"
-                  : "border-white/20 hover:border-[#00ccff]/55"
+                  ? "border-brand-via bg-brand-via/10"
+                  : "border-white/20 hover:border-brand-from/55"
               }`}
             >
               <p className="text-sm text-gray-400">
@@ -137,7 +137,7 @@ export default function CreateEventForm({
             {/* Input Fields */}
             {(["title", "date", "location"] as const).map((field) => (
               <div key={field}>
-                <label className="mb-1 block text-sm font-medium capitalize text-[#00ccff]/90">
+                <label className="mb-1 block text-sm font-medium capitalize text-brand-from/90">
                   {field}
                 </label>
                 <input
@@ -152,7 +152,7 @@ export default function CreateEventForm({
 
             {/* Description */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-[#00ccff]/90">
+              <label className="mb-1 block text-sm font-medium text-brand-from/90">
                 Description
               </label>
               <textarea
@@ -176,7 +176,7 @@ export default function CreateEventForm({
               )}
               <button
                 type="submit"
-                className="rounded-md bg-[#3700ff] px-4 py-2 text-zinc-950 transition hover:bg-[#ff00f7]/85 disabled:opacity-50"
+                className="rounded-md bg-brand-to px-4 py-2 text-zinc-950 transition hover:bg-brand-via/85 disabled:opacity-50"
                 disabled={creating}
               >
                 {creating ? "Creating..." : isEditing ? "Update" : "Submit Event"}

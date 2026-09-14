@@ -53,7 +53,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
         <h3 className="text-xl font-bold text-gradient-bends">MERCH & TICKETS</h3>
         <button
           onClick={() => setIsEditingLinks(!isEditingLinks)}
-          className="rounded px-2 py-1 text-xs transition-colors bg-[#00ccff]/25 text-[#00ccff] hover:bg-[#00ccff]/35"
+          className="rounded px-2 py-1 text-xs transition-colors bg-brand-from/25 text-brand-from hover:bg-brand-from/35"
         >
           {isEditingLinks ? "Done" : "Edit"}
         </button>
@@ -66,7 +66,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className="block transform cursor-pointer rounded-md border border-black/8 bg-gradient-to-br from-[#3700ff]/15 to-[#ff00f7]/10 p-4 text-center transition-all hover:scale-105 hover:border-[#00ccff]/35 hover:from-[#3700ff]/25 hover:to-[#00ccff]/15"
+              className="block transform cursor-pointer rounded-md border border-black/8 bg-gradient-to-br from-brand-to/15 to-brand-via/10 p-4 text-center transition-all hover:scale-105 hover:border-brand-from/35 hover:from-brand-to/25 hover:to-brand-from/15"
             >
               <p className="text-sm font-medium text-zinc-900">{label}</p>
               <p className="mt-1 text-xs text-zinc-500">{description}</p>
@@ -94,7 +94,7 @@ const VenueLinks: React.FC<VenueLinksProps> = ({ id }) => {
         ))}
 
         {isEditingLinks && (
-          <div className="rounded-md border-2 border-dashed border-[#00ccff]/25 bg-white/60 p-4">
+          <div className="rounded-md border-2 border-dashed border-brand-from/25 bg-white/60 p-4">
             <input
               type="text"
               value={linkInput.label}
