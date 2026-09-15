@@ -50,8 +50,7 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 
 | Route | What it does |
 |-------|----------------|
-| `/` | Home: hero, story cards, featured DJ sets from **`GET /api/dj-sets`** |
-| `/events` | DJ set grid, filters, “Random set”, featured + paginated sets; **`EventLayout`** may show live/upcoming **Supabase events** as posters |
+| `/` | Home: hero, then DJ set grid (“Random set”, featured + paginated sets from **`GET /api/dj-sets`**); **`EventLayout`** may show live/upcoming **Supabase events** as posters. **`/events`** redirects here. |
 | `/stream/[eventId]` | Public stream viewer. **`eventId`** interpretation below. |
 | `/stream/[eventId]/photo-upload` | Photo upload for an event |
 | `/policy`, `/feedback`, `/contact` | Static-ish content + forms writing to Supabase utilities |

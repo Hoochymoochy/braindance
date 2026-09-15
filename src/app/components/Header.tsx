@@ -29,12 +29,6 @@ export default function Header() {
             >
               Home
             </Link>
-            <Link
-              href="/events"
-              className="text-zinc-700 transition-colors duration-bends-fast ease-bends hover:text-brand-via"
-            >
-              Events
-            </Link>
           </nav>
           <ThemeToggle />
         </div>

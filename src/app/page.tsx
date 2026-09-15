@@ -1,63 +1,154 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowRight, Radio, Waves, Globe2, TrendingUp } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, TrendingUp, Shuffle, ChevronDown } from "lucide-react";
+import { EventsLayout } from "@/app/EventLayout";
+import { EventPosterProps } from "@/app/components/user/Poster";
+import { getAllEvents } from "@/app/lib/events/event";
+import { getStreams } from "@/app/lib/events/stream";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 
 type DjSet = {
   video_id: string;
   title: string;
   channel: string;
+  published_at: string;
   thumbnail?: string;
+  url: string;
   view_count?: number;
+  duration_seconds?: number;
 };
 
 type DjSetsResponse = {
   currentSets?: DjSet[];
+  /** Full catalog (duration-filtered only); used for Random, includes sets older than 90 days. */
+  allSets?: DjSet[];
   featured?: {
+    daily?: DjSet[];
     weekly?: DjSet[];
   };
 };
 
+function SectionHeader({
+  eyebrow,
+  title,
+}: {
+  eyebrow?: string;
+  title: string;
+}) {
+  return (
+    <div className="mt-4 flex flex-col gap-1">
+      {eyebrow && (
+        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-brand-from/80">
+          <TrendingUp className="h-3 w-3" />
+          {eyebrow}
+        </span>
+      )}
+      <h2 className="text-2xl font-bold text-gradient-bends">{title}</h2>
+    </div>
+  );
+}
+
+const PAGE_SIZE = 9;
+
 export default function Home() {
-  const [featuredStreams, setFeaturedStreams] = useState<DjSet[]>([]);
-  const [streamsLoading, setStreamsLoading] = useState(true);
-  const eventsRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const catalogRef = useRef<HTMLElement>(null);
+  const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
+  const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
+  const [randomPool, setRandomPool] = useState<DjSet[]>([]);
+  const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
-    const getFeaturedStreams = async () => {
-      try {
-        const response = await fetch("/api/dj-sets", { cache: "no-store" });
-        if (!response.ok) return;
-        const data = (await response.json()) as DjSetsResponse;
-        const weekly = data.featured?.weekly;
-        let list = Array.isArray(weekly) ? weekly : [];
-        if (
-          list.length === 0 &&
-          Array.isArray(data.currentSets) &&
-          data.currentSets.length > 0
-        ) {
-          list = [...data.currentSets].sort(
-            (a, b) => (b.view_count ?? 0) - (a.view_count ?? 0)
-          );
-        }
-        setFeaturedStreams(list.slice(0, 3));
-      } catch {
-        setFeaturedStreams([]);
-      } finally {
-        setStreamsLoading(false);
-      }
-    };
-
-    getFeaturedStreams();
+    getEvents();
+    getDjSets();
   }, []);
 
+  const getEvents = async () => {
+    const events = await getAllEvents();
+    const live: EventPosterProps[] = [];
+    const upcoming: EventPosterProps[] = [];
+
+    await Promise.all(
+      events.map(async (event) => {
+        const streams = await getStreams(event.id);
+        const hasLiveLink = streams?.some((s) => s.link !== null);
+
+        if (hasLiveLink) {
+          live.push({
+            ...event,
+            link: streams?.find((s) => s.link !== null)?.link,
+          });
+        } else {
+          upcoming.push(event);
+        }
+      })
+    );
+
+    setLiveEvents(live);
+    setUpcomingEvents(upcoming);
+  };
+
+  const getDjSets = async () => {
+    try {
+      const res = await fetch("/api/dj-sets", { cache: "no-store" });
+      if (!res.ok) throw new Error("fetch failed");
+      const data: DjSetsResponse = await res.json();
+
+      setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
+      setRandomPool(
+        Array.isArray(data.allSets)
+          ? data.allSets
+          : Array.isArray(data.currentSets)
+            ? data.currentSets
+            : []
+      );
+      setFeaturedWeekly(
+        Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
+      );
+    } catch {
+      setAllDjSets([]);
+      setRandomPool([]);
+      setFeaturedWeekly([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const visibleDjSets = useMemo(
+    () => allDjSets.slice(0, visibleCount),
+    [allDjSets, visibleCount]
+  );
+
+  const hasMore = visibleCount < allDjSets.length;
+
+  const loadMore = () => {
+    setVisibleCount((c) => c + PAGE_SIZE);
+  };
+
+  const goRandomSet = () => {
+    const pool = randomPool.length > 0 ? randomPool : allDjSets;
+    if (pool.length === 0) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    router.push(`/stream/${pick.video_id}`);
+  };
+
+  const skeletons = (n: number) =>
+    Array.from({ length: n }).map((_, i) => (
+      <div
+        key={i}
+        className="skeleton-shimmer glass-bends-card h-64 rounded-2xl"
+      />
+    ));
+
   return (
-    <div className="relative text-zinc-900">
-      <div className="relative z-10">
-        {/* HERO */}
-        <section className="container mx-auto px-4 py-24 text-center">
+    <div className="relative flex min-h-svh flex-col overflow-x-clip text-zinc-900">
+      <div className="relative z-10 flex-1">
+        <section className="container mx-auto px-4 py-16 text-center md:py-24">
           <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg border border-black/8">
             <div className="mb-4 text-sm uppercase tracking-wider text-brand-from/90">
               Welcome to Braindance
@@ -68,131 +159,94 @@ export default function Home() {
             <p className="mb-8 text-base text-zinc-600 md:text-lg">
               Find fresh DJ sets and classic mixes in one place. Easy streaming, no fuss.
             </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <button
-                className="rounded-md bg-brand-to px-5 py-2 text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-brand-via/90 hover:shadow-[0_4px_14px_rgba(0,0,0,0.45)] dark:text-zinc-950"
-                onClick={() =>
-                  eventsRef.current?.scrollIntoView({ behavior: "smooth" })
-                }
-              >
-                Explore Braindance
-              </button>
-              <Link
-                href="/events"
-                className="rounded-md border border-zinc-300/80 bg-white/60 px-5 py-2 text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends-fast ease-bends hover:border-brand-from/60 hover:bg-brand-from/10 hover:shadow-lg hover:shadow-brand-from/20"
-              >
-                Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* STORY */}
-        <section className="container mx-auto px-4 py-8 md:py-12">
-          <div className="mx-auto max-w-4xl rounded-2xl p-8 glass-bends-card backdrop-blur-lg border border-black/8 md:p-10">
-            <div className="mb-4 text-sm uppercase tracking-wider text-brand-from/90">
-              About us
-            </div>
-            <h2 className="mb-5 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
-              All your DJ sets in one place
-            </h2>
-            <p className="text-base leading-relaxed text-zinc-600 md:text-lg">
-              We stream DJ mixes and sets. Browse what&apos;s popular, discover new artists, and build your library.
-            </p>
-          </div>
-        </section>
-
-        {/* STORY PILLARS */}
-        <section className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-3">
-          {[
-            {
-              Icon: Radio,
-              title: "Stream Anytime",
-              description:
-                "Watch DJ sets whenever you want. No ads, no hassle.",
-              accent: "text-brand-via",
-              iconBg: "bg-brand-via/15",
-            },
-            {
-              Icon: Waves,
-              title: "Discover Artists",
-              description:
-                "Find new DJs and revisit classics. All in one place.",
-              accent: "text-brand-from",
-              iconBg: "bg-brand-from/15",
-            },
-            {
-              Icon: Globe2,
-              title: "Stay Current",
-              description:
-                "See what's trending and what people are watching right now.",
-              accent: "text-brand-to",
-              iconBg: "bg-brand-to/20",
-            },
-          ].map(({ Icon, title, description, accent, iconBg }) => (
-            <div
-              key={title}
-              className="hover-glow-brand rounded-xl p-6 glass-bends-card backdrop-blur-lg border border-black/8 transition-[background-color,box-shadow] duration-bends ease-bends"
+            <button
+              type="button"
+              className="rounded-md bg-brand-to px-5 py-2 text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-brand-via/90 hover:shadow-[0_4px_14px_rgba(0,0,0,0.45)] dark:text-zinc-950"
+              onClick={() =>
+                catalogRef.current?.scrollIntoView({ behavior: "smooth" })
+              }
             >
-              <div
-                className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-black/8 ${iconBg}`}
-              >
-                <Icon className={`h-5 w-5 ${accent}`} />
+              Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
+            </button>
+          </div>
+        </section>
+
+        <section
+          ref={catalogRef}
+          className="mx-auto max-w-7xl px-4 pb-16 pt-2"
+        >
+          <div className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4">
+            <button
+              type="button"
+              onClick={goRandomSet}
+              disabled={
+                loading || (randomPool.length === 0 && allDjSets.length === 0)
+              }
+              className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/35 disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Shuffle className="h-3.5 w-3.5 shrink-0 text-brand-from" />
+              <span className="font-medium text-brand-from">Random set</span>
+            </button>
+          </div>
+
+          <div className="mb-12">
+            <div className="mb-5">
+              <SectionHeader
+                eyebrow="Top weekly views"
+                title="Featured This Week"
+              />
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {loading && skeletons(3)}
+              {!loading &&
+                featuredWeekly.map((set, i) => (
+                  <StreamCard key={set.video_id} set={set} index={i} />
+                ))}
+              {!loading && featuredWeekly.length === 0 && (
+                <p className="col-span-full py-4 text-sm text-[#7a7a7a]">
+                  No featured picks yet. Refresh the DJ feed or check back soon.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+              <SectionHeader title="Current DJ Sets" />
+              {!loading && allDjSets.length > 0 && (
+                <p className="tabular-nums text-xs text-brand-from/65">
+                  Showing {visibleDjSets.length} of {allDjSets.length}
+                </p>
+              )}
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {loading && skeletons(6)}
+              {!loading &&
+                visibleDjSets.map((set, i) => (
+                  <StreamCard key={set.video_id} set={set} index={i} />
+                ))}
+            </div>
+            {!loading && hasMore && (
+              <div className="mb-8 mt-16 flex justify-center">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-300/70 bg-white/70 px-6 py-3 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-brand-to/10 active:opacity-90"
+                >
+                  Load more
+                  <ChevronDown className="h-4 w-4" />
+                </button>
               </div>
-              <h3 className={`mb-2 text-lg font-bold ${accent}`}>{title}</h3>
-              <p className="text-sm text-zinc-600">{description}</p>
-            </div>
-          ))}
-        </section>
-
-        {/* ── FEATURED STREAMS ─────────────────────────────────────── */}
-        <section className="container mx-auto space-y-6 px-4 py-8">
-          <div className="mb-7 flex items-end justify-between">
-            <div className="flex flex-col gap-1">
-              <span className="inline-flex items-center gap-2 space-y-2 text-[0.7rem] font-medium uppercase tracking-widest text-brand-from/80">
-                <TrendingUp className="h-3 w-3" />
-                Top weekly views
-              </span>
-              <h2 className="m-0 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-tight text-transparent">
-                Featured Streams
-              </h2>
-            </div>
-            <Link
-              href="/events"
-              className="group inline-flex items-center gap-1.5 text-[0.8rem] text-brand-from/75 no-underline transition-colors duration-bends-fast ease-bends hover:text-brand-from"
-            >
-              View all
-              <span className="inline-block transition-transform duration-bends-fast ease-bends group-hover:translate-x-0.5">
-                →
-              </span>
-            </Link>
-          </div>
-
-          <div
-            ref={eventsRef}
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {streamsLoading &&
-              [0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="skeleton-shimmer glass-bends-card h-64 rounded-2xl"
-                />
-              ))}
-
-            {!streamsLoading && featuredStreams.length === 0 && (
-              <p className="col-span-full py-8 text-sm text-[#7a7a7a]">
-                Featured streams will appear after DJ feed refresh.
-              </p>
             )}
-
-            {!streamsLoading &&
-              featuredStreams.map((set, i) => (
-                <StreamCard key={set.video_id} set={set} index={i} />
-              ))}
           </div>
         </section>
       </div>
+
+      <EventsLayout
+        liveEvents={liveEvents}
+        upcomingEvents={upcomingEvents}
+        hideStuff={{}}
+      />
     </div>
   );
 }

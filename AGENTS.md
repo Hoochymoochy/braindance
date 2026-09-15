@@ -4,15 +4,14 @@ Use this file to orient quickly when editing or reviewing the codebase.
 
 ## What this repo is
 
-A **Next.js App Router** frontend: marketing home, DJ set discovery (`/events`), public stream page (`/stream/[eventId]`), host tools, and thin **API routes** that proxy an optional **external Braindance backend** (`BACKEND_URL`). **Supabase** holds hosted events, links, feedback/contact, and stream metadata for the “hosted event” path.
+A **Next.js App Router** frontend: marketing home + DJ set discovery (`/`), public stream page (`/stream/[eventId]`), host tools, and thin **API routes** that proxy an optional **external Braindance backend** (`BACKEND_URL`). **Supabase** holds hosted events, links, feedback/contact, and stream metadata for the “hosted event” path.
 
 ## Find things fast
 
 | Topic | Where |
 |-------|--------|
 | Global layout, nav chrome | `src/app/layout.tsx` (Header, Footer, main padding vars `--nav-header-h`, `--nav-footer-h`) |
-| Home / featured sets | `src/app/page.tsx` → fetches `/api/dj-sets` |
-| DJ sets grid, filters | `src/app/events/page.tsx` |
+| Home (hero + DJ sets grid) | `src/app/page.tsx` → fetches `/api/dj-sets` |
 | Public stream + tracklist | `src/app/stream/[eventId]/page.tsx` |
 | Host live stream + photos | `src/app/host/[hostId]/[eventId]/stream/page.tsx` |
 | DJ sets proxy | `src/app/api/dj-sets/route.ts` |
