@@ -148,32 +148,69 @@ export default function Home() {
   return (
     <div className="relative flex min-h-svh flex-col overflow-x-clip text-zinc-900">
       <div className="relative z-10 flex-1">
-        <section className="container mx-auto px-4 py-16 text-center md:py-24">
-          <div className="mx-auto max-w-3xl rounded-2xl p-10 glass-bends backdrop-blur-lg border border-black/8">
-            <div className="mb-4 text-sm uppercase tracking-wider text-brand-from/90">
-              Welcome to Braindance
-            </div>
-            <h1 className="mb-6 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-4xl font-bold text-transparent sm:text-5xl md:text-6xl">
-              Stream DJ sets. Discover new mixes.
-            </h1>
-            <p className="mb-8 text-base text-zinc-600 md:text-lg">
-              Find fresh DJ sets and classic mixes in one place. Easy streaming, no fuss.
-            </p>
-            <button
-              type="button"
-              className="rounded-md bg-brand-to px-5 py-2 text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-brand-via/90 hover:shadow-[0_4px_14px_rgba(0,0,0,0.45)] dark:text-zinc-950"
-              onClick={() =>
-                catalogRef.current?.scrollIntoView({ behavior: "smooth" })
-              }
+        <section className="relative flex min-h-[calc(100svh-var(--nav-header-h))] items-center overflow-hidden">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+          >
+            <div className="absolute left-[12%] top-[28%] h-72 w-72 rounded-full bg-brand-from/25 blur-[110px] dark:bg-brand-from/20" />
+            <div className="absolute right-[8%] top-[18%] h-80 w-80 rounded-full bg-brand-via/20 blur-[120px] dark:bg-brand-via/16" />
+            <div className="absolute bottom-[12%] left-[38%] h-64 w-64 rounded-full bg-brand-to/25 blur-[100px] dark:bg-brand-to/18" />
+          </div>
+
+          <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-20">
+            <p
+              className="motion-enter mb-8 text-[0.7rem] font-medium uppercase tracking-[0.42em] text-zinc-500"
+              style={{ animationDelay: "40ms" }}
             >
-              Explore Streams <ArrowRight className="ml-2 inline h-4 w-4" />
-            </button>
+              Braindance
+            </p>
+            <h1 className="max-w-5xl text-[clamp(2.6rem,8.4vw,7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
+              <span
+                className="motion-enter block"
+                style={{ animationDelay: "90ms" }}
+              >
+                Stream DJ sets
+              </span>
+              <span
+                className="motion-enter mt-[0.12em] block text-gradient-bends"
+                style={{ animationDelay: "160ms" }}
+              >
+                Discover new mixes
+              </span>
+            </h1>
+            <p
+              className="motion-enter mt-8 max-w-sm text-base leading-relaxed text-zinc-600 md:text-lg"
+              style={{ animationDelay: "230ms" }}
+            >
+              Fresh sets and classics. One place. No fuss.
+            </p>
+            <div
+              className="motion-enter mt-10 flex flex-wrap items-center gap-6"
+              style={{ animationDelay: "300ms" }}
+            >
+              <button
+                type="button"
+                className="group inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
+                onClick={() =>
+                  catalogRef.current?.scrollIntoView({ behavior: "smooth" })
+                }
+              >
+                Browse sets
+                <ArrowRight className="h-4 w-4 transition-transform duration-bends-fast ease-bends group-hover:translate-x-0.5" />
+              </button>
+              {!loading && allDjSets.length > 0 && (
+                <span className="text-xs uppercase tracking-[0.22em] text-zinc-500">
+                  {allDjSets.length} sets
+                </span>
+              )}
+            </div>
           </div>
         </section>
 
         <section
           ref={catalogRef}
-          className="mx-auto max-w-7xl px-4 pb-16 pt-2"
+          className="mx-auto max-w-7xl px-4 pb-16 pt-10"
         >
           <div className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4">
             <button
