@@ -21,6 +21,7 @@ export default function OpenGraphImage() {
           fontFamily:
             "ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif",
           position: "relative",
+          overflow: "hidden",
         }}
       >
         <div
@@ -35,6 +36,24 @@ export default function OpenGraphImage() {
               "radial-gradient(circle at 18% 30%, rgba(0,204,255,0.28), transparent 42%), radial-gradient(circle at 82% 20%, rgba(255,0,247,0.22), transparent 40%), radial-gradient(circle at 55% 88%, rgba(55,0,255,0.28), transparent 45%)",
           }}
         />
+
+        {/* Large branded watermark */}
+        <div
+          style={{
+            position: "absolute",
+            right: -40,
+            bottom: -36,
+            display: "flex",
+            fontSize: 168,
+            fontWeight: 800,
+            letterSpacing: "-0.06em",
+            color: "rgba(255,255,255,0.07)",
+            transform: "rotate(-8deg)",
+            lineHeight: 1,
+          }}
+        >
+          braindance
+        </div>
 
         <div
           style={{

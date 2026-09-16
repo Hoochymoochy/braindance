@@ -62,10 +62,6 @@ export async function generateMetadata({
         const description =
           (typeof event.description === "string" && event.description.trim()) ||
           SITE_TAGLINE;
-        const image =
-          typeof event.image_url === "string" && event.image_url
-            ? event.image_url
-            : undefined;
         return {
           title,
           description,
@@ -73,15 +69,11 @@ export async function generateMetadata({
             title,
             description,
             type: "website",
-            ...(image
-              ? { images: [{ url: image, width: 1200, height: 630, alt: title }] }
-              : {}),
           },
           twitter: {
             card: "summary_large_image",
             title,
             description,
-            ...(image ? { images: [image] } : {}),
           },
         };
       }
@@ -96,11 +88,6 @@ export async function generateMetadata({
     const description = djSet.channel
       ? `${djSet.channel} on ${SITE_NAME}`
       : SITE_TAGLINE;
-    const image =
-      djSet.thumbnail ||
-      (djSet.video_id
-        ? `https://i.ytimg.com/vi/${djSet.video_id}/hqdefault.jpg`
-        : undefined);
 
     return {
       title,
@@ -109,15 +96,11 @@ export async function generateMetadata({
         title,
         description,
         type: "video.other",
-        ...(image
-          ? { images: [{ url: image, width: 1280, height: 720, alt: title }] }
-          : {}),
       },
       twitter: {
         card: "summary_large_image",
         title,
         description,
-        ...(image ? { images: [image] } : {}),
       },
     };
   }
