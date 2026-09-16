@@ -4,9 +4,13 @@ import {
   classifyBackendError,
   fetchJsonFromBackendWithFallback,
 } from "@/app/lib/backend/http";
+import {
+  TRACKLIST_REVALIDATE_SECONDS,
+  cacheControlHeader,
+} from "@/app/lib/cache/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
 
-export const dynamic = "force-dynamic";
+export const revalidate = TRACKLIST_REVALIDATE_SECONDS;
 export const runtime = "nodejs";
 
 const LOG = "api/dj-sets/tracklists";
@@ -30,10 +34,15 @@ export async function GET(
     const { data, source } = await fetchJsonFromBackendWithFallback(
       path,
       25_000,
-      LOG
+      LOG,
+      { revalidateSeconds: TRACKLIST_REVALIDATE_SECONDS }
     );
     routeLog(LOG, "GET OK", { videoId, backendSource: source });
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": cacheControlHeader(TRACKLIST_REVALIDATE_SECONDS),
+      },
+    });
   } catch (error) {
     const detail = classifyBackendError(error);
     routeError(LOG, `GET failed: ${detail}`, error);
@@ -44,7 +53,10 @@ export async function GET(
         items: [],
         error: detail,
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: { "Cache-Control": "no-store" },
+      }
     );
   }
 }

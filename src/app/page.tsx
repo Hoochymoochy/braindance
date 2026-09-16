@@ -6,8 +6,10 @@ import { ArrowRight, TrendingUp, Shuffle, ChevronDown } from "lucide-react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
-import { getStreams } from "@/app/lib/events/stream";
+import { getAllStreams } from "@/app/lib/events/stream";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
+import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
+import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
 
 type DjSet = {
   video_id: string;
@@ -50,7 +52,15 @@ function SectionHeader({
   );
 }
 
+type HomeEventsCache = {
+  live: EventPosterProps[];
+  upcoming: EventPosterProps[];
+};
+
 const PAGE_SIZE = 9;
+const DJ_SETS_CACHE_KEY = "home:dj-sets";
+const EVENTS_CACHE_KEY = "home:events";
+const CLIENT_CACHE_MS = CATALOG_REVALIDATE_SECONDS * 1000;
 
 export default function Home() {
   const router = useRouter();
@@ -69,51 +79,75 @@ export default function Home() {
   }, []);
 
   const getEvents = async () => {
-    const events = await getAllEvents();
+    const cached = ttlGet<HomeEventsCache>(EVENTS_CACHE_KEY);
+    if (cached) {
+      setLiveEvents(cached.live);
+      setUpcomingEvents(cached.upcoming);
+    }
+
+    const events = (await getAllEvents()) ?? [];
+    const streams = await getAllStreams();
+    const streamsByEvent = new Map<string, typeof streams>();
+    for (const row of streams) {
+      const list = streamsByEvent.get(row.event_id) ?? [];
+      list.push(row);
+      streamsByEvent.set(row.event_id, list);
+    }
+
     const live: EventPosterProps[] = [];
     const upcoming: EventPosterProps[] = [];
 
-    await Promise.all(
-      events.map(async (event) => {
-        const streams = await getStreams(event.id);
-        const hasLiveLink = streams?.some((s) => s.link !== null);
+    for (const event of events) {
+      const eventStreams = streamsByEvent.get(event.id) ?? [];
+      const liveStream = eventStreams.find((s) => s.link !== null);
+      if (liveStream) {
+        live.push({
+          ...event,
+          link: liveStream.link ?? undefined,
+        });
+      } else {
+        upcoming.push(event);
+      }
+    }
 
-        if (hasLiveLink) {
-          live.push({
-            ...event,
-            link: streams?.find((s) => s.link !== null)?.link,
-          });
-        } else {
-          upcoming.push(event);
-        }
-      })
-    );
-
+    ttlSet(EVENTS_CACHE_KEY, { live, upcoming }, CLIENT_CACHE_MS);
     setLiveEvents(live);
     setUpcomingEvents(upcoming);
   };
 
+  const applyDjSets = (data: DjSetsResponse) => {
+    setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
+    setRandomPool(
+      Array.isArray(data.allSets)
+        ? data.allSets
+        : Array.isArray(data.currentSets)
+          ? data.currentSets
+          : []
+    );
+    setFeaturedWeekly(
+      Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
+    );
+  };
+
   const getDjSets = async () => {
+    const cached = ttlGet<DjSetsResponse>(DJ_SETS_CACHE_KEY);
+    if (cached) {
+      applyDjSets(cached);
+      setLoading(false);
+    }
+
     try {
-      const res = await fetch("/api/dj-sets", { cache: "no-store" });
+      const res = await fetch("/api/dj-sets");
       if (!res.ok) throw new Error("fetch failed");
       const data: DjSetsResponse = await res.json();
-
-      setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
-      setRandomPool(
-        Array.isArray(data.allSets)
-          ? data.allSets
-          : Array.isArray(data.currentSets)
-            ? data.currentSets
-            : []
-      );
-      setFeaturedWeekly(
-        Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
-      );
+      ttlSet(DJ_SETS_CACHE_KEY, data, CLIENT_CACHE_MS);
+      applyDjSets(data);
     } catch {
-      setAllDjSets([]);
-      setRandomPool([]);
-      setFeaturedWeekly([]);
+      if (!cached) {
+        setAllDjSets([]);
+        setRandomPool([]);
+        setFeaturedWeekly([]);
+      }
     } finally {
       setLoading(false);
     }

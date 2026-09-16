@@ -22,3 +22,18 @@ export async function getStreams(eventId: string) {
   if (error) throw new Error(`Failed to fetch streams: ${error.message}`);
   return data;
 }
+
+export type StreamRow = {
+  event_id: string;
+  link: string | null;
+  platform: string | null;
+};
+
+export async function getAllStreams(): Promise<StreamRow[]> {
+  const { data, error } = await supabase
+    .from("streams")
+    .select("event_id, link, platform");
+
+  if (error) throw new Error(`Failed to fetch streams: ${error.message}`);
+  return (data ?? []) as StreamRow[];
+}

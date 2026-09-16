@@ -6,10 +6,13 @@ import {
   getBackupBackendUrl,
   getPrimaryBackendUrl,
 } from "@/app/lib/backend/http";
+import {
+  CATALOG_REVALIDATE_SECONDS,
+  cacheControlHeader,
+} from "@/app/lib/cache/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
 
-/** Ensure route runs on each request; logs appear in `next dev` terminal. */
-export const dynamic = "force-dynamic";
+export const revalidate = CATALOG_REVALIDATE_SECONDS;
 export const runtime = "nodejs";
 
 const LOG = "api/dj-sets";
@@ -88,11 +91,12 @@ async function fetchDjSetsListWithFallback(timeoutMs: number): Promise<{
   const backup = getBackupBackendUrl(LOG);
 
   const tryList = async (base: string) => {
-    const upstream = `${base}/dj-sets`;
+    const upstream = `${base}/dj-sets?limit=500`;
     const backendPayload = (await fetchJsonWithTimeout(
       upstream,
       timeoutMs,
-      LOG
+      LOG,
+      { revalidateSeconds: CATALOG_REVALIDATE_SECONDS }
     )) as BackendDjSetsListResponse;
     const items = extractItemsFromListPayload(backendPayload);
     return { backendPayload, items };
@@ -155,7 +159,9 @@ async function fetchDjSetByIdWithFallback(
 
   const tryOne = async (base: string) => {
     const upstream = `${base}/dj-sets/${encodeURIComponent(videoId)}`;
-    return fetchJsonWithTimeout(upstream, timeoutMs, LOG);
+    return fetchJsonWithTimeout(upstream, timeoutMs, LOG, {
+      revalidateSeconds: CATALOG_REVALIDATE_SECONDS,
+    });
   };
 
   let primaryRaw: unknown;
@@ -253,7 +259,11 @@ export async function GET(request: NextRequest) {
       itemsAfterAgeFilter: listSets.length,
       count: payload.count,
     });
-    return NextResponse.json(payload);
+    return NextResponse.json(payload, {
+      headers: {
+        "Cache-Control": cacheControlHeader(CATALOG_REVALIDATE_SECONDS),
+      },
+    });
   } catch (error) {
     const detail = classifyBackendError(error);
     routeError("api/dj-sets", `GET failed: ${detail}`, error);
@@ -266,7 +276,10 @@ export async function GET(request: NextRequest) {
         featured: { daily: [], weekly: [] },
         error: detail,
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: { "Cache-Control": "no-store" },
+      }
     );
   }
 }

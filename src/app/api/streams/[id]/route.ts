@@ -5,10 +5,14 @@ import {
   classifyBackendError,
   fetchJsonFromBackendWithFallback,
 } from "@/app/lib/backend/http";
+import {
+  CATALOG_REVALIDATE_SECONDS,
+  cacheControlHeader,
+} from "@/app/lib/cache/http";
 import { getMockStream, isStreamUiMocksEnabled } from "@/app/lib/mocks/streamMocks";
 import { routeLog } from "@/app/lib/routeLog";
 
-export const dynamic = "force-dynamic";
+export const revalidate = CATALOG_REVALIDATE_SECONDS;
 export const runtime = "nodejs";
 
 const LOG = "api/streams/[id]";
@@ -32,16 +36,23 @@ export async function GET(
     const { data, source } = await fetchJsonFromBackendWithFallback(
       `/streams/${encodeURIComponent(id.trim())}`,
       30_000,
-      LOG
+      LOG,
+      { revalidateSeconds: CATALOG_REVALIDATE_SECONDS }
     );
     routeLog(LOG, "GET OK", { id, backendSource: source });
+    const headers = {
+      "Cache-Control": cacheControlHeader(CATALOG_REVALIDATE_SECONDS),
+    };
     if (data && typeof data === "object" && !Array.isArray(data)) {
-      return NextResponse.json({
-        ...(data as Record<string, unknown>),
-        backendSource: source,
-      });
+      return NextResponse.json(
+        {
+          ...(data as Record<string, unknown>),
+          backendSource: source,
+        },
+        { headers }
+      );
     }
-    return NextResponse.json({ stream: data, backendSource: source });
+    return NextResponse.json({ stream: data, backendSource: source }, { headers });
   } catch (error) {
     const status =
       error instanceof BackendRequestError && error.statusCode === 404

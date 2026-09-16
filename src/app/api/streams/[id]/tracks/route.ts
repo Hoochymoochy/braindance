@@ -6,12 +6,16 @@ import {
   fetchJsonFromBackendWithFallback,
 } from "@/app/lib/backend/http";
 import {
+  CATALOG_REVALIDATE_SECONDS,
+  cacheControlHeader,
+} from "@/app/lib/cache/http";
+import {
   getMockTracksForStream,
   isStreamUiMocksEnabled,
 } from "@/app/lib/mocks/streamMocks";
 import { routeLog } from "@/app/lib/routeLog";
 
-export const dynamic = "force-dynamic";
+export const revalidate = CATALOG_REVALIDATE_SECONDS;
 export const runtime = "nodejs";
 
 const LOG = "api/streams/[id]/tracks";
@@ -37,19 +41,26 @@ export async function GET(
     const { data, source } = await fetchJsonFromBackendWithFallback(
       `/streams/${encodeURIComponent(sid)}/tracks`,
       30_000,
-      LOG
+      LOG,
+      { revalidateSeconds: CATALOG_REVALIDATE_SECONDS }
     );
     routeLog(LOG, "GET OK", { id: sid, backendSource: source });
+    const headers = {
+      "Cache-Control": cacheControlHeader(CATALOG_REVALIDATE_SECONDS),
+    };
     if (Array.isArray(data)) {
-      return NextResponse.json({ tracks: data, backendSource: source });
+      return NextResponse.json({ tracks: data, backendSource: source }, { headers });
     }
     if (data && typeof data === "object") {
-      return NextResponse.json({
-        ...(data as Record<string, unknown>),
-        backendSource: source,
-      });
+      return NextResponse.json(
+        {
+          ...(data as Record<string, unknown>),
+          backendSource: source,
+        },
+        { headers }
+      );
     }
-    return NextResponse.json({ tracks: [], backendSource: source });
+    return NextResponse.json({ tracks: [], backendSource: source }, { headers });
   } catch (error) {
     const status =
       error instanceof BackendRequestError && error.statusCode === 404

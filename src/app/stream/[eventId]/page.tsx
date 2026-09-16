@@ -136,7 +136,7 @@ export default function BraindanceUserStream() {
   );
   const [pipelineTracks, setPipelineTracks] = useState<TrackRow[]>([]);
   const [djSetTracks, setDjSetTracks] = useState<TrackRow[]>([]);
-  /** Set when `/api/dj-sets/.../tracklists` returns empty due to upstream/config (e.g. missing BACKEND_URL on Vercel). */
+  /** Empty-state or error copy for the DJ-set sidebar (missing tracklist vs fetch failure). */
   const [djSetTracklistError, setDjSetTracklistError] = useState<string | null>(
     null
   );
@@ -162,9 +162,7 @@ export default function BraindanceUserStream() {
 
     try {
       if (isUuid(eventId)) {
-        const streamRes = await fetch(`/api/streams/${encodeURIComponent(eventId)}`, {
-          cache: "no-store",
-        });
+        const streamRes = await fetch(`/api/streams/${encodeURIComponent(eventId)}`);
         if (streamRes.ok) {
           const body = (await streamRes.json()) as PipelineStream & {
             backendSource?: string;
@@ -174,8 +172,7 @@ export default function BraindanceUserStream() {
             const videoId =
               youtubeVideoIdFromUrl(body.youtube_url) ?? body.youtube_url.trim();
             const tracksRes = await fetch(
-              `/api/streams/${encodeURIComponent(eventId)}/tracks`,
-              { cache: "no-store" }
+              `/api/streams/${encodeURIComponent(eventId)}/tracks`
             );
             let tracks: TrackRow[] = [];
             if (tracksRes.ok) {
@@ -282,8 +279,7 @@ export default function BraindanceUserStream() {
 
         try {
           const tr = await fetch(
-            `/api/dj-sets/${encodeURIComponent(payload.item.video_id)}/tracklists`,
-            { cache: "no-store" }
+            `/api/dj-sets/${encodeURIComponent(payload.item.video_id)}/tracklists`
           );
           const body = (await tr.json()) as {
             items?: unknown;
@@ -305,7 +301,7 @@ export default function BraindanceUserStream() {
             setDjSetTracklistError(null);
           } else {
             setDjSetTracks([]);
-            setDjSetTracklistError(upstreamErr);
+            setDjSetTracklistError(upstreamErr ?? "No tracklist found.");
           }
         } catch {
           setDjSetTracks([]);
@@ -359,8 +355,7 @@ export default function BraindanceUserStream() {
   const sidebarTracks = pipelineStream ? pipelineTracks : djSetTracks;
   const tracklistEmptyHint = pipelineStream
     ? undefined
-    : djSetTracklistError ??
-      "No tracklist parsed for this video yet.";
+    : djSetTracklistError ?? "No tracklist found.";
   const streamArtwork =
     event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail || "";
 

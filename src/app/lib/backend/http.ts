@@ -100,6 +100,7 @@ function explainFetchFailure(error: unknown): string {
 }
 
 const BACKEND_LOG_MAX_CHARS = 12_000;
+const DEFAULT_REVALIDATE_SECONDS = 60;
 
 function logBackendResponse(
   logTag: string,
@@ -122,20 +123,28 @@ function logBackendResponse(
 export async function fetchJsonWithTimeout(
   url: string,
   timeoutMs: number,
-  logTag: string
+  logTag: string,
+  options?: { revalidateSeconds?: number | false }
 ): Promise<unknown> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const nodeUrl = new URL(url);
     const isHttps = nodeUrl.protocol === "https:";
+    const revalidate = options?.revalidateSeconds;
 
-    const fetchOptions: RequestInit = {
+    const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
       method: "GET",
       headers: { "content-type": "application/json" },
-      cache: "no-store",
       signal: controller.signal,
     };
+    if (revalidate === false) {
+      fetchOptions.cache = "no-store";
+    } else {
+      fetchOptions.next = {
+        revalidate: revalidate ?? DEFAULT_REVALIDATE_SECONDS,
+      };
+    }
 
     if (isHttps && process.env.NODE_ENV === "development") {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -196,7 +205,8 @@ export function classifyBackendError(error: unknown): string {
 export async function fetchJsonFromBackendWithFallback(
   path: string,
   timeoutMs: number,
-  logTag: string
+  logTag: string,
+  options?: { revalidateSeconds?: number | false }
 ): Promise<{ data: unknown; source: "primary" | "backup" }> {
   const primary = getPrimaryBackendUrl();
   const backup = getBackupBackendUrl(logTag);
@@ -211,7 +221,7 @@ export async function fetchJsonFromBackendWithFallback(
   let lastError: unknown = null;
   for (const { url, source } of bases) {
     try {
-      const data = await fetchJsonWithTimeout(url, timeoutMs, logTag);
+      const data = await fetchJsonWithTimeout(url, timeoutMs, logTag, options);
       return { data, source };
     } catch (e) {
       lastError = e;
