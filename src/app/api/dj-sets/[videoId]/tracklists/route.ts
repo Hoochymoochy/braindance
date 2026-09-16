@@ -10,7 +10,7 @@ import {
 } from "@/app/lib/cache/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
 
-export const revalidate = TRACKLIST_REVALIDATE_SECONDS;
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const LOG = "api/dj-sets/tracklists";

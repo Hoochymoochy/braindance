@@ -12,7 +12,7 @@ import {
 } from "@/app/lib/cache/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
 
-export const revalidate = CATALOG_REVALIDATE_SECONDS;
+export const revalidate = 60;
 export const runtime = "nodejs";
 
 const LOG = "api/dj-sets";

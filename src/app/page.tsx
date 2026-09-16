@@ -74,84 +74,84 @@ export default function Home() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
-    getEvents();
-    getDjSets();
+    const applyDjSets = (data: DjSetsResponse) => {
+      setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
+      setRandomPool(
+        Array.isArray(data.allSets)
+          ? data.allSets
+          : Array.isArray(data.currentSets)
+            ? data.currentSets
+            : []
+      );
+      setFeaturedWeekly(
+        Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
+      );
+    };
+
+    const getEvents = async () => {
+      const cached = ttlGet<HomeEventsCache>(EVENTS_CACHE_KEY);
+      if (cached) {
+        setLiveEvents(cached.live);
+        setUpcomingEvents(cached.upcoming);
+      }
+
+      const events = (await getAllEvents()) ?? [];
+      const streams = await getAllStreams();
+      const streamsByEvent = new Map<string, typeof streams>();
+      for (const row of streams) {
+        const list = streamsByEvent.get(row.event_id) ?? [];
+        list.push(row);
+        streamsByEvent.set(row.event_id, list);
+      }
+
+      const live: EventPosterProps[] = [];
+      const upcoming: EventPosterProps[] = [];
+
+      for (const event of events) {
+        const eventStreams = streamsByEvent.get(event.id) ?? [];
+        const liveStream = eventStreams.find((s) => s.link !== null);
+        if (liveStream) {
+          live.push({
+            ...event,
+            link: liveStream.link ?? undefined,
+          });
+        } else {
+          upcoming.push(event);
+        }
+      }
+
+      ttlSet(EVENTS_CACHE_KEY, { live, upcoming }, CLIENT_CACHE_MS);
+      setLiveEvents(live);
+      setUpcomingEvents(upcoming);
+    };
+
+    const getDjSets = async () => {
+      const cached = ttlGet<DjSetsResponse>(DJ_SETS_CACHE_KEY);
+      if (cached) {
+        applyDjSets(cached);
+        setLoading(false);
+      }
+
+      try {
+        const res = await fetch("/api/dj-sets");
+        if (!res.ok) throw new Error("fetch failed");
+        const data: DjSetsResponse = await res.json();
+        ttlSet(DJ_SETS_CACHE_KEY, data, CLIENT_CACHE_MS);
+        applyDjSets(data);
+      } catch {
+        if (!cached) {
+          setAllDjSets([]);
+          setRandomPool([]);
+          setFeaturedWeekly([]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void getEvents();
+    void getDjSets();
   }, []);
-
-  const getEvents = async () => {
-    const cached = ttlGet<HomeEventsCache>(EVENTS_CACHE_KEY);
-    if (cached) {
-      setLiveEvents(cached.live);
-      setUpcomingEvents(cached.upcoming);
-    }
-
-    const events = (await getAllEvents()) ?? [];
-    const streams = await getAllStreams();
-    const streamsByEvent = new Map<string, typeof streams>();
-    for (const row of streams) {
-      const list = streamsByEvent.get(row.event_id) ?? [];
-      list.push(row);
-      streamsByEvent.set(row.event_id, list);
-    }
-
-    const live: EventPosterProps[] = [];
-    const upcoming: EventPosterProps[] = [];
-
-    for (const event of events) {
-      const eventStreams = streamsByEvent.get(event.id) ?? [];
-      const liveStream = eventStreams.find((s) => s.link !== null);
-      if (liveStream) {
-        live.push({
-          ...event,
-          link: liveStream.link ?? undefined,
-        });
-      } else {
-        upcoming.push(event);
-      }
-    }
-
-    ttlSet(EVENTS_CACHE_KEY, { live, upcoming }, CLIENT_CACHE_MS);
-    setLiveEvents(live);
-    setUpcomingEvents(upcoming);
-  };
-
-  const applyDjSets = (data: DjSetsResponse) => {
-    setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
-    setRandomPool(
-      Array.isArray(data.allSets)
-        ? data.allSets
-        : Array.isArray(data.currentSets)
-          ? data.currentSets
-          : []
-    );
-    setFeaturedWeekly(
-      Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
-    );
-  };
-
-  const getDjSets = async () => {
-    const cached = ttlGet<DjSetsResponse>(DJ_SETS_CACHE_KEY);
-    if (cached) {
-      applyDjSets(cached);
-      setLoading(false);
-    }
-
-    try {
-      const res = await fetch("/api/dj-sets");
-      if (!res.ok) throw new Error("fetch failed");
-      const data: DjSetsResponse = await res.json();
-      ttlSet(DJ_SETS_CACHE_KEY, data, CLIENT_CACHE_MS);
-      applyDjSets(data);
-    } catch {
-      if (!cached) {
-        setAllDjSets([]);
-        setRandomPool([]);
-        setFeaturedWeekly([]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const visibleDjSets = useMemo(
     () => allDjSets.slice(0, visibleCount),

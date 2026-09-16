@@ -12,7 +12,7 @@ import {
 import { getMockStream, isStreamUiMocksEnabled } from "@/app/lib/mocks/streamMocks";
 import { routeLog } from "@/app/lib/routeLog";
 
-export const revalidate = CATALOG_REVALIDATE_SECONDS;
+export const revalidate = 60;
 export const runtime = "nodejs";
 
 const LOG = "api/streams/[id]";
