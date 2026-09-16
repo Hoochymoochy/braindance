@@ -87,51 +87,6 @@ async function resolvePreview(eventId: string): Promise<{
   };
 }
 
-function BrandChip() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 18px",
-        borderRadius: 999,
-        background: "rgba(10,10,12,0.72)",
-        border: "1px solid rgba(255,255,255,0.16)",
-      }}
-    >
-      <div
-        style={{
-          width: 28,
-          height: 28,
-          borderRadius: 8,
-          background:
-            "linear-gradient(135deg, #00ccff 0%, #ff00f7 50%, #3700ff 100%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 14,
-          fontWeight: 700,
-          color: "#0a0a0c",
-        }}
-      >
-        B
-      </div>
-      <div
-        style={{
-          display: "flex",
-          fontSize: 22,
-          fontWeight: 700,
-          letterSpacing: "-0.03em",
-          color: "#fafafa",
-        }}
-      >
-        braindance
-      </div>
-    </div>
-  );
-}
-
 export default async function StreamOpenGraphImage({
   params,
 }: {
@@ -196,27 +151,9 @@ export default async function StreamOpenGraphImage({
             bottom: 0,
             display: "flex",
             background:
-              "linear-gradient(180deg, rgba(10,10,12,0.35) 0%, rgba(10,10,12,0.15) 42%, rgba(10,10,12,0.88) 100%)",
+              "linear-gradient(180deg, rgba(10,10,12,0.2) 0%, rgba(10,10,12,0.1) 42%, rgba(10,10,12,0.88) 100%)",
           }}
         />
-
-        {/* Soft brand watermark across the art */}
-        <div
-          style={{
-            position: "absolute",
-            right: -20,
-            top: 120,
-            display: "flex",
-            fontSize: 140,
-            fontWeight: 800,
-            letterSpacing: "-0.06em",
-            color: "rgba(255,255,255,0.12)",
-            transform: "rotate(-10deg)",
-            lineHeight: 1,
-          }}
-        >
-          braindance
-        </div>
 
         <div
           style={{
@@ -225,14 +162,10 @@ export default async function StreamOpenGraphImage({
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             padding: "48px 56px",
           }}
         >
-          <div style={{ display: "flex" }}>
-            <BrandChip />
-          </div>
-
           <div
             style={{
               display: "flex",
