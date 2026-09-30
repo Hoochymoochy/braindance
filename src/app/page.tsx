@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, TrendingUp, Shuffle, ChevronDown } from "lucide-react";
+import { TrendingUp, Shuffle, ChevronDown } from "lucide-react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
@@ -64,7 +64,6 @@ const CLIENT_CACHE_MS = CATALOG_REVALIDATE_SECONDS * 1000;
 
 export default function Home() {
   const router = useRouter();
-  const catalogRef = useRef<HTMLElement>(null);
   const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
@@ -225,13 +224,15 @@ export default function Home() {
             >
               <button
                 type="button"
-                className="group inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
-                onClick={() =>
-                  catalogRef.current?.scrollIntoView({ behavior: "smooth" })
+                className="group inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
+                onClick={goRandomSet}
+                disabled={
+                  loading ||
+                  (randomPool.length === 0 && allDjSets.length === 0)
                 }
               >
-                Browse sets
-                <ArrowRight className="h-4 w-4 transition-transform duration-bends-fast ease-bends group-hover:translate-x-0.5" />
+                <Shuffle className="h-4 w-4" />
+                Random set
               </button>
               {!loading && allDjSets.length > 0 && (
                 <span className="text-xs uppercase tracking-[0.22em] text-zinc-500">
@@ -242,10 +243,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section
-          ref={catalogRef}
-          className="mx-auto max-w-7xl px-4 pb-16 pt-10"
-        >
+        <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
+          {/* Old catalog Random set bar — kept for easy restore
           <div className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4">
             <button
               type="button"
@@ -259,6 +258,7 @@ export default function Home() {
               <span className="font-medium text-brand-from">Random set</span>
             </button>
           </div>
+          */}
 
           <div className="mb-12">
             <div className="mb-5">
