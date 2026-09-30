@@ -224,7 +224,7 @@ export default function Home() {
             >
               <button
                 type="button"
-                className="group inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
+                className="group inline-flex items-center gap-2 hover:cursor-pointer rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
                 onClick={goRandomSet}
                 disabled={
                   loading ||
