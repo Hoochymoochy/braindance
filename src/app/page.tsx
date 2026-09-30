@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TrendingUp, Shuffle, ChevronDown } from "lucide-react";
 import { EventsLayout } from "@/app/EventLayout";
@@ -71,17 +71,22 @@ export default function Home() {
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const djSetsPromiseRef = useRef<Promise<DjSetsResponse | null> | null>(null);
+  const randomPoolRef = useRef<DjSet[]>([]);
+  const allDjSetsRef = useRef<DjSet[]>([]);
 
   useEffect(() => {
     const applyDjSets = (data: DjSetsResponse) => {
-      setAllDjSets(Array.isArray(data.currentSets) ? data.currentSets : []);
-      setRandomPool(
-        Array.isArray(data.allSets)
-          ? data.allSets
-          : Array.isArray(data.currentSets)
-            ? data.currentSets
-            : []
-      );
+      const current = Array.isArray(data.currentSets) ? data.currentSets : [];
+      const pool = Array.isArray(data.allSets)
+        ? data.allSets
+        : current.length > 0
+          ? current
+          : [];
+      allDjSetsRef.current = current;
+      randomPoolRef.current = pool;
+      setAllDjSets(current);
+      setRandomPool(pool);
       setFeaturedWeekly(
         Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
       );
@@ -124,7 +129,7 @@ export default function Home() {
       setUpcomingEvents(upcoming);
     };
 
-    const getDjSets = async () => {
+    const getDjSets = async (): Promise<DjSetsResponse | null> => {
       const cached = ttlGet<DjSetsResponse>(DJ_SETS_CACHE_KEY);
       if (cached) {
         applyDjSets(cached);
@@ -137,19 +142,23 @@ export default function Home() {
         const data: DjSetsResponse = await res.json();
         ttlSet(DJ_SETS_CACHE_KEY, data, CLIENT_CACHE_MS);
         applyDjSets(data);
+        return data;
       } catch {
         if (!cached) {
+          allDjSetsRef.current = [];
+          randomPoolRef.current = [];
           setAllDjSets([]);
           setRandomPool([]);
           setFeaturedWeekly([]);
         }
+        return cached;
       } finally {
         setLoading(false);
       }
     };
 
+    djSetsPromiseRef.current = getDjSets();
     void getEvents();
-    void getDjSets();
   }, []);
 
   const visibleDjSets = useMemo(
@@ -163,8 +172,23 @@ export default function Home() {
     setVisibleCount((c) => c + PAGE_SIZE);
   };
 
-  const goRandomSet = () => {
-    const pool = randomPool.length > 0 ? randomPool : allDjSets;
+  const goRandomSet = async () => {
+    let pool =
+      randomPoolRef.current.length > 0
+        ? randomPoolRef.current
+        : allDjSetsRef.current;
+
+    if (pool.length === 0 && djSetsPromiseRef.current) {
+      const data = await djSetsPromiseRef.current;
+      if (data) {
+        pool = Array.isArray(data.allSets)
+          ? data.allSets
+          : Array.isArray(data.currentSets)
+            ? data.currentSets
+            : [];
+      }
+    }
+
     if (pool.length === 0) return;
     const pick = pool[Math.floor(Math.random() * pool.length)];
     router.push(`/stream/${pick.video_id}`);
@@ -182,15 +206,6 @@ export default function Home() {
     <div className="relative flex min-h-svh flex-col overflow-x-clip text-zinc-900">
       <div className="relative z-10 flex-1">
         <section className="relative flex min-h-[calc(100svh-var(--nav-header-h))] items-center overflow-hidden">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-          >
-            <div className="absolute left-[12%] top-[28%] h-72 w-72 rounded-full bg-brand-from/25 blur-[110px] dark:bg-brand-from/20" />
-            <div className="absolute right-[8%] top-[18%] h-80 w-80 rounded-full bg-brand-via/20 blur-[120px] dark:bg-brand-via/16" />
-            <div className="absolute bottom-[12%] left-[38%] h-64 w-64 rounded-full bg-brand-to/25 blur-[100px] dark:bg-brand-to/18" />
-          </div>
-
           <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-20">
             <p
               className="motion-enter mb-8 text-[0.7rem] font-medium uppercase tracking-[0.42em] text-zinc-500"
@@ -212,33 +227,18 @@ export default function Home() {
                 Discover new mixes
               </span>
             </h1>
-            <p
-              className="motion-enter mt-8 max-w-sm text-base leading-relaxed text-zinc-600 md:text-lg"
-              style={{ animationDelay: "230ms" }}
-            >
-              Fresh sets and classics. One place. No fuss.
-            </p>
             <div
-              className="motion-enter mt-10 flex flex-wrap items-center gap-6"
-              style={{ animationDelay: "300ms" }}
+              className="motion-enter mt-10"
+              style={{ animationDelay: "230ms" }}
             >
               <button
                 type="button"
-                className="group inline-flex items-center gap-2 hover:cursor-pointer rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
+                className="group inline-flex items-center gap-2 hover:cursor-pointer rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
                 onClick={goRandomSet}
-                disabled={
-                  loading ||
-                  (randomPool.length === 0 && allDjSets.length === 0)
-                }
               >
                 <Shuffle className="h-4 w-4" />
                 Random set
               </button>
-              {!loading && allDjSets.length > 0 && (
-                <span className="text-xs uppercase tracking-[0.22em] text-zinc-500">
-                  {allDjSets.length} sets
-                </span>
-              )}
             </div>
           </div>
         </section>
