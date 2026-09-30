@@ -67,7 +67,6 @@ export default function Home() {
   const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
-  const [randomPool, setRandomPool] = useState<DjSet[]>([]);
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -86,7 +85,6 @@ export default function Home() {
       allDjSetsRef.current = current;
       randomPoolRef.current = pool;
       setAllDjSets(current);
-      setRandomPool(pool);
       setFeaturedWeekly(
         Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
       );
@@ -148,7 +146,6 @@ export default function Home() {
           allDjSetsRef.current = [];
           randomPoolRef.current = [];
           setAllDjSets([]);
-          setRandomPool([]);
           setFeaturedWeekly([]);
         }
         return cached;
@@ -213,7 +210,7 @@ export default function Home() {
             >
               Braindance
             </p>
-            <h1 className="max-w-5xl text-[clamp(2.6rem,8.4vw,7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
+            <h1 className="max-w-5xl text-[clamp(3.5rem,14vw,7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
               <span
                 className="motion-enter block"
                 style={{ animationDelay: "90ms" }}
