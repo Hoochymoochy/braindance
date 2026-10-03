@@ -229,7 +229,10 @@ export default function Home() {
   return (
     <div className="relative flex min-h-svh flex-col overflow-x-clip text-zinc-900">
       <div className="relative z-10 flex-1">
-        <section className="relative flex min-h-[calc(100svh-var(--nav-header-h))] items-center overflow-hidden">
+        <section
+          id="home-hero"
+          className="relative flex min-h-svh items-center overflow-hidden"
+        >
           <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-20">
             <p
               className="motion-enter mb-8 text-[0.7rem] font-medium uppercase tracking-[0.42em] text-zinc-500"

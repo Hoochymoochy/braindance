@@ -13,13 +13,17 @@ function isDashboardPath(pathname: string): boolean {
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const showMobileFooter = isDashboardPath(pathname);
+  const isHome = pathname === "/";
 
   return (
     <>
       <Header />
       <main
         className={cn(
-          "min-h-svh pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
+          "min-h-svh",
+          isHome
+            ? "pt-0"
+            : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
           showMobileFooter
             ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
             : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
