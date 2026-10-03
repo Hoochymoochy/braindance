@@ -99,26 +99,7 @@ function explainFetchFailure(error: unknown): string {
   return lines.join(" → ");
 }
 
-const BACKEND_LOG_MAX_CHARS = 12_000;
 const DEFAULT_REVALIDATE_SECONDS = 60;
-
-function logBackendResponse(
-  logTag: string,
-  url: string,
-  status: number,
-  data: unknown
-) {
-  try {
-    const raw = JSON.stringify(data);
-    const preview =
-      raw.length > BACKEND_LOG_MAX_CHARS
-        ? `${raw.slice(0, BACKEND_LOG_MAX_CHARS)}…(truncated, ${raw.length} chars total)`
-        : raw;
-    routeLog(logTag, `backend OK ${status}`, { url, bodyPreview: preview });
-  } catch {
-    routeLog(logTag, `backend OK ${status} (unserializable body)`, { url });
-  }
-}
 
 export async function fetchJsonWithTimeout(
   url: string,
@@ -172,7 +153,6 @@ export async function fetchJsonWithTimeout(
       routeError(logTag, `backend invalid JSON ${url}`, text.slice(0, 2000));
       throw new BackendRequestError("Backend returned invalid JSON");
     }
-    logBackendResponse(logTag, url, res.status, parsed);
     return parsed;
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
