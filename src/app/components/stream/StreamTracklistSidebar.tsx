@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Music2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trackEvent, type SetAnalyticsMeta } from "@/app/lib/analytics";
 
 export type TrackRow = {
   id: string;
@@ -44,17 +45,48 @@ export function StreamTracklistSidebar({
   tracks,
   emptyHint,
   className,
+  analytics,
 }: {
   tracks: TrackRow[];
   emptyHint?: string;
   className?: string;
+  analytics?: Partial<SetAnalyticsMeta>;
 }) {
   const [minimized, setMinimized] = useState(false);
+  const openedTrackedRef = useRef(false);
+  const analyticsRef = useRef(analytics);
+  analyticsRef.current = analytics;
+
+  const fireTracklistOpened = () => {
+    if (openedTrackedRef.current) return;
+    openedTrackedRef.current = true;
+    trackEvent("tracklist_opened", {
+      set_id: analyticsRef.current?.set_id,
+      set_title: analyticsRef.current?.set_title,
+      artist: analyticsRef.current?.artist,
+    });
+  };
+
+  useEffect(() => {
+    // Open by default on mount (desktop always expanded; mobile starts expanded).
+    fireTracklistOpened();
+  }, []);
 
   const toggleMinimized = () => {
     if (window.matchMedia(lgQuery).matches) return;
-    setMinimized((prev) => !prev);
+    setMinimized((prev) => {
+      const next = !prev;
+      if (prev && !next) fireTracklistOpened();
+      return next;
+    });
   };
+
+  const trackPayload = (t: TrackRow) => ({
+    set_id: analytics?.set_id,
+    track_title: t.title,
+    track_artist: t.artist,
+    timestamp: t.timestamp,
+  });
 
   return (
     <div
@@ -113,6 +145,9 @@ export function StreamTracklistSidebar({
               <li
                 key={t.id}
                 className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-black/8 hover:bg-black/[0.03]"
+                onClick={() => {
+                  trackEvent("track_clicked", trackPayload(t));
+                }}
               >
                 <div className="flex gap-2">
                   <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
@@ -135,6 +170,12 @@ export function StreamTracklistSidebar({
                             target="_blank"
                             rel="noopener noreferrer"
                             className="rounded-sm hover:text-[#1ed760] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#1ed760]/50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const payload = trackPayload(t);
+                              trackEvent("track_clicked", payload);
+                              trackEvent("track_external_clicked", payload);
+                            }}
                           >
                             Spotify
                           </a>
@@ -150,6 +191,12 @@ export function StreamTracklistSidebar({
                             target="_blank"
                             rel="noopener noreferrer"
                             className="rounded-sm hover:text-[#ff5500] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#ff5500]/50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const payload = trackPayload(t);
+                              trackEvent("track_clicked", payload);
+                              trackEvent("track_external_clicked", payload);
+                            }}
                           >
                             SoundCloud
                           </a>

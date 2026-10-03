@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { trackEvent } from "@/app/lib/analytics";
 
 export type StreamCardSet = {
   video_id: string;
@@ -20,13 +22,55 @@ function formatViews(count: number): string {
 export function StreamCard({
   set,
   index,
+  source = "homepage",
 }: {
   set: StreamCardSet;
   index: number;
+  source?: string;
 }) {
+  const rootRef = useRef<HTMLAnchorElement | null>(null);
+  const impressedRef = useRef(false);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || impressedRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting || impressedRef.current) return;
+        impressedRef.current = true;
+        trackEvent("set_impression", {
+          set_id: set.video_id,
+          set_title: set.title,
+          artist: set.channel,
+          position: index,
+          source,
+        });
+        observer.disconnect();
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [set.video_id, set.title, set.channel, index, source]);
+
+  const href = `/stream/${set.video_id}?src=${encodeURIComponent(source)}`;
+
   return (
     <Link
-      href={`/stream/${set.video_id}`}
+      ref={rootRef}
+      href={href}
+      onClick={() => {
+        trackEvent("set_opened", {
+          set_id: set.video_id,
+          set_title: set.title,
+          artist: set.channel,
+          position: index,
+          source,
+        });
+      }}
       className="group hover-glow-brand glass-bends-card relative flex cursor-pointer flex-col overflow-hidden rounded-2xl text-zinc-900 transition-[transform,box-shadow,border-color] duration-bends ease-bends motion-reduce:transition-none hover:-translate-y-1 hover:border-brand-from/35 motion-enter"
       style={{ animationDelay: `${index * 45}ms` }}
     >

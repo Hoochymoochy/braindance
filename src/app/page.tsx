@@ -10,6 +10,7 @@ import { getAllStreams } from "@/app/lib/events/stream";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
+import { trackEvent } from "@/app/lib/analytics";
 
 type DjSet = {
   video_id: string;
@@ -73,6 +74,27 @@ export default function Home() {
   const djSetsPromiseRef = useRef<Promise<DjSetsResponse | null> | null>(null);
   const randomPoolRef = useRef<DjSet[]>([]);
   const allDjSetsRef = useRef<DjSet[]>([]);
+  const heroSentinelRef = useRef<HTMLDivElement | null>(null);
+  const heroPassedRef = useRef(false);
+
+  useEffect(() => {
+    const el = heroSentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting || heroPassedRef.current) return;
+        heroPassedRef.current = true;
+        trackEvent("hero_passed");
+        observer.disconnect();
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const applyDjSets = (data: DjSetsResponse) => {
@@ -188,7 +210,12 @@ export default function Home() {
 
     if (pool.length === 0) return;
     const pick = pool[Math.floor(Math.random() * pool.length)];
-    router.push(`/stream/${pick.video_id}`);
+    trackEvent("random_set_clicked", {
+      set_id: pick.video_id,
+      set_title: pick.title,
+      artist: pick.channel,
+    });
+    router.push(`/stream/${pick.video_id}?src=random`);
   };
 
   const skeletons = (n: number) =>
@@ -239,6 +266,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Marks the start of set discovery; used once for hero_passed. */}
+        <div ref={heroSentinelRef} className="h-px w-full" aria-hidden />
 
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
           {/* Old catalog Random set bar — kept for easy restore

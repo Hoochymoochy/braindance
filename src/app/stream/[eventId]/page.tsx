@@ -18,6 +18,10 @@ import {
   youtubeVideoIdFromUrl,
   YOUTUBE_IFRAME_ALLOW,
 } from "@/app/lib/utils/youtube";
+import { trackEvent } from "@/app/lib/analytics";
+import { useYoutubePlaybackAnalytics } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
+
+const PLAYER_IFRAME_ID = "braindance-stream-player";
 
 interface Event {
   title: string;
@@ -125,7 +129,7 @@ export default function BraindanceUserStream() {
   const [topCity, setTopCity] = useState("");
   const [event, setEvent] = useState<Event | null>(null);
   const [merchItems, setMerchItems] = useState<
-    { title: string; subtitle: string; url: string }[]
+    { title: string; subtitle: string; url: string; kind?: "youtube_set" | "youtube_channel" | "other" }[]
   >([]);
   const [djSet, setDjSet] = useState<DjSetItem | null>(null);
   const [isDbEvent, setIsDbEvent] = useState<boolean>(false);
@@ -141,6 +145,16 @@ export default function BraindanceUserStream() {
     null
   );
   const [isPlayerActivated, setIsPlayerActivated] = useState(false);
+  const [analyticsSource, setAnalyticsSource] = useState<string | undefined>();
+
+  useEffect(() => {
+    try {
+      const src = new URLSearchParams(window.location.search).get("src");
+      if (src) setAnalyticsSource(src);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -191,11 +205,17 @@ export default function BraindanceUserStream() {
             setViews(0);
             setTopCity("Global");
 
-            const links: { title: string; subtitle: string; url: string }[] = [
+            const links: {
+              title: string;
+              subtitle: string;
+              url: string;
+              kind?: "youtube_set" | "youtube_channel" | "other";
+            }[] = [
               {
                 title: "Watch on YouTube",
                 subtitle: body.artist,
                 url: body.youtube_url,
+                kind: "youtube_set",
               },
             ];
             if (body.soundcloud_url) {
@@ -203,6 +223,7 @@ export default function BraindanceUserStream() {
                 title: "SoundCloud",
                 subtitle: "Listen on SoundCloud",
                 url: body.soundcloud_url,
+                kind: "other",
               });
             }
             setMerchItems(links);
@@ -240,6 +261,7 @@ export default function BraindanceUserStream() {
           title: link.label,
           subtitle: link.description || "Exclusive drop – limited time only!",
           url: link.link,
+          kind: "other" as const,
         }))
       );
 
@@ -267,6 +289,7 @@ export default function BraindanceUserStream() {
             title: "Watch on YouTube",
             subtitle: "Open the source video on YouTube",
             url: payload.item.url,
+            kind: "youtube_set",
           },
           {
             title: "More From Channel",
@@ -274,6 +297,7 @@ export default function BraindanceUserStream() {
             url: `https://www.youtube.com/results?search_query=${encodeURIComponent(
               payload.item.channel
             )}`,
+            kind: "youtube_channel",
           },
         ]);
 
@@ -346,6 +370,42 @@ export default function BraindanceUserStream() {
     ).toLocaleDateString()}`;
   }, [pipelineStream, event, djSet]);
 
+  const analyticsMeta = useMemo(() => {
+    if (pipelineStream) {
+      return {
+        set_id: pipelineStream.id,
+        set_title: pipelineStream.title,
+        artist: pipelineStream.artist,
+      };
+    }
+    if (djSet) {
+      return {
+        set_id: djSet.video_id,
+        set_title: djSet.title,
+        artist: djSet.channel,
+      };
+    }
+    if (event) {
+      return {
+        set_id: eventId,
+        set_title: event.title,
+        artist: event.location,
+      };
+    }
+    return {
+      set_id: eventId,
+      set_title: headerTitle,
+      artist: undefined as string | undefined,
+    };
+  }, [pipelineStream, djSet, event, eventId, headerTitle]);
+
+  useYoutubePlaybackAnalytics({
+    enabled: isPlayerActivated && platform === "youtube" && Boolean(stream),
+    iframeId: PLAYER_IFRAME_ID,
+    meta: analyticsMeta,
+    source: analyticsSource,
+  });
+
   if (streamLoading) {
     return <StreamLoadingScreen />;
   }
@@ -403,6 +463,7 @@ export default function BraindanceUserStream() {
 
     return (
       <iframe
+        id={PLAYER_IFRAME_ID}
         className="absolute left-0 top-0 h-full w-full border-0 bg-black"
         src={getEmbedUrl()}
         title={headerTitle}
@@ -474,6 +535,7 @@ export default function BraindanceUserStream() {
                     tracks={sidebarTracks}
                     emptyHint={tracklistEmptyHint}
                     className="flex-1 lg:h-full"
+                    analytics={analyticsMeta}
                   />
                 </aside>
               </div>
@@ -568,6 +630,18 @@ export default function BraindanceUserStream() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-brand-to underline-offset-2 transition-[background-image,color] duration-bends-fast ease-bends hover:bg-gradient-to-r hover:from-brand-from hover:via-brand-via hover:to-brand-to hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
+                      onClick={() => {
+                        const payload = {
+                          set_id: analyticsMeta.set_id,
+                          set_title: analyticsMeta.set_title,
+                          artist: analyticsMeta.artist,
+                        };
+                        if (item.kind === "youtube_set") {
+                          trackEvent("youtube_set_clicked", payload);
+                        } else if (item.kind === "youtube_channel") {
+                          trackEvent("youtube_channel_clicked", payload);
+                        }
+                      }}
                     >
                       {item.title}
                     </a>

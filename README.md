@@ -39,6 +39,8 @@ npm test        # Jest
 | `NEXT_PUBLIC_SITE_URL` | e.g. `https://braindance.live` — passed as YouTube embed `origin` (see `src/app/lib/utils/youtube.ts`) |
 | `NEXT_PUBLIC_YOUTUBE_EMBED_HOST` | Set to `nocookie` to use `youtube-nocookie.com` embeds |
 | `NEXT_PUBLIC_TWITCH_PARENT` | Hostname Twitch allows for embeds (e.g. `localhost` locally, your domain in prod). Defaults to `localhost` if unset. |
+| `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website UUID (public). When set, loads the analytics script site-wide. |
+| `NEXT_PUBLIC_UMAMI_SCRIPT_URL` | Optional. Defaults to `https://analytics.hoochymoochy.xyz/script.js`. |
 
 Copy from your hoster / Supabase dashboard; there is no committed `.env` in-repo.
 

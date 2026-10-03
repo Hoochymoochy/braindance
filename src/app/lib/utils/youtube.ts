@@ -51,6 +51,8 @@ export function buildYoutubeEmbedSrc(
     } catch {
       /* ignore invalid env */
     }
+  } else if (typeof window !== "undefined") {
+    params.set("origin", window.location.origin);
   }
 
   const host =
