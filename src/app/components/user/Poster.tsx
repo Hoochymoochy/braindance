@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { incrementCityView } from "@/app/lib/utils/location";
 import { addGeo } from "@/app/lib/events/heatmap";
@@ -31,6 +31,34 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   id,
 }) => {
   const router = useRouter();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reduceMotion) {
+      setInView(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) return;
+        setInView(true);
+        observer.disconnect();
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -8% 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const handleClick = useCallback(
     async (e: React.MouseEvent | React.TouchEvent) => {
@@ -49,7 +77,12 @@ export const EventPoster: React.FC<EventPosterProps> = ({
   );
 
   return (
-    <div className="glass-bends-card hover-glow-brand group mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-black/8 shadow-lg transition-[transform,box-shadow,border-color] duration-500 ease-in-out motion-reduce:transition-none hover:-translate-y-1 hover:border-brand-from/35 sm:max-w-md md:max-w-lg">
+    <div
+      ref={rootRef}
+      className={`glass-bends-card hover-glow-brand motion-enter-float group mx-auto w-full max-w-sm overflow-hidden rounded-none border border-black/8 shadow-lg hover:border-brand-from/35 sm:max-w-md md:max-w-lg${
+        inView ? " is-inview" : ""
+      }`}
+    >
       <div className="relative aspect-[2/3] w-full overflow-hidden">
         <Image
           src={image_url || "/placeholder.svg"}

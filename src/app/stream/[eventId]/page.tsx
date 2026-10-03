@@ -486,7 +486,7 @@ export default function BraindanceUserStream() {
             <>
               <div className="relative mb-6">
                 <div className="lg:pr-[calc(340px+1.5rem)]">
-                  <div className="glass-bends-card relative overflow-hidden rounded-lg">
+                  <div className="glass-bends-card relative overflow-hidden rounded-none">
                     <div className="aspect-video relative">
                       {renderPlayer()}
                     </div>
@@ -543,7 +543,7 @@ export default function BraindanceUserStream() {
           ) : (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <div className="glass-bends-card relative overflow-hidden rounded-lg">
+                <div className="glass-bends-card relative overflow-hidden rounded-none">
                   <div className="aspect-video relative">
                     {renderPlayer()}
                   </div>
@@ -586,7 +586,7 @@ export default function BraindanceUserStream() {
               </div>
 
               <div>
-                <div className="glass-bends-card rounded-lg p-4">
+                <div className="glass-bends-card rounded-none p-4">
                   <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
                     Stats
                   </h3>
@@ -610,7 +610,7 @@ export default function BraindanceUserStream() {
         </main>
 
         {merchItems.length > 0 && (
-          <section className="glass-bends-card relative mt-8 overflow-hidden rounded-xl p-5">
+          <section className="glass-bends-card relative mt-8 overflow-hidden rounded-none p-5">
             <div
               className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-from/[0.14] via-brand-via/[0.06] to-brand-to/[0.14]"
               aria-hidden

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { trackEvent } from "@/app/lib/analytics";
@@ -30,26 +30,43 @@ export function StreamCard({
 }) {
   const rootRef = useRef<HTMLAnchorElement | null>(null);
   const impressedRef = useRef(false);
+  const [inView, setInView] = useState(false);
+  const [enterDelay, setEnterDelay] = useState("0ms");
 
   useEffect(() => {
     const el = rootRef.current;
-    if (!el || impressedRef.current) return;
+    if (!el) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reduceMotion) {
+      setInView(true);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (!entry?.isIntersecting || impressedRef.current) return;
-        impressedRef.current = true;
-        trackEvent("set_impression", {
-          set_id: set.video_id,
-          set_title: set.title,
-          artist: set.channel,
-          position: index,
-          source,
-        });
+        if (!entry?.isIntersecting) return;
+
+        setEnterDelay(`${(index % 3) * 70}ms`);
+        setInView(true);
+
+        if (!impressedRef.current) {
+          impressedRef.current = true;
+          trackEvent("set_impression", {
+            set_id: set.video_id,
+            set_title: set.title,
+            artist: set.channel,
+            position: index,
+            source,
+          });
+        }
+
         observer.disconnect();
       },
-      { threshold: 0.5 }
+      { threshold: 0.18, rootMargin: "0px 0px -8% 0px" }
     );
 
     observer.observe(el);
@@ -71,8 +88,19 @@ export function StreamCard({
           source,
         });
       }}
-      className="group hover-glow-brand glass-bends-card relative flex cursor-pointer flex-col overflow-hidden rounded-2xl text-zinc-900 transition-[transform,box-shadow,border-color] duration-bends ease-bends motion-reduce:transition-none hover:-translate-y-1 hover:border-brand-from/35 motion-enter"
-      style={{ animationDelay: `${index * 45}ms` }}
+      onTransitionEnd={(e) => {
+        if (e.propertyName === "opacity" && inView) {
+          setEnterDelay("0ms");
+        }
+      }}
+      className={`group hover-glow-brand glass-bends-card motion-enter-float relative flex cursor-pointer flex-col overflow-hidden rounded-none text-zinc-900 hover:border-brand-from/35${
+        inView ? " is-inview" : ""
+      }`}
+      style={
+        {
+          "--float-delay": enterDelay,
+        } as CSSProperties
+      }
     >
       <div className="relative w-full aspect-video overflow-hidden bg-black">
         {set.thumbnail ? (

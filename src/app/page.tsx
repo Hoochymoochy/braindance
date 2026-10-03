@@ -43,12 +43,12 @@ function SectionHeader({
   return (
     <div className="mt-4 flex flex-col gap-1">
       {eyebrow && (
-        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-brand-from/80">
+        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-zinc-900">
           <TrendingUp className="h-3 w-3" />
           {eyebrow}
         </span>
       )}
-      <h2 className="text-2xl font-bold text-gradient-bends">{title}</h2>
+      <h2 className="text-2xl font-bold text-zinc-900">{title}</h2>
     </div>
   );
 }
@@ -222,7 +222,7 @@ export default function Home() {
     Array.from({ length: n }).map((_, i) => (
       <div
         key={i}
-        className="skeleton-shimmer glass-bends-card h-64 rounded-2xl"
+        className="skeleton-shimmer glass-bends-card h-64 rounded-none"
       />
     ));
 

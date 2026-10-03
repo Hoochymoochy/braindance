@@ -514,6 +514,24 @@ body {
   .motion-enter {
     animation: bends-fade-up 0.48s var(--ease-bends) both;
   }
+  /** Scroll-triggered float-in; add .is-inview when visible */
+  .motion-enter-float {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.75s var(--ease-bends-soft) var(--float-delay, 0ms),
+      transform 0.75s var(--ease-bends-soft) var(--float-delay, 0ms),
+      box-shadow 560ms var(--ease-bends-soft),
+      border-color 560ms var(--ease-bends-soft);
+  }
+  .motion-enter-float.is-inview {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .motion-enter-float.is-inview:hover {
+    transform: translateY(-6px);
+    transition-delay: 0ms;
+  }
   .hover-glow-brand:hover {
     box-shadow: 0 0 28px rgb(var(--brand-from-rgb) / 0.12);
   }
@@ -528,6 +546,14 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .motion-enter {
     animation: none !important;
+  }
+  .motion-enter-float {
+    opacity: 1;
+    transform: none;
+    transition: none !important;
+  }
+  .motion-enter-float.is-inview:hover {
+    transform: none;
   }
 }
 
