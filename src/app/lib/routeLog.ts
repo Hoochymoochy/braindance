@@ -4,11 +4,13 @@
  * Currently quiet — restore the previous body when debugging backend proxies.
  */
 export function routeLog(
-  _scope: string,
-  _message: string,
-  _extra?: unknown
+  scope: string,
+  message: string,
+  extra?: unknown
 ): void {
-  // no-op
+  void scope;
+  void message;
+  void extra;
 }
 
 export function routeError(scope: string, message: string, err?: unknown): void {
