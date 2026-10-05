@@ -107,8 +107,8 @@ export function StreamTracklistSidebar({
       className={cn(
         "glass-bends-card relative flex min-h-0 w-full flex-col overflow-hidden rounded-none",
         minimized
-          ? "min-h-0 max-h-none"
-          : "min-h-[10rem] max-h-[min(65vh,520px)] lg:max-h-none lg:min-h-0",
+          ? "max-lg:shrink-0"
+          : "max-lg:min-h-0 max-lg:flex-1 max-lg:max-h-none min-h-[10rem] lg:max-h-none lg:min-h-0",
         className
       )}
     >
@@ -144,7 +144,7 @@ export function StreamTracklistSidebar({
           id="stream-tracklist"
           data-scroll-lock-ignore
           className={cn(
-            "min-h-0 flex-1 overflow-y-auto overscroll-y-none px-2 py-2",
+            "min-h-0 flex-1 overflow-y-auto overscroll-y-none touch-pan-y px-2 py-2",
             scrollbarHidden,
             minimized && "max-lg:hidden"
           )}

@@ -591,6 +591,18 @@ body {
   html.dark {
     color-scheme: dark;
   }
+  html.scroll-locked,
+  html.scroll-locked body {
+    overscroll-behavior: none !important;
+  }
+  html.scroll-locked body {
+    overflow: hidden !important;
+    touch-action: none;
+  }
+  [data-scroll-lock-ignore] {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: auto;
+  }
   body {
     @apply text-foreground antialiased;
     background-color: var(--page-bg);
