@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
@@ -21,6 +21,8 @@ import {
 } from "@/app/lib/utils/youtube";
 import { trackEvent } from "@/app/lib/analytics";
 import { useYoutubePlaybackAnalytics } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
+import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
+import { cn } from "@/lib/utils";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
 
@@ -147,6 +149,9 @@ export default function BraindanceUserStream() {
   );
   const [isPlayerActivated, setIsPlayerActivated] = useState(false);
   const [analyticsSource, setAnalyticsSource] = useState<string | undefined>();
+  const [tracklistExpanded, setTracklistExpanded] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const pageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -156,6 +161,59 @@ export default function BraindanceUserStream() {
       /* ignore */
     }
   }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setIsMobileViewport(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const hasStreamTracklist = Boolean(pipelineStream) || Boolean(djSet);
+  const [contentOverflows, setContentOverflows] = useState(false);
+
+  useEffect(() => {
+    if (!isMobileViewport || streamLoading) {
+      setContentOverflows(false);
+      return;
+    }
+    const el = pageRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const top = el.getBoundingClientRect().top;
+      setContentOverflows(top + el.offsetHeight > window.innerHeight + 4);
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [
+    isMobileViewport,
+    streamLoading,
+    tracklistExpanded,
+    merchItems.length,
+    hasStreamTracklist,
+    pipelineStream,
+    djSet,
+    event,
+  ]);
+
+  /** Mobile stream: solid page — no rubber-band scroll until tracklist opens or content overflows. */
+  const lockMobileScroll =
+    isMobileViewport &&
+    !streamLoading &&
+    hasStreamTracklist &&
+    !tracklistExpanded &&
+    !contentOverflows;
+
+  useLockBodyScroll(lockMobileScroll);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -489,12 +547,18 @@ export default function BraindanceUserStream() {
   };
 
   return (
-    <div className="relative text-zinc-900">
+    <div
+      ref={pageRef}
+      className={cn(
+        "relative text-zinc-900 overscroll-none",
+        lockMobileScroll && "max-lg:overflow-hidden"
+      )}
+    >
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-5 pt-0 md:p-8">
         <main className="mt-0 md:mt-5">
           {showTracklist ? (
             <>
-              <div className="relative mb-6">
+              <div className="relative mb-4 md:mb-6">
                 <div className="lg:pr-[calc(340px+1.5rem)]">
                   <div className="glass-bends-card relative overflow-hidden rounded-none">
                     <div className="aspect-video relative">
@@ -538,7 +602,7 @@ export default function BraindanceUserStream() {
                   </div>
                 </div>
                 <aside
-                  className="mt-6 flex min-h-0 w-full flex-col lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
+                  className="mt-4 flex min-h-0 w-full flex-col md:mt-6 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
                   aria-label="Tracklist"
                 >
                   <StreamTracklistSidebar
@@ -546,6 +610,7 @@ export default function BraindanceUserStream() {
                     emptyHint={tracklistEmptyHint}
                     className="flex-1 lg:h-full"
                     analytics={analyticsMeta}
+                    onExpandedChange={setTracklistExpanded}
                   />
                 </aside>
               </div>

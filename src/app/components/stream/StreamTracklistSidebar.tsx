@@ -46,11 +46,14 @@ export function StreamTracklistSidebar({
   emptyHint,
   className,
   analytics,
+  onExpandedChange,
 }: {
   tracks: TrackRow[];
   emptyHint?: string;
   className?: string;
   analytics?: Partial<SetAnalyticsMeta>;
+  /** Fires when mobile expand/collapse changes (`true` = open). Desktop always reports open. */
+  onExpandedChange?: (expanded: boolean) => void;
 }) {
   const [minimized, setMinimized] = useState(true);
   const openedTrackedRef = useRef(false);
@@ -71,8 +74,17 @@ export function StreamTracklistSidebar({
     if (window.matchMedia(lgQuery).matches) {
       setMinimized(false);
       fireTracklistOpened();
+      onExpandedChange?.(true);
+    } else {
+      onExpandedChange?.(false);
     }
+    // Only sync initial breakpoint state on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    onExpandedChange?.(!minimized);
+  }, [minimized, onExpandedChange]);
 
   const toggleMinimized = () => {
     if (window.matchMedia(lgQuery).matches) return;
