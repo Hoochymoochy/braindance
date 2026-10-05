@@ -171,49 +171,18 @@ export default function BraindanceUserStream() {
   }, []);
 
   const hasStreamTracklist = Boolean(pipelineStream) || Boolean(djSet);
-  const [contentOverflows, setContentOverflows] = useState(false);
 
-  useEffect(() => {
-    if (!isMobileViewport || streamLoading) {
-      setContentOverflows(false);
-      return;
-    }
-    const el = pageRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      const top = el.getBoundingClientRect().top;
-      setContentOverflows(top + el.offsetHeight > window.innerHeight + 4);
-    };
-
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    window.addEventListener("resize", measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [
-    isMobileViewport,
-    streamLoading,
-    tracklistExpanded,
-    merchItems.length,
-    hasStreamTracklist,
-    pipelineStream,
-    djSet,
-    event,
-  ]);
-
-  /** Mobile stream: solid page — no rubber-band scroll until tracklist opens or content overflows. */
+  /**
+   * Always lock document scroll on mobile stream (Safari rubber-band ignores CSS).
+   * Contained panels opt out via `[data-scroll-lock-ignore]`.
+   */
   const lockMobileScroll =
-    isMobileViewport &&
-    !streamLoading &&
-    hasStreamTracklist &&
-    !tracklistExpanded &&
-    !contentOverflows;
+    isMobileViewport && !streamLoading && hasStreamTracklist;
 
   useLockBodyScroll(lockMobileScroll);
+
+  const allowContainedPageScroll =
+    lockMobileScroll && (tracklistExpanded || merchItems.length > 0);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -551,8 +520,11 @@ export default function BraindanceUserStream() {
       ref={pageRef}
       className={cn(
         "relative text-zinc-900 overscroll-none",
-        lockMobileScroll && "max-lg:overflow-hidden"
+        lockMobileScroll && !allowContainedPageScroll && "max-lg:overflow-hidden",
+        allowContainedPageScroll &&
+          "max-lg:max-h-[calc(100dvh-var(--nav-header-h)-env(safe-area-inset-top,0px)-1.25rem)] max-lg:overflow-y-auto max-lg:overscroll-y-none"
       )}
+      {...(allowContainedPageScroll ? { "data-scroll-lock-ignore": true } : {})}
     >
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-5 pt-0 md:p-8">
         <main className="mt-0 md:mt-5">

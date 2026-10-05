@@ -142,8 +142,9 @@ export function StreamTracklistSidebar({
 
         <div
           id="stream-tracklist"
+          data-scroll-lock-ignore
           className={cn(
-            "min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 py-2",
+            "min-h-0 flex-1 overflow-y-auto overscroll-y-none px-2 py-2",
             scrollbarHidden,
             minimized && "max-lg:hidden"
           )}
