@@ -546,6 +546,8 @@ export default function BraindanceUserStream() {
                     emptyHint={tracklistEmptyHint}
                     className="flex-1 lg:h-full"
                     analytics={analyticsMeta}
+                    videoId={analyticsMeta.set_id}
+                    setTitle={headerTitle}
                   />
                 </aside>
               </div>

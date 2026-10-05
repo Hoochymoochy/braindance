@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Settings } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { trackEvent } from "@/app/lib/analytics";
@@ -23,6 +24,7 @@ export default function AppSettingsMenu({
   "aria-hidden": ariaHidden,
   inert,
 }: AppSettingsMenuProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -85,12 +87,13 @@ export default function AppSettingsMenu({
             type="button"
             role="menuitem"
             onClick={() => {
-              trackEvent("login_clicked", { placement: menuPlacement });
+              trackEvent("profile_clicked", { placement: menuPlacement });
               setOpen(false);
+              router.push("/profile");
             }}
             className="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-zinc-700 transition-colors duration-bends-fast ease-bends hover:bg-black/[0.04] hover:text-brand-from dark:text-zinc-200 dark:hover:bg-brand-from/10"
           >
-            Login
+            Profile
           </button>
           <div
             role="menuitem"

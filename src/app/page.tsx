@@ -3,10 +3,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shuffle, ChevronDown } from "lucide-react";
-import { EventsLayout } from "@/app/EventLayout";
-import { EventPosterProps } from "@/app/components/user/Poster";
-import { getAllEvents } from "@/app/lib/events/event";
-import { getAllStreams } from "@/app/lib/events/stream";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
@@ -41,20 +37,12 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-type HomeEventsCache = {
-  live: EventPosterProps[];
-  upcoming: EventPosterProps[];
-};
-
 const PAGE_SIZE = 9;
 const DJ_SETS_CACHE_KEY = "home:dj-sets";
-const EVENTS_CACHE_KEY = "home:events";
 const CLIENT_CACHE_MS = CATALOG_REVALIDATE_SECONDS * 1000;
 
 export default function Home() {
   const router = useRouter();
-  const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,43 +88,6 @@ export default function Home() {
       );
     };
 
-    const getEvents = async () => {
-      const cached = ttlGet<HomeEventsCache>(EVENTS_CACHE_KEY);
-      if (cached) {
-        setLiveEvents(cached.live);
-        setUpcomingEvents(cached.upcoming);
-      }
-
-      const events = (await getAllEvents()) ?? [];
-      const streams = await getAllStreams();
-      const streamsByEvent = new Map<string, typeof streams>();
-      for (const row of streams) {
-        const list = streamsByEvent.get(row.event_id) ?? [];
-        list.push(row);
-        streamsByEvent.set(row.event_id, list);
-      }
-
-      const live: EventPosterProps[] = [];
-      const upcoming: EventPosterProps[] = [];
-
-      for (const event of events) {
-        const eventStreams = streamsByEvent.get(event.id) ?? [];
-        const liveStream = eventStreams.find((s) => s.link !== null);
-        if (liveStream) {
-          live.push({
-            ...event,
-            link: liveStream.link ?? undefined,
-          });
-        } else {
-          upcoming.push(event);
-        }
-      }
-
-      ttlSet(EVENTS_CACHE_KEY, { live, upcoming }, CLIENT_CACHE_MS);
-      setLiveEvents(live);
-      setUpcomingEvents(upcoming);
-    };
-
     const getDjSets = async (): Promise<DjSetsResponse | null> => {
       const cached = ttlGet<DjSetsResponse>(DJ_SETS_CACHE_KEY);
       if (cached) {
@@ -165,7 +116,6 @@ export default function Home() {
     };
 
     djSetsPromiseRef.current = getDjSets();
-    void getEvents();
   }, []);
 
   const visibleDjSets = useMemo(
@@ -258,26 +208,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Marks the start of set discovery; used once for hero_passed. */}
         <div ref={heroSentinelRef} className="h-px w-full" aria-hidden />
 
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
-          {/* Old catalog Random set bar — kept for easy restore
-          <div className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4">
-            <button
-              type="button"
-              onClick={goRandomSet}
-              disabled={
-                loading || (randomPool.length === 0 && allDjSets.length === 0)
-              }
-              className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/35 disabled:pointer-events-none disabled:opacity-40"
-            >
-              <Shuffle className="h-3.5 w-3.5 shrink-0 text-brand-from" />
-              <span className="font-medium text-brand-from">Random set</span>
-            </button>
-          </div>
-          */}
-
           <div className="mb-12">
             <div className="mb-5">
               <SectionHeader title="Featured This Week" />
@@ -327,12 +260,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-      <EventsLayout
-        liveEvents={liveEvents}
-        upcomingEvents={upcomingEvents}
-        hideStuff={{}}
-      />
     </div>
   );
 }
