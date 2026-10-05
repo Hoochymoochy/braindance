@@ -107,8 +107,8 @@ export function StreamTracklistSidebar({
       className={cn(
         "glass-bends-card relative flex min-h-0 w-full flex-col overflow-hidden rounded-none",
         minimized
-          ? "max-lg:shrink-0"
-          : "max-lg:min-h-0 max-lg:flex-1 max-lg:max-h-none min-h-[10rem] lg:max-h-none lg:min-h-0",
+          ? "min-h-0 max-h-none"
+          : "min-h-[10rem] max-h-[min(65vh,520px)] lg:max-h-none lg:min-h-0",
         className
       )}
     >

@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ReactNode } from "react";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
@@ -19,6 +19,12 @@ const umamiScriptUrl =
   "https://analytics.hoochymoochy.xyz/script.js";
 
 export const metadata: Metadata = defaultMetadata;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 // import LocationGate from "@/app/components/LocationGate";
 export default function RootLayout({ children }: { children: ReactNode }) {

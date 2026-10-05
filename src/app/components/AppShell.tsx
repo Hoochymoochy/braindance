@@ -27,16 +27,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pastHero = usePastHomeHero();
   const hideMobileSettings = isHome && !pastHero;
 
+  // Match header chrome breakpoint (`md` = 768px), not `lg`.
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
+    const mq = window.matchMedia("(max-width: 767px)");
     const sync = () => setIsMobileViewport(mq.matches);
     sync();
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // Lock document on mobile stream — no overflow:auto parent (that still bounces in Safari).
   useLockBodyScroll(isStreamWatch && isMobileViewport);
 
   return (
@@ -60,31 +60,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </header>
       <main
         className={cn(
-          isStreamWatch
-            ? cn(
-                // Mobile: true fixed viewport, overflow hidden (not auto — Safari bounces auto).
-                "max-lg:fixed max-lg:inset-0 max-lg:z-40 max-lg:flex max-lg:flex-col max-lg:overflow-hidden max-lg:overscroll-none max-lg:touch-none",
-                "max-lg:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))] max-lg:pb-[env(safe-area-inset-bottom,0px)]",
-                "md:min-h-svh md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
-              )
-            : cn(
-                "min-h-svh",
-                isHome
-                  ? "pt-0"
-                  : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
-                showMobileFooter
-                  ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
-                  : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
-              )
+          "min-h-svh",
+          isHome
+            ? "pt-0"
+            : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
+          showMobileFooter
+            ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
+            : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
+          // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
+          isStreamWatch &&
+            "max-md:overflow-x-hidden max-md:overscroll-none"
         )}
       >
-        <div
-          className={cn(
-            isStreamWatch && "max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:overflow-hidden"
-          )}
-        >
-          {children}
-        </div>
+        {children}
       </main>
       <Footer showOnMobile={showMobileFooter} />
     </>

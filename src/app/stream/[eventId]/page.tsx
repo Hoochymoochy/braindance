@@ -21,7 +21,6 @@ import {
 } from "@/app/lib/utils/youtube";
 import { trackEvent } from "@/app/lib/analytics";
 import { useYoutubePlaybackAnalytics } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
-import { cn } from "@/lib/utils";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
 
@@ -490,27 +489,13 @@ export default function BraindanceUserStream() {
   };
 
   return (
-    <div
-      className={cn(
-        "relative text-zinc-900 overscroll-none",
-        "max-lg:flex max-lg:h-full max-lg:min-h-0 max-lg:flex-col max-lg:overflow-hidden"
-      )}
-    >
-      <div
-        className={cn(
-          "relative z-10 mx-auto max-w-6xl px-5 pb-5 pt-0 md:p-8",
-          "max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:overflow-hidden max-lg:pb-3",
-          // Rare: links below the fold — only then allow a contained scroller.
-          merchItems.length > 0 &&
-            "max-lg:overflow-y-auto max-lg:overscroll-y-none max-lg:touch-pan-y"
-        )}
-        {...(merchItems.length > 0 ? { "data-scroll-lock-ignore": true } : {})}
-      >
-        <main className="mt-0 max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:overflow-hidden md:mt-5">
+    <div className="relative text-zinc-900 overscroll-none">
+      <div className="relative z-10 mx-auto max-w-6xl px-5 pb-5 pt-0 md:p-8">
+        <main className="mt-0 md:mt-5">
           {showTracklist ? (
             <>
-              <div className="relative mb-4 max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:overflow-hidden md:mb-6">
-                <div className="shrink-0 lg:pr-[calc(340px+1.5rem)]">
+              <div className="relative mb-4 md:mb-6">
+                <div className="lg:pr-[calc(340px+1.5rem)]">
                   <div className="glass-bends-card relative overflow-hidden rounded-none">
                     <div className="aspect-video relative">
                       {renderPlayer()}
@@ -553,13 +538,13 @@ export default function BraindanceUserStream() {
                   </div>
                 </div>
                 <aside
-                  className="mt-4 flex min-h-0 w-full flex-col max-lg:min-h-0 max-lg:flex-1 md:mt-6 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
+                  className="mt-4 flex min-h-0 w-full flex-col md:mt-6 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
                   aria-label="Tracklist"
                 >
                   <StreamTracklistSidebar
                     tracks={sidebarTracks}
                     emptyHint={tracklistEmptyHint}
-                    className="min-h-0 flex-1 lg:h-full"
+                    className="flex-1 lg:h-full"
                     analytics={analyticsMeta}
                   />
                 </aside>
