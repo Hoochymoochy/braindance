@@ -490,8 +490,8 @@ export default function BraindanceUserStream() {
 
   return (
     <div className="relative text-zinc-900">
-      <div className="relative z-10 mx-auto max-w-6xl p-5 md:p-8">
-        <main className="mt-5">
+      <div className="relative z-10 mx-auto max-w-6xl px-5 pb-5 pt-0 md:p-8">
+        <main className="mt-0 md:mt-5">
           {showTracklist ? (
             <>
               <div className="relative mb-6">

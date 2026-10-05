@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { Settings } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { trackEvent } from "@/app/lib/analytics";
 import { cn } from "@/lib/utils";
 
 type AppSettingsMenuProps = {
   className?: string;
   /** When true, menu opens upward (e.g. fixed bottom-right on mobile). */
   openUp?: boolean;
+  /** Umami metadata: where the settings control lives (header vs mobile FAB). */
+  menuPlacement?: "header" | "mobile";
   "aria-hidden"?: boolean;
   inert?: boolean;
 };
@@ -17,6 +19,7 @@ type AppSettingsMenuProps = {
 export default function AppSettingsMenu({
   className,
   openUp = false,
+  menuPlacement,
   "aria-hidden": ariaHidden,
   inert,
 }: AppSettingsMenuProps) {
@@ -78,14 +81,17 @@ export default function AppSettingsMenu({
             openUp ? "bottom-full mb-2" : "top-full mt-2"
           )}
         >
-          <Link
-            href="/"
+          <button
+            type="button"
             role="menuitem"
-            onClick={() => setOpen(false)}
-            className="block rounded-lg px-3 py-2.5 text-sm text-zinc-700 transition-colors duration-bends-fast ease-bends hover:bg-black/[0.04] hover:text-brand-from dark:text-zinc-200 dark:hover:bg-brand-from/10"
+            onClick={() => {
+              trackEvent("login_clicked", { placement: menuPlacement });
+              setOpen(false);
+            }}
+            className="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-zinc-700 transition-colors duration-bends-fast ease-bends hover:bg-black/[0.04] hover:text-brand-from dark:text-zinc-200 dark:hover:bg-brand-from/10"
           >
-            Home
-          </Link>
+            Login
+          </button>
           <div
             role="menuitem"
             className="flex items-center justify-between gap-3 rounded-lg px-3 py-2"
