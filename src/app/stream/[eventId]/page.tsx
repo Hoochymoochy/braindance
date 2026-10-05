@@ -15,6 +15,7 @@ import { getLinks } from "@/app/lib/events/links";
 import { getEventById } from "@/app/lib/events/event";
 import {
   buildYoutubeEmbedSrc,
+  upgradeYoutubeThumbnail,
   youtubeVideoIdFromUrl,
   YOUTUBE_IFRAME_ALLOW,
 } from "@/app/lib/utils/youtube";
@@ -417,7 +418,14 @@ export default function BraindanceUserStream() {
     ? undefined
     : djSetTracklistError ?? "No tracklist found.";
   const streamArtwork =
-    event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail || "";
+    upgradeYoutubeThumbnail(
+      event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail || "",
+      djSet?.video_id || youtubeVideoIdFromUrl(pipelineStream?.youtube_url ?? "")
+    ) ||
+    event?.image_url ||
+    djSet?.thumbnail ||
+    pipelineStream?.thumbnail ||
+    "";
 
   const renderPlayer = () => {
     if (!stream) {
@@ -441,6 +449,8 @@ export default function BraindanceUserStream() {
               src={streamArtwork}
               alt={headerTitle}
               fill
+              sizes="(max-width: 1024px) 100vw, 66vw"
+              quality={90}
               className="object-cover opacity-55"
             />
           ) : (

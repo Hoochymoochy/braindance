@@ -4,6 +4,10 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { trackEvent } from "@/app/lib/analytics";
+import {
+  upgradeYoutubeThumbnail,
+  youtubeThumbnailFallbackUrl,
+} from "@/app/lib/utils/youtube";
 
 export type StreamCardSet = {
   video_id: string;
@@ -32,6 +36,13 @@ export function StreamCard({
   const impressedRef = useRef(false);
   const [inView, setInView] = useState(false);
   const [enterDelay, setEnterDelay] = useState("0ms");
+  const hiResThumb =
+    upgradeYoutubeThumbnail(set.thumbnail, set.video_id) ?? set.thumbnail;
+  const [thumbSrc, setThumbSrc] = useState(hiResThumb);
+
+  useEffect(() => {
+    setThumbSrc(hiResThumb);
+  }, [hiResThumb]);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -103,13 +114,18 @@ export function StreamCard({
       }
     >
       <div className="relative w-full aspect-video overflow-hidden bg-black">
-        {set.thumbnail ? (
+        {thumbSrc ? (
           <Image
-            src={set.thumbnail}
+            src={thumbSrc}
             alt={set.title}
-            width={640}
-            height={360}
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            quality={90}
+            className="object-cover"
+            onError={() => {
+              const fallback = youtubeThumbnailFallbackUrl(thumbSrc);
+              if (fallback !== thumbSrc) setThumbSrc(fallback);
+            }}
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-brand-to/30 to-black" />

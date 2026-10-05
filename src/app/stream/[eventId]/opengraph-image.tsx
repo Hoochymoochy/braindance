@@ -5,6 +5,7 @@ import {
   getPrimaryBackendUrl,
 } from "@/app/lib/backend/http";
 import { getEventById } from "@/app/lib/events/event";
+import { upgradeYoutubeThumbnail } from "@/app/lib/utils/youtube";
 
 export const alt = "Braindance stream";
 export const size = { width: 1200, height: 630 };
@@ -69,9 +70,9 @@ async function resolvePreview(eventId: string): Promise<{
           title: item.title || "DJ Set",
           subtitle: item.channel ? `${item.channel} · Braindance` : "Braindance",
           imageUrl:
-            item.thumbnail ||
+            upgradeYoutubeThumbnail(item.thumbnail, item.video_id) ||
             (item.video_id
-              ? `https://i.ytimg.com/vi/${item.video_id}/hqdefault.jpg`
+              ? `https://i.ytimg.com/vi/${item.video_id}/maxresdefault.jpg`
               : null),
         };
       }

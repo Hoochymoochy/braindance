@@ -1,58 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrainLogo } from "@/app/components/Brain-logo";
-import ThemeToggle from "@/app/components/ThemeToggle";
+import AppSettingsMenu from "@/app/components/AppSettingsMenu";
+import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const [pastHero, setPastHero] = useState(!isHome);
-
-  useEffect(() => {
-    if (!isHome) {
-      setPastHero(true);
-      return;
-    }
-
-    setPastHero(false);
-    let observer: IntersectionObserver | null = null;
-    let raf = 0;
-
-    const attach = () => {
-      const hero = document.getElementById("home-hero");
-      if (!hero) {
-        raf = requestAnimationFrame(attach);
-        return;
-      }
-
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry) return;
-          setPastHero(!entry.isIntersecting);
-        },
-        { threshold: 0 }
-      );
-      observer.observe(hero);
-    };
-
-    attach();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      observer?.disconnect();
-    };
-  }, [isHome]);
-
+  const pastHero = usePastHomeHero();
   const hidden = isHome && !pastHero;
 
   return (
     <header
       className={cn(
-        "glass-nav-header fixed left-0 right-0 top-0 z-50 border-b pt-[env(safe-area-inset-top)] transition-[transform,opacity] duration-bends ease-bends",
+        "glass-nav-header fixed left-0 right-0 top-0 z-50 hidden border-b pt-[env(safe-area-inset-top)] transition-[transform,opacity] duration-bends ease-bends md:block",
         hidden
           ? "pointer-events-none -translate-y-full opacity-0"
           : "translate-y-0 opacity-100"
@@ -72,17 +36,7 @@ export default function Header() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-6">
-          <nav className="flex items-center space-x-8 text-sm" aria-label="Primary">
-            <Link
-              href="/"
-              className="text-zinc-700 transition-colors duration-bends-fast ease-bends hover:text-brand-from"
-            >
-              Home
-            </Link>
-          </nav>
-          <ThemeToggle />
-        </div>
+        <AppSettingsMenu />
       </div>
     </header>
   );

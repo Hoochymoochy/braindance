@@ -11,6 +11,7 @@ import {
   cacheControlHeader,
 } from "@/app/lib/cache/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
+import { upgradeYoutubeThumbnail } from "@/app/lib/utils/youtube";
 
 export const revalidate = 60;
 export const runtime = "nodejs";
@@ -28,6 +29,11 @@ type DjSet = {
   view_count?: number;
   duration_seconds?: number;
 };
+
+function withHiResThumbnail(item: DjSet): DjSet {
+  const thumbnail = upgradeYoutubeThumbnail(item.thumbnail, item.video_id);
+  return thumbnail ? { ...item, thumbnail } : item;
+}
 
 /** Shape returned by GET ${BACKEND_URL}/dj-sets */
 type BackendDjSetsListResponse =
@@ -221,9 +227,9 @@ export async function GET(request: NextRequest) {
         backendPayload.updated ??
         null);
 
-    const filtered = items.filter(
-      (item) => Boolean(item.video_id) && passesDurationFilter(item)
-    );
+    const filtered = items
+      .filter((item) => Boolean(item.video_id) && passesDurationFilter(item))
+      .map(withHiResThumbnail);
 
     const listSets = filtered.filter((item) =>
       withinDays(item.published_at, MAX_LIST_AGE_DAYS)
@@ -233,9 +239,9 @@ export async function GET(request: NextRequest) {
       ? null
       : (backendPayload.featured ?? null);
 
-    const backendWeekly = backendFeatured?.weekly?.filter((item) =>
-      withinDays(item.published_at, MAX_LIST_AGE_DAYS)
-    );
+    const backendWeekly = backendFeatured?.weekly
+      ?.filter((item) => withinDays(item.published_at, MAX_LIST_AGE_DAYS))
+      .map(withHiResThumbnail);
 
     const payload = {
       updatedAt,
@@ -301,7 +307,8 @@ export async function POST(request: NextRequest) {
 
     const { raw, source } = await fetchDjSetByIdWithFallback(videoId, 30_000);
     const item = parseDjSetPayload(raw);
-    const safeItem = item && passesDurationFilter(item) ? item : null;
+    const safeItem =
+      item && passesDurationFilter(item) ? withHiResThumbnail(item) : null;
 
     routeLog("api/dj-sets", "POST OK", {
       videoId,

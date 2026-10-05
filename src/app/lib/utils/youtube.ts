@@ -63,6 +63,62 @@ export function buildYoutubeEmbedSrc(
   return `https://${host}/embed/${encodeURIComponent(id)}?${params.toString()}`;
 }
 
+/** YouTube still image sizes (largest → smallest). `maxresdefault` is 1280×720 when present. */
+export type YoutubeThumbnailQuality =
+  | "maxresdefault"
+  | "sddefault"
+  | "hqdefault"
+  | "mqdefault"
+  | "default";
+
+export function youtubeThumbnailUrl(
+  videoId: string,
+  quality: YoutubeThumbnailQuality = "maxresdefault"
+): string {
+  return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/${quality}.jpg`;
+}
+
+/**
+ * Prefer a higher-res YouTube still when the backend returns `hqdefault` / `mqdefault`.
+ * Non-YouTube URLs are returned unchanged.
+ */
+export function upgradeYoutubeThumbnail(
+  url: string | null | undefined,
+  videoId?: string | null
+): string | undefined {
+  const fromUrl = url ? youtubeVideoIdFromThumbnailUrl(url) : null;
+  if (fromUrl) return youtubeThumbnailUrl(fromUrl, "maxresdefault");
+
+  // Keep custom / hosted covers as-is.
+  if (url) return url;
+
+  if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+    return youtubeThumbnailUrl(videoId, "maxresdefault");
+  }
+  return undefined;
+}
+
+/** Fall back when `maxresdefault` is missing for a video. */
+export function youtubeThumbnailFallbackUrl(url: string): string {
+  return url.replace(
+    /\/(maxresdefault|sddefault|hqdefault|mqdefault|default)\.(jpg|webp|jpeg)(\?.*)?$/i,
+    "/hqdefault.jpg"
+  );
+}
+
+function youtubeVideoIdFromThumbnailUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname !== "i.ytimg.com") return null;
+    const match = u.pathname.match(
+      /^\/vi(?:_webp)?\/([a-zA-Z0-9_-]{11})\//
+    );
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Extract YouTube video id from common URL shapes for embeds. */
 export function youtubeVideoIdFromUrl(url: string): string | null {
   const trimmed = url.trim();

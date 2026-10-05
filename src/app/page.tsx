@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TrendingUp, Shuffle, ChevronDown } from "lucide-react";
+import { Shuffle, ChevronDown } from "lucide-react";
 import { EventsLayout } from "@/app/EventLayout";
 import { EventPosterProps } from "@/app/components/user/Poster";
 import { getAllEvents } from "@/app/lib/events/event";
@@ -33,21 +33,9 @@ type DjSetsResponse = {
   };
 };
 
-function SectionHeader({
-  eyebrow,
-  title,
-}: {
-  eyebrow?: string;
-  title: string;
-}) {
+function SectionHeader({ title }: { title: string }) {
   return (
     <div className="mt-4 flex flex-col gap-1">
-      {eyebrow && (
-        <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-zinc-900">
-          <TrendingUp className="h-3 w-3" />
-          {eyebrow}
-        </span>
-      )}
       <h2 className="text-2xl font-bold text-zinc-900">{title}</h2>
     </div>
   );
@@ -292,10 +280,7 @@ export default function Home() {
 
           <div className="mb-12">
             <div className="mb-5">
-              <SectionHeader
-                eyebrow="Top weekly views"
-                title="Featured This Week"
-              />
+              <SectionHeader title="Featured This Week" />
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading && skeletons(3)}
