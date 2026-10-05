@@ -52,7 +52,7 @@ export function StreamTracklistSidebar({
   className?: string;
   analytics?: Partial<SetAnalyticsMeta>;
 }) {
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(true);
   const openedTrackedRef = useRef(false);
   const analyticsRef = useRef(analytics);
   analyticsRef.current = analytics;
@@ -68,8 +68,10 @@ export function StreamTracklistSidebar({
   };
 
   useEffect(() => {
-    // Open by default on mount (desktop always expanded; mobile starts expanded).
-    fireTracklistOpened();
+    if (window.matchMedia(lgQuery).matches) {
+      setMinimized(false);
+      fireTracklistOpened();
+    }
   }, []);
 
   const toggleMinimized = () => {
