@@ -38,6 +38,40 @@ export async function listCrates(userId: string): Promise<Crate[]> {
   return data ?? [];
 }
 
+export type CratePreview = Crate & {
+  set_count: number;
+  thumbnails: string[];
+};
+
+export async function listCratesWithPreviews(
+  userId: string
+): Promise<CratePreview[]> {
+  const { data, error } = await supabase
+    .from("crates")
+    .select("*, crate_sets(thumbnail, video_id)")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row) => {
+    const { crate_sets: sets, ...crate } = row as Crate & {
+      crate_sets: { thumbnail: string | null; video_id: string }[] | null;
+    };
+    const thumbnails = (sets ?? [])
+      .map((s) => s.thumbnail)
+      .filter((t): t is string => Boolean(t))
+      .slice(0, 4);
+
+    return {
+      ...(crate as Crate),
+      set_count: sets?.length ?? 0,
+      thumbnails,
+    };
+  });
+}
+
+
 export async function getCrate(crateId: string): Promise<Crate | null> {
   const { data, error } = await supabase
     .from("crates")

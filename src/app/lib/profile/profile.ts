@@ -62,6 +62,23 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 
+export async function getProfileByUsername(
+  username: string
+): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, bio, created_at")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export function profileSharePath(username: string): string {
+  return `/u/${encodeURIComponent(username)}`;
+}
+
 export async function updateProfile(
   userId: string,
   patch: Partial<Pick<Profile, "display_name" | "bio">>

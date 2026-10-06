@@ -1,0 +1,73 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { Play, Trash2 } from "lucide-react";
+import type { Moment } from "@/app/lib/profile/moments";
+import { youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
+
+export function MomentsTrackRow({
+  moment,
+  index,
+  onDelete,
+}: {
+  moment: Moment;
+  index: number;
+  onDelete?: () => void;
+}) {
+  const href = `/stream/${moment.video_id}?t=${moment.timestamp_seconds}`;
+  const thumb = youtubeThumbnailUrl(moment.video_id, "mqdefault");
+
+  return (
+    <div className="group grid grid-cols-[2.5rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-black/[0.04] sm:grid-cols-[2rem_2.5rem_minmax(0,1fr)_5rem_auto] dark:hover:bg-white/[0.06]">
+      <div className="relative flex h-8 w-8 items-center justify-center">
+        <span className="text-sm tabular-nums text-zinc-400 group-hover:hidden">
+          {index + 1}
+        </span>
+        <Play
+          className="absolute hidden h-3.5 w-3.5 fill-current text-zinc-800 group-hover:block dark:text-zinc-100"
+          aria-hidden
+        />
+      </div>
+
+      <Link
+        href={href}
+        className="relative h-10 w-10 shrink-0 overflow-hidden rounded-sm bg-zinc-200 dark:bg-zinc-800"
+      >
+        <Image src={thumb} alt="" fill className="object-cover" sizes="40px" />
+      </Link>
+
+      <Link href={href} className="min-w-0">
+        <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+          {moment.track_title || "Untitled track"}
+        </p>
+        <p className="truncate text-xs text-zinc-500">
+          {moment.track_artist || "Unknown artist"}
+          {moment.set_title ? ` · ${moment.set_title}` : ""}
+        </p>
+      </Link>
+
+      <Link
+        href={href}
+        className="hidden font-mono text-xs tabular-nums text-zinc-500 sm:block"
+      >
+        {moment.timestamp_label}
+      </Link>
+
+      {onDelete ? (
+        <button
+          type="button"
+          aria-label="Remove moment"
+          onClick={onDelete}
+          className="rounded-lg p-1.5 text-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      ) : (
+        <span className="font-mono text-xs tabular-nums text-zinc-500 sm:hidden">
+          {moment.timestamp_label}
+        </span>
+      )}
+    </div>
+  );
+}

@@ -14,6 +14,7 @@ A **Next.js App Router** frontend: marketing home + DJ set discovery (`/`), publ
 | Home (hero + DJ sets grid) | `src/app/page.tsx` → fetches `/api/dj-sets` |
 | Public stream + tracklist | `src/app/stream/[eventId]/page.tsx` |
 | Profile / crates / moments | `src/app/profile/page.tsx`, `src/app/profile/crates/[crateId]/page.tsx` |
+| Public shareable profile | `src/app/u/[username]/page.tsx`, crates at `.../crates/[crateId]` |
 | Profile data libs | `src/app/lib/profile/{profile,crates,moments}.ts` |
 | Auth (login + JWT cookie) | `src/app/login/page.tsx`, `src/app/lib/auth/*`, `POST /api/auth/token` |
 | DJ sets proxy | `src/app/api/dj-sets/route.ts` |

@@ -57,8 +57,10 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 | `/stream/[eventId]/photo-upload` | Photo upload for a legacy hosted event |
 | `/policy`, `/feedback`, `/contact` | Static-ish content + forms writing to Supabase utilities |
 | `/login` | Login / sign-up (Supabase + JWT cookie) → `/profile` |
-| `/profile` | Listener profile: crates + moments (JWT-protected) |
-| `/profile/crates/[crateId]` | Customize a crate and its saved sets |
+| `/profile` | Your profile: edit, share, crates + moments (JWT-protected) |
+| `/profile/crates/[crateId]` | Own crate (Spotify-style playlist view) |
+| `/u/[username]` | **Public shareable profile** |
+| `/u/[username]/crates/[crateId]` | Public crate view |
 
 ---
 
@@ -83,7 +85,7 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 
 ### Profiles / crates / moments
 
-Run `supabase/migrations/001_profiles_crates_moments.sql` in the Supabase SQL editor once. Tables: `profiles`, `crates`, `crate_sets`, `moments` (RLS: owner-only).
+Run `supabase/migrations/001_profiles_crates_moments.sql`, then `002_profile_on_signup_trigger.sql`, then `003_public_profile_read.sql` in the Supabase SQL editor. Tables: `profiles`, `crates`, `crate_sets`, `moments` (public read; owner-only write).
 
 ---
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import { useUserId } from "@/app/components/profile/UserProvider";
 import {
   getCrate,
@@ -13,7 +13,8 @@ import {
   type Crate,
   type CrateSet,
 } from "@/app/lib/profile/crates";
-import { StreamCard } from "@/app/components/dj-sets/StreamCard";
+import { CrateCover } from "@/app/components/profile/CrateCover";
+import { CrateSetRow } from "@/app/components/profile/CrateSetRow";
 
 export default function CrateDetailPage() {
   const { crateId } = useParams<{ crateId: string }>();
@@ -23,6 +24,7 @@ export default function CrateDetailPage() {
   const [sets, setSets] = useState<CrateSet[]>([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -51,6 +53,15 @@ export default function CrateDetailPage() {
     refresh();
   }, [refresh]);
 
+  const thumbnails = useMemo(
+    () =>
+      sets
+        .map((s) => s.thumbnail)
+        .filter((t): t is string => Boolean(t))
+        .slice(0, 4),
+    [sets]
+  );
+
   const handleSaveMeta = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!crateId) return;
@@ -59,6 +70,7 @@ export default function CrateDetailPage() {
         name: name.trim() || crate?.name || "Untitled",
         description: description.trim(),
       });
+      setEditing(false);
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save crate");
@@ -74,6 +86,10 @@ export default function CrateDetailPage() {
       setError(err instanceof Error ? err.message : "Could not remove set");
     }
   };
+
+  const firstSetHref = sets[0]
+    ? `/stream/${sets[0].video_id}?src=crate`
+    : null;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 pb-16 text-zinc-900 dark:text-zinc-100">
@@ -95,60 +111,121 @@ export default function CrateDetailPage() {
         <p className="text-sm text-zinc-500">Loading crate…</p>
       ) : (
         <>
-          <form onSubmit={handleSaveMeta} className="space-y-3">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="input-bends w-full text-xl font-semibold"
-              aria-label="Crate name"
+          <div className="relative overflow-hidden rounded-2xl">
+            <div
+              className="absolute inset-0 bg-gradient-to-br from-brand-from/40 via-brand-via/25 to-brand-to/35"
+              aria-hidden
             />
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-              placeholder="Optional description"
-              className="input-bends w-full resize-y"
-              aria-label="Crate description"
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-[var(--page-bg)] via-transparent to-transparent"
+              aria-hidden
             />
-            <button
-              type="submit"
-              className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950"
-            >
-              Save crate
-            </button>
-          </form>
+            <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-end sm:gap-8 sm:p-8">
+              <CrateCover
+                thumbnails={thumbnails}
+                name={crate.name}
+                size="lg"
+                className="shadow-xl"
+              />
+              <div className="min-w-0 flex-1 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-from/90">
+                  Crate
+                </p>
+                {editing ? (
+                  <form onSubmit={handleSaveMeta} className="space-y-3">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="input-bends w-full text-2xl font-bold"
+                      aria-label="Crate name"
+                    />
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={2}
+                      placeholder="Optional description"
+                      className="input-bends w-full resize-y"
+                      aria-label="Crate description"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditing(false);
+                          setName(crate.name);
+                          setDescription(crate.description ?? "");
+                        }}
+                        className="rounded-xl border border-black/10 px-3 py-2 text-sm dark:border-brand-from/20"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+                      {crate.name}
+                    </h1>
+                    {crate.description ? (
+                      <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-300">
+                        {crate.description}
+                      </p>
+                    ) : null}
+                    <p className="text-sm text-zinc-500">
+                      {sets.length} {sets.length === 1 ? "set" : "sets"}
+                    </p>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {firstSetHref ? (
+                        <Link
+                          href={firstSetHref}
+                          className="inline-flex items-center gap-2 rounded-full bg-brand-to px-5 py-2.5 text-sm font-semibold text-zinc-950 transition-transform hover:scale-[1.02]"
+                        >
+                          <Play className="h-4 w-4 fill-current" aria-hidden />
+                          Play
+                        </Link>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setEditing(true)}
+                        className="rounded-full border border-black/10 px-4 py-2 text-sm dark:border-brand-from/20"
+                      >
+                        Edit details
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
 
           {sets.length === 0 ? (
             <p className="text-sm text-zinc-500">
               This crate is empty. Add sets from home or any stream page.
             </p>
           ) : (
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {sets.map((set, index) => (
-                <li key={set.id} className="relative">
-                  <StreamCard
-                    set={{
-                      video_id: set.video_id,
-                      title: set.title,
-                      channel: set.channel,
-                      thumbnail: set.thumbnail ?? undefined,
-                    }}
-                    index={index}
-                    source="crate"
-                    showAddToCrate={false}
-                  />
-                  <button
-                    type="button"
-                    aria-label={`Remove ${set.title}`}
-                    onClick={() => handleRemove(set.video_id)}
-                    className="absolute right-2 top-2 z-10 rounded-lg bg-black/50 p-1.5 text-white backdrop-blur-sm transition-colors hover:bg-red-500/80"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </li>
+            <div className="rounded-xl border border-black/8 bg-white/40 px-1 py-1 dark:border-brand-from/15 dark:bg-black/20">
+              <div className="hidden grid-cols-[2rem_2.5rem_minmax(0,1fr)_auto] gap-3 border-b border-black/5 px-2 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:border-white/10 sm:grid">
+                <span>#</span>
+                <span />
+                <span>Title</span>
+                <span />
+              </div>
+              {sets.map((set, i) => (
+                <CrateSetRow
+                  key={set.id}
+                  set={set}
+                  index={i}
+                  onRemove={() => handleRemove(set.video_id)}
+                />
               ))}
-            </ul>
+            </div>
           )}
         </>
       )}
