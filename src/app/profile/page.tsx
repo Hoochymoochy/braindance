@@ -59,13 +59,8 @@ export default function ProfilePage() {
   };
 
   const handleDeleteCrate = async (id: string) => {
-    if (!confirm("Delete this crate and its sets?")) return;
-    try {
-      await deleteCrate(id);
-      await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete crate");
-    }
+    await deleteCrate(id);
+    await refresh();
   };
 
   const handleSaveProfile = async (patch: {
@@ -119,7 +114,18 @@ export default function ProfilePage() {
                   key={crate.id}
                   crate={crate}
                   href={`/profile/crates/${crate.id}`}
-                  onDelete={() => handleDeleteCrate(crate.id)}
+                  onDelete={async () => {
+                    try {
+                      await handleDeleteCrate(crate.id);
+                    } catch (err) {
+                      setError(
+                        err instanceof Error
+                          ? err.message
+                          : "Could not delete crate"
+                      );
+                      throw err;
+                    }
+                  }}
                 />
               ))}
             </div>

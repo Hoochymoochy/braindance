@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ListMusic, Play } from "lucide-react";
+import { ArrowLeft, ListMusic, Play } from "lucide-react";
 import {
   getCrate,
   listCrateSets,
@@ -110,9 +110,13 @@ export function StreamCrateQueue({
               {crate.name}
             </p>
           </div>
-          <span className="shrink-0 text-xs tabular-nums text-zinc-500">
-            {sets.length} {sets.length === 1 ? "set" : "sets"}
-          </span>
+          <Link
+            href="/profile"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition-colors hover:border-brand-from/40 hover:text-brand-from dark:border-brand-from/20 dark:bg-black/40 dark:text-zinc-100"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+            Back to profile
+          </Link>
         </div>
 
         <ul className="max-h-[min(40vh,320px)] space-y-0.5 overflow-y-auto overscroll-y-none px-2 py-2">

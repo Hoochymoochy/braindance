@@ -214,7 +214,7 @@ export function StreamCard({
             </span>
           </Link>
 
-          {showAddToCrate ? (
+          {showAddToCrate && userId ? (
             <button
               type="button"
               disabled={crateBusy}
@@ -242,20 +242,22 @@ export function StreamCard({
         </div>
       </div>
 
-      <AddToCrateDialog
-        open={crateOpen}
-        onClose={() => setCrateOpen(false)}
-        userId={userId}
-        set={{
-          video_id: set.video_id,
-          title: set.title,
-          channel: set.channel,
-          thumbnail:
-            upgradeYoutubeThumbnail(set.thumbnail, set.video_id) ??
-            set.thumbnail,
-        }}
-        onMembershipChange={setInCrate}
-      />
+      {showAddToCrate && userId ? (
+        <AddToCrateDialog
+          open={crateOpen}
+          onClose={() => setCrateOpen(false)}
+          userId={userId}
+          set={{
+            video_id: set.video_id,
+            title: set.title,
+            channel: set.channel,
+            thumbnail:
+              upgradeYoutubeThumbnail(set.thumbnail, set.video_id) ??
+              set.thumbnail,
+          }}
+          onMembershipChange={setInCrate}
+        />
+      ) : null}
     </>
   );
 }

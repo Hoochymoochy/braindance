@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shuffle, ChevronDown } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
@@ -52,6 +52,7 @@ export default function Home() {
   const allDjSetsRef = useRef<DjSet[]>([]);
   const heroSentinelRef = useRef<HTMLDivElement | null>(null);
   const heroPassedRef = useRef(false);
+  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const el = heroSentinelRef.current;
@@ -125,9 +126,24 @@ export default function Home() {
 
   const hasMore = visibleCount < allDjSets.length;
 
-  const loadMore = () => {
-    setVisibleCount((c) => c + PAGE_SIZE);
-  };
+  useEffect(() => {
+    if (loading || !hasMore) return;
+    const el = loadMoreSentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        setVisibleCount((c) =>
+          c >= allDjSets.length ? c : Math.min(c + PAGE_SIZE, allDjSets.length)
+        );
+      },
+      { rootMargin: "400px 0px", threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loading, hasMore, allDjSets.length, visibleCount]);
 
   const goRandomSet = async () => {
     let pool =
@@ -246,16 +262,11 @@ export default function Home() {
                 ))}
             </div>
             {!loading && hasMore && (
-              <div className="mb-8 mt-16 flex justify-center">
-                <button
-                  type="button"
-                  onClick={loadMore}
-                  className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-300/70 bg-white/70 px-6 py-3 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-brand-to/10 active:opacity-90"
-                >
-                  Load more
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-              </div>
+              <div
+                ref={loadMoreSentinelRef}
+                className="mb-8 mt-12 h-px w-full"
+                aria-hidden
+              />
             )}
           </div>
         </section>

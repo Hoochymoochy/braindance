@@ -10,13 +10,10 @@ export type Profile = {
 
 function usernameFromUser(user: {
   id: string;
-  email?: string | null;
-}): { username: string; display_name: string } {
-  const local =
-    user.email?.split("@")[0]?.replace(/[^a-zA-Z0-9._-]/g, "_") || "user";
-  // Suffix keeps username unique even if email local-part collides.
-  const username = `${local}_${user.id.replace(/-/g, "").slice(0, 8)}`;
-  return { username, display_name: local };
+}): { username: string } {
+  // Opaque tag from auth id — do not derive from email (privacy).
+  const username = user.id.replace(/-/g, "").slice(0, 8);
+  return { username };
 }
 
 /**
@@ -36,13 +33,12 @@ export async function ensureProfileForCurrentUser(): Promise<string> {
   const existing = await getProfile(user.id);
   if (existing) return user.id;
 
-  const { username, display_name } = usernameFromUser(user);
+  const { username } = usernameFromUser(user);
 
   const { error } = await supabase.from("profiles").upsert(
     {
       id: user.id,
       username,
-      display_name,
     },
     { onConflict: "id" }
   );

@@ -267,7 +267,7 @@ export function StreamTracklistSidebar({
                         </p>
                       )}
                     </div>
-                    {videoId ? (
+                    {videoId && userId ? (
                       <button
                         type="button"
                         title="Save moment to profile"

@@ -117,7 +117,7 @@ export default function CrateDetailPage() {
     <div className="mx-auto max-w-5xl space-y-8 px-4 pb-16 text-zinc-900 dark:text-zinc-100">
       <Link
         href="/profile"
-        className="inline-flex items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-brand-from"
+        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm backdrop-blur-sm transition-colors hover:border-brand-from/40 hover:text-brand-from dark:border-brand-from/20 dark:bg-black/30 dark:text-zinc-100"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Back to profile
