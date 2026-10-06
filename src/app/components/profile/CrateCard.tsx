@@ -20,7 +20,11 @@ export function CrateCard({
         href={href}
         className="flex flex-col gap-3 rounded-xl p-3 transition-colors duration-bends-fast ease-bends hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
       >
-        <CrateCover thumbnails={crate.thumbnails} name={crate.name} />
+        <CrateCover
+          thumbnails={crate.thumbnails}
+          videoIds={crate.cover_video_ids}
+          name={crate.name}
+        />
         <div className="min-w-0 px-0.5">
           <p className="truncate font-semibold text-zinc-900 dark:text-zinc-50">
             {crate.name}

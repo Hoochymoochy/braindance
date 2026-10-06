@@ -9,13 +9,18 @@ import { youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
 export function CrateSetRow({
   set,
   index,
+  crateId,
   onRemove,
 }: {
   set: CrateSet;
   index: number;
+  /** When set, stream links keep the crate queue via `?crate=`. */
+  crateId?: string;
   onRemove?: () => void;
 }) {
-  const href = `/stream/${set.video_id}?src=crate`;
+  const href = crateId
+    ? `/stream/${set.video_id}?src=crate&crate=${encodeURIComponent(crateId)}`
+    : `/stream/${set.video_id}?src=crate`;
   const thumb =
     set.thumbnail || youtubeThumbnailUrl(set.video_id, "mqdefault");
 

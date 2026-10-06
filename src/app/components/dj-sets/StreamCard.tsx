@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { trackEvent } from "@/app/lib/analytics";
 import {
   upgradeYoutubeThumbnail,
@@ -11,6 +11,11 @@ import {
 } from "@/app/lib/utils/youtube";
 import { AddToCrateDialog } from "@/app/components/profile/AddToCrateDialog";
 import { useAuthUserId } from "@/app/lib/hooks/useAuthUserId";
+import {
+  listCrateIdsContainingVideo,
+  removeSetFromAllUserCrates,
+} from "@/app/lib/profile/crates";
+import { cn } from "@/lib/utils";
 
 export type StreamCardSet = {
   video_id: string;
@@ -42,6 +47,8 @@ export function StreamCard({
   const [inView, setInView] = useState(false);
   const [enterDelay, setEnterDelay] = useState("0ms");
   const [crateOpen, setCrateOpen] = useState(false);
+  const [inCrate, setInCrate] = useState(false);
+  const [crateBusy, setCrateBusy] = useState(false);
   const userId = useAuthUserId();
   const hiResThumb =
     upgradeYoutubeThumbnail(set.thumbnail, set.video_id) ?? set.thumbnail;
@@ -50,6 +57,26 @@ export function StreamCard({
   useEffect(() => {
     setThumbSrc(hiResThumb);
   }, [hiResThumb]);
+
+  useEffect(() => {
+    if (!userId || !showAddToCrate) {
+      setInCrate(false);
+      return;
+    }
+
+    let cancelled = false;
+    listCrateIdsContainingVideo(userId, set.video_id)
+      .then((ids) => {
+        if (!cancelled) setInCrate(ids.length > 0);
+      })
+      .catch(() => {
+        if (!cancelled) setInCrate(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, set.video_id, showAddToCrate]);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -92,6 +119,28 @@ export function StreamCard({
   }, [set.video_id, set.title, set.channel, index, source]);
 
   const href = `/stream/${set.video_id}?src=${encodeURIComponent(source)}`;
+
+  const handleCrateButton = async () => {
+    if (!userId) {
+      setCrateOpen(true);
+      return;
+    }
+
+    if (inCrate) {
+      setCrateBusy(true);
+      try {
+        await removeSetFromAllUserCrates(userId, set.video_id);
+        setInCrate(false);
+      } catch {
+        setCrateOpen(true);
+      } finally {
+        setCrateBusy(false);
+      }
+      return;
+    }
+
+    setCrateOpen(true);
+  };
 
   return (
     <>
@@ -168,11 +217,26 @@ export function StreamCard({
           {showAddToCrate ? (
             <button
               type="button"
-              aria-label={`Add ${set.title} to a crate`}
-              onClick={() => setCrateOpen(true)}
-              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-black/10 text-zinc-600 transition-colors hover:border-brand-from/40 hover:bg-brand-from/10 hover:text-brand-from dark:border-brand-from/25 dark:text-zinc-300"
+              disabled={crateBusy}
+              aria-label={
+                inCrate
+                  ? `Remove ${set.title} from crates`
+                  : `Add ${set.title} to a crate`
+              }
+              aria-pressed={inCrate}
+              onClick={handleCrateButton}
+              className={cn(
+                "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-colors disabled:opacity-60",
+                inCrate
+                  ? "border-brand-from bg-brand-from text-white hover:bg-brand-from/90"
+                  : "border-black/10 text-zinc-600 hover:border-brand-from/40 hover:bg-brand-from/10 hover:text-brand-from dark:border-brand-from/25 dark:text-zinc-300"
+              )}
             >
-              <Plus className="h-3.5 w-3.5" aria-hidden />
+              {inCrate ? (
+                <Check className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+              ) : (
+                <Plus className="h-3.5 w-3.5" aria-hidden />
+              )}
             </button>
           ) : null}
         </div>
@@ -186,8 +250,11 @@ export function StreamCard({
           video_id: set.video_id,
           title: set.title,
           channel: set.channel,
-          thumbnail: set.thumbnail,
+          thumbnail:
+            upgradeYoutubeThumbnail(set.thumbnail, set.video_id) ??
+            set.thumbnail,
         }}
+        onMembershipChange={setInCrate}
       />
     </>
   );

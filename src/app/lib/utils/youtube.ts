@@ -71,6 +71,13 @@ export type YoutubeThumbnailQuality =
   | "mqdefault"
   | "default";
 
+const THUMB_QUALITY_FALLBACK: YoutubeThumbnailQuality[] = [
+  "maxresdefault",
+  "sddefault",
+  "hqdefault",
+  "mqdefault",
+];
+
 export function youtubeThumbnailUrl(
   videoId: string,
   quality: YoutubeThumbnailQuality = "maxresdefault"
@@ -87,19 +94,33 @@ export function upgradeYoutubeThumbnail(
   videoId?: string | null
 ): string | undefined {
   const fromUrl = url ? youtubeVideoIdFromThumbnailUrl(url) : null;
-  if (fromUrl) return youtubeThumbnailUrl(fromUrl, "maxresdefault");
+  const id =
+    fromUrl ||
+    (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId) ? videoId : null);
+  if (id) return youtubeThumbnailUrl(id, "maxresdefault");
 
   // Keep custom / hosted covers as-is.
   if (url) return url;
-
-  if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
-    return youtubeThumbnailUrl(videoId, "maxresdefault");
-  }
   return undefined;
 }
 
-/** Fall back when `maxresdefault` is missing for a video. */
+/** Next lower YouTube still when maxres is missing or is YouTube’s tiny placeholder. */
 export function youtubeThumbnailFallbackUrl(url: string): string {
+  const id = youtubeVideoIdFromThumbnailUrl(url);
+  if (id) {
+    const match = url.match(
+      /\/(maxresdefault|sddefault|hqdefault|mqdefault|default)\./i
+    );
+    const current = (match?.[1]?.toLowerCase() ??
+      "maxresdefault") as YoutubeThumbnailQuality;
+    const idx = THUMB_QUALITY_FALLBACK.indexOf(current);
+    const next =
+      idx >= 0 && idx < THUMB_QUALITY_FALLBACK.length - 1
+        ? THUMB_QUALITY_FALLBACK[idx + 1]
+        : "hqdefault";
+    return youtubeThumbnailUrl(id, next);
+  }
+
   return url.replace(
     /\/(maxresdefault|sddefault|hqdefault|mqdefault|default)\.(jpg|webp|jpeg)(\?.*)?$/i,
     "/hqdefault.jpg"
@@ -109,7 +130,8 @@ export function youtubeThumbnailFallbackUrl(url: string): string {
 function youtubeVideoIdFromThumbnailUrl(url: string): string | null {
   try {
     const u = new URL(url);
-    if (u.hostname !== "i.ytimg.com") return null;
+    const host = u.hostname.replace(/^www\./, "");
+    if (host !== "i.ytimg.com" && host !== "img.youtube.com") return null;
     const match = u.pathname.match(
       /^\/vi(?:_webp)?\/([a-zA-Z0-9_-]{11})\//
     );

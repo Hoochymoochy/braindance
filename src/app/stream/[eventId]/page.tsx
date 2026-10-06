@@ -21,6 +21,7 @@ import {
 } from "@/app/lib/utils/youtube";
 import { trackEvent } from "@/app/lib/analytics";
 import { useYoutubePlaybackAnalytics } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
+import { StreamCrateQueue } from "@/app/components/stream/StreamCrateQueue";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
 
@@ -147,15 +148,19 @@ export default function BraindanceUserStream() {
   );
   const [isPlayerActivated, setIsPlayerActivated] = useState(false);
   const [analyticsSource, setAnalyticsSource] = useState<string | undefined>();
+  const [crateId, setCrateId] = useState<string | null>(null);
 
   useEffect(() => {
     try {
-      const src = new URLSearchParams(window.location.search).get("src");
+      const params = new URLSearchParams(window.location.search);
+      const src = params.get("src");
       if (src) setAnalyticsSource(src);
+      const crate = params.get("crate");
+      setCrateId(crate && crate.length > 0 ? crate : null);
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [eventId]);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -551,6 +556,13 @@ export default function BraindanceUserStream() {
                   />
                 </aside>
               </div>
+              {crateId ? (
+                <StreamCrateQueue
+                  crateId={crateId}
+                  currentVideoId={eventId}
+                  className="mb-4 md:mb-6"
+                />
+              ) : null}
             </>
           ) : (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -595,6 +607,13 @@ export default function BraindanceUserStream() {
                     </div>
                   )}
                 </div>
+                {crateId ? (
+                  <StreamCrateQueue
+                    crateId={crateId}
+                    currentVideoId={eventId}
+                    className="mt-6"
+                  />
+                ) : null}
               </div>
 
               <div>

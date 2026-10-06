@@ -2,13 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check, Plus } from "lucide-react";
 import {
   addSetToCrate,
   createCrate,
-  listCrates,
-  type Crate,
+  listCrateIdsContainingVideo,
+  listCratesWithPreviews,
+  removeSetFromCrate,
+  type CratePreview,
   type CrateSetInput,
 } from "@/app/lib/profile/crates";
+import { CrateCover } from "@/app/components/profile/CrateCover";
+import { upgradeYoutubeThumbnail, youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
 import { cn } from "@/lib/utils";
 
 type AddToCrateDialogProps = {
@@ -16,6 +21,8 @@ type AddToCrateDialogProps = {
   onClose: () => void;
   userId: string | null;
   set: CrateSetInput;
+  /** Fired whenever membership for this set changes (add or remove). */
+  onMembershipChange?: (inAnyCrate: boolean) => void;
 };
 
 export function AddToCrateDialog({
@@ -23,14 +30,16 @@ export function AddToCrateDialog({
   onClose,
   userId,
   set,
+  onMembershipChange,
 }: AddToCrateDialogProps) {
   const router = useRouter();
-  const [crates, setCrates] = useState<Crate[]>([]);
+  const [crates, setCrates] = useState<CratePreview[]>([]);
+  const [inCrateIds, setInCrateIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [error, setError] = useState("");
-  const [done, setDone] = useState("");
 
   useEffect(() => {
     if (!open || !userId) return;
@@ -38,11 +47,17 @@ export function AddToCrateDialog({
     let cancelled = false;
     setLoading(true);
     setError("");
-    setDone("");
+    setCreating(false);
+    setNewName("");
 
-    listCrates(userId)
-      .then((rows) => {
-        if (!cancelled) setCrates(rows);
+    Promise.all([
+      listCratesWithPreviews(userId),
+      listCrateIdsContainingVideo(userId, set.video_id),
+    ])
+      .then(([rows, containing]) => {
+        if (cancelled) return;
+        setCrates(rows);
+        setInCrateIds(new Set(containing));
       })
       .catch((err) => {
         if (!cancelled) {
@@ -56,7 +71,44 @@ export function AddToCrateDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, userId]);
+  }, [open, userId, set.video_id]);
+
+  const syncMembership = (next: Set<string>) => {
+    setInCrateIds(next);
+    onMembershipChange?.(next.size > 0);
+  };
+
+  const hiResThumb =
+    upgradeYoutubeThumbnail(set.thumbnail, set.video_id) ??
+    youtubeThumbnailUrl(set.video_id);
+
+  const patchCover = (crate: CratePreview, adding: boolean): CratePreview => {
+    if (adding) {
+      const thumbnails = crate.thumbnails.includes(hiResThumb)
+        ? crate.thumbnails
+        : [...crate.thumbnails, hiResThumb].slice(0, 4);
+      const cover_video_ids = crate.cover_video_ids.includes(set.video_id)
+        ? crate.cover_video_ids
+        : [...crate.cover_video_ids, set.video_id].slice(0, 4);
+      return {
+        ...crate,
+        set_count: crate.set_count + 1,
+        thumbnails,
+        cover_video_ids,
+      };
+    }
+
+    const idx = crate.cover_video_ids.indexOf(set.video_id);
+    return {
+      ...crate,
+      set_count: Math.max(0, crate.set_count - 1),
+      thumbnails:
+        idx >= 0
+          ? crate.thumbnails.filter((_, i) => i !== idx)
+          : crate.thumbnails.filter((t) => t !== hiResThumb),
+      cover_video_ids: crate.cover_video_ids.filter((id) => id !== set.video_id),
+    };
+  };
 
   if (!open) return null;
 
@@ -91,15 +143,29 @@ export function AddToCrateDialog({
     );
   }
 
-  const handleAdd = async (crateId: string) => {
+  const handleToggle = async (crateId: string) => {
     setSaving(crateId);
     setError("");
     try {
-      await addSetToCrate(crateId, set);
-      setDone("Added to crate");
-      setTimeout(onClose, 700);
+      if (inCrateIds.has(crateId)) {
+        await removeSetFromCrate(crateId, set.video_id);
+        const next = new Set(inCrateIds);
+        next.delete(crateId);
+        syncMembership(next);
+        setCrates((prev) =>
+          prev.map((c) => (c.id === crateId ? patchCover(c, false) : c))
+        );
+      } else {
+        await addSetToCrate(crateId, set);
+        const next = new Set(inCrateIds);
+        next.add(crateId);
+        syncMembership(next);
+        setCrates((prev) =>
+          prev.map((c) => (c.id === crateId ? patchCover(c, true) : c))
+        );
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not add set");
+      setError(err instanceof Error ? err.message : "Could not update crate");
     } finally {
       setSaving(null);
     }
@@ -116,8 +182,18 @@ export function AddToCrateDialog({
     try {
       const crate = await createCrate(name);
       await addSetToCrate(crate.id, set);
-      setDone(`Saved to ${crate.name}`);
-      setTimeout(onClose, 700);
+      const preview: CratePreview = {
+        ...crate,
+        set_count: 1,
+        thumbnails: [hiResThumb],
+        cover_video_ids: [set.video_id],
+      };
+      setCrates((prev) => [preview, ...prev]);
+      const next = new Set(inCrateIds);
+      next.add(crate.id);
+      syncMembership(next);
+      setNewName("");
+      setCreating(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create crate");
     } finally {
@@ -131,74 +207,130 @@ export function AddToCrateDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="add-to-crate-title"
-        className="glass-bends w-full max-w-md rounded-2xl p-6 shadow-lg"
+        className="glass-bends w-full max-w-lg rounded-2xl p-6 shadow-lg sm:p-7"
       >
-        <h2
-          id="add-to-crate-title"
-          className="text-lg font-semibold text-gradient-bends"
-        >
-          Add to crate
-        </h2>
-        <p className="mt-1 truncate text-sm text-zinc-500">{set.title}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2
+              id="add-to-crate-title"
+              className="text-lg font-semibold text-gradient-bends sm:text-xl"
+            >
+              Add to crate
+            </h2>
+            <p className="mt-1 truncate text-sm text-zinc-500">{set.title}</p>
+          </div>
+          {!creating ? (
+            <button
+              type="button"
+              disabled={saving !== null}
+              onClick={() => {
+                setCreating(true);
+                setError("");
+              }}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-brand-to/50 bg-brand-to/80 px-3.5 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Create crate
+            </button>
+          ) : null}
+        </div>
+
+        {creating ? (
+          <form
+            className="mt-3 flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleCreateAndAdd();
+            }}
+          >
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Crate name"
+              className="input-bends flex-1"
+              aria-label="Crate name"
+              autoFocus
+              disabled={saving !== null}
+            />
+            <button
+              type="submit"
+              disabled={saving !== null || !newName.trim()}
+              className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
+            >
+              {saving === "new" ? "…" : "Create"}
+            </button>
+            <button
+              type="button"
+              disabled={saving !== null}
+              onClick={() => {
+                setCreating(false);
+                setNewName("");
+              }}
+              className="rounded-xl border border-black/10 px-3 py-2 text-sm dark:border-brand-from/20"
+            >
+              Cancel
+            </button>
+          </form>
+        ) : null}
 
         {error ? (
           <p className="mt-3 text-sm text-red-400" role="alert">
             {error}
           </p>
         ) : null}
-        {done ? (
-          <p className="mt-3 text-sm text-brand-from" role="status">
-            {done}
-          </p>
-        ) : null}
 
-        <div className="mt-4 max-h-48 space-y-1 overflow-y-auto">
+        <div className="mt-5 max-h-72 space-y-2 overflow-y-auto">
           {loading ? (
             <p className="text-sm text-zinc-500">Loading crates…</p>
           ) : crates.length === 0 ? (
             <p className="text-sm text-zinc-500">
-              No crates yet — create one below.
+              No crates yet — hit Create crate above.
             </p>
           ) : (
-            crates.map((crate) => (
-              <button
-                key={crate.id}
-                type="button"
-                disabled={saving !== null}
-                onClick={() => handleAdd(crate.id)}
-                className={cn(
-                  "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
-                  "hover:bg-black/[0.04] dark:hover:bg-brand-from/10",
-                  saving === crate.id && "opacity-60"
-                )}
-              >
-                <span className="font-medium text-zinc-800 dark:text-zinc-100">
-                  {crate.name}
-                </span>
-                <span className="text-xs text-brand-from">
-                  {saving === crate.id ? "Adding…" : "Add"}
-                </span>
-              </button>
-            ))
+            crates.map((crate) => {
+              const alreadyIn = inCrateIds.has(crate.id);
+              return (
+                <button
+                  key={crate.id}
+                  type="button"
+                  disabled={saving !== null}
+                  onClick={() => handleToggle(crate.id)}
+                  className={cn(
+                    "flex w-full items-center gap-3.5 rounded-xl px-2.5 py-2.5 text-left text-sm transition-colors",
+                    "hover:bg-black/[0.04] dark:hover:bg-brand-from/10",
+                    saving === crate.id && "opacity-60"
+                  )}
+                >
+                  <CrateCover
+                    thumbnails={crate.thumbnails}
+                    videoIds={crate.cover_video_ids}
+                    name={crate.name}
+                    size="sm"
+                    className="shadow-sm"
+                  />
+                  <span className="min-w-0 flex-1 truncate text-base font-medium text-zinc-800 dark:text-zinc-100">
+                    {crate.name}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors",
+                      alreadyIn
+                        ? "border-brand-from bg-brand-from text-white"
+                        : "border-black/10 text-zinc-600 dark:border-brand-from/25 dark:text-zinc-300"
+                    )}
+                    aria-hidden
+                  >
+                    {alreadyIn ? (
+                      <Check className="h-4 w-4" strokeWidth={2.25} />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </span>
+                </button>
+              );
+            })
           )}
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="New crate name"
-            className="input-bends flex-1"
-          />
-          <button
-            type="button"
-            disabled={saving !== null}
-            onClick={handleCreateAndAdd}
-            className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
-          >
-            {saving === "new" ? "…" : "Create"}
-          </button>
         </div>
 
         <button

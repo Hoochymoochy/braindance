@@ -1,5 +1,6 @@
 import { supabase } from "@/app/lib/utils/supabaseClient";
 import { ensureProfileForCurrentUser } from "@/app/lib/profile/profile";
+import { upgradeYoutubeThumbnail, youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
 
 export type Crate = {
   id: string;
@@ -41,6 +42,8 @@ export async function listCrates(userId: string): Promise<Crate[]> {
 export type CratePreview = Crate & {
   set_count: number;
   thumbnails: string[];
+  /** Video ids for the same first-four sets as `thumbnails` (cover upgrades). */
+  cover_video_ids: string[];
 };
 
 export async function listCratesWithPreviews(
@@ -48,7 +51,7 @@ export async function listCratesWithPreviews(
 ): Promise<CratePreview[]> {
   const { data, error } = await supabase
     .from("crates")
-    .select("*, crate_sets(thumbnail, video_id)")
+    .select("*, crate_sets(thumbnail, video_id, added_at)")
     .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -56,17 +59,30 @@ export async function listCratesWithPreviews(
 
   return (data ?? []).map((row) => {
     const { crate_sets: sets, ...crate } = row as Crate & {
-      crate_sets: { thumbnail: string | null; video_id: string }[] | null;
+      crate_sets:
+        | { thumbnail: string | null; video_id: string; added_at: string }[]
+        | null;
     };
-    const thumbnails = (sets ?? [])
-      .map((s) => s.thumbnail)
-      .filter((t): t is string => Boolean(t))
-      .slice(0, 4);
+    const ordered = [...(sets ?? [])].sort(
+      (a, b) =>
+        new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
+    );
+    const coverSets = ordered.slice(0, 4);
+    const thumbnails = coverSets
+      .map(
+        (s) =>
+          upgradeYoutubeThumbnail(s.thumbnail, s.video_id) ??
+          s.thumbnail ??
+          youtubeThumbnailUrl(s.video_id)
+      )
+      .filter((t): t is string => Boolean(t));
+    const cover_video_ids = coverSets.map((s) => s.video_id);
 
     return {
       ...(crate as Crate),
       set_count: sets?.length ?? 0,
       thumbnails,
+      cover_video_ids,
     };
   });
 }
@@ -127,10 +143,31 @@ export async function listCrateSets(crateId: string): Promise<CrateSet[]> {
   return data ?? [];
 }
 
+/** Crate ids owned by `userId` that already include this video. */
+export async function listCrateIdsContainingVideo(
+  userId: string,
+  videoId: string
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("crate_sets")
+    .select("crate_id, crates!inner(user_id)")
+    .eq("video_id", videoId)
+    .eq("crates.user_id", userId);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => row.crate_id as string);
+}
+
 export async function addSetToCrate(
   crateId: string,
   set: CrateSetInput
 ): Promise<CrateSet> {
+  const thumbnail =
+    upgradeYoutubeThumbnail(set.thumbnail, set.video_id) ??
+    (set.video_id ? youtubeThumbnailUrl(set.video_id) : null) ??
+    set.thumbnail ??
+    null;
+
   const { data, error } = await supabase
     .from("crate_sets")
     .upsert(
@@ -140,7 +177,7 @@ export async function addSetToCrate(
           video_id: set.video_id,
           title: set.title,
           channel: set.channel,
-          thumbnail: set.thumbnail ?? null,
+          thumbnail,
         },
       ],
       { onConflict: "crate_id,video_id" }
@@ -167,6 +204,23 @@ export async function removeSetFromCrate(
     .delete()
     .eq("crate_id", crateId)
     .eq("video_id", videoId);
+
+  if (error) throw new Error(error.message);
+}
+
+/** Removes this video from every crate owned by `userId`. */
+export async function removeSetFromAllUserCrates(
+  userId: string,
+  videoId: string
+): Promise<void> {
+  const crateIds = await listCrateIdsContainingVideo(userId, videoId);
+  if (crateIds.length === 0) return;
+
+  const { error } = await supabase
+    .from("crate_sets")
+    .delete()
+    .eq("video_id", videoId)
+    .in("crate_id", crateIds);
 
   if (error) throw new Error(error.message);
 }

@@ -14,6 +14,7 @@ import {
   type Crate,
   type CrateSet,
 } from "@/app/lib/profile/crates";
+import { upgradeYoutubeThumbnail, youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
 import { CrateCover } from "@/app/components/profile/CrateCover";
 import { CrateSetRow } from "@/app/components/profile/CrateSetRow";
 
@@ -56,18 +57,39 @@ export default function PublicCratePage() {
     load();
   }, [load]);
 
-  const thumbnails = useMemo(
+  const thumbnails = useMemo(() => {
+    const coverSets = [...sets]
+      .sort(
+        (a, b) =>
+          new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
+      )
+      .slice(0, 4);
+    return {
+      urls: coverSets
+        .map(
+          (s) =>
+            upgradeYoutubeThumbnail(s.thumbnail, s.video_id) ??
+            s.thumbnail ??
+            youtubeThumbnailUrl(s.video_id)
+        )
+        .filter((t): t is string => Boolean(t)),
+      videoIds: coverSets.map((s) => s.video_id),
+    };
+  }, [sets]);
+
+  const playOrder = useMemo(
     () =>
-      sets
-        .map((s) => s.thumbnail)
-        .filter((t): t is string => Boolean(t))
-        .slice(0, 4),
+      [...sets].sort(
+        (a, b) =>
+          new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
+      ),
     [sets]
   );
 
-  const firstSetHref = sets[0]
-    ? `/stream/${sets[0].video_id}?src=crate`
-    : null;
+  const firstSetHref =
+    playOrder[0] && crateId
+      ? `/stream/${playOrder[0].video_id}?src=crate&crate=${encodeURIComponent(crateId)}`
+      : null;
 
   const backHref = profile
     ? `/u/${encodeURIComponent(profile.username)}`
@@ -111,7 +133,8 @@ export default function PublicCratePage() {
             />
             <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-end sm:gap-8 sm:p-8">
               <CrateCover
-                thumbnails={thumbnails}
+                thumbnails={thumbnails.urls}
+                videoIds={thumbnails.videoIds}
                 name={crate.name}
                 size="lg"
                 className="shadow-xl"
@@ -157,7 +180,12 @@ export default function PublicCratePage() {
           ) : (
             <div className="rounded-xl border border-black/8 bg-white/40 px-1 py-1 dark:border-brand-from/15 dark:bg-black/20">
               {sets.map((set, i) => (
-                <CrateSetRow key={set.id} set={set} index={i} />
+                <CrateSetRow
+                  key={set.id}
+                  set={set}
+                  index={i}
+                  crateId={crateId}
+                />
               ))}
             </div>
           )}

@@ -13,6 +13,7 @@ import {
   type Crate,
   type CrateSet,
 } from "@/app/lib/profile/crates";
+import { upgradeYoutubeThumbnail, youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
 import { CrateCover } from "@/app/components/profile/CrateCover";
 import { CrateSetRow } from "@/app/components/profile/CrateSetRow";
 
@@ -53,14 +54,25 @@ export default function CrateDetailPage() {
     refresh();
   }, [refresh]);
 
-  const thumbnails = useMemo(
-    () =>
-      sets
-        .map((s) => s.thumbnail)
-        .filter((t): t is string => Boolean(t))
-        .slice(0, 4),
-    [sets]
-  );
+  const thumbnails = useMemo(() => {
+    const coverSets = [...sets]
+      .sort(
+        (a, b) =>
+          new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
+      )
+      .slice(0, 4);
+    return {
+      urls: coverSets
+        .map(
+          (s) =>
+            upgradeYoutubeThumbnail(s.thumbnail, s.video_id) ??
+            s.thumbnail ??
+            youtubeThumbnailUrl(s.video_id)
+        )
+        .filter((t): t is string => Boolean(t)),
+      videoIds: coverSets.map((s) => s.video_id),
+    };
+  }, [sets]);
 
   const handleSaveMeta = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,9 +99,19 @@ export default function CrateDetailPage() {
     }
   };
 
-  const firstSetHref = sets[0]
-    ? `/stream/${sets[0].video_id}?src=crate`
-    : null;
+  const playOrder = useMemo(
+    () =>
+      [...sets].sort(
+        (a, b) =>
+          new Date(a.added_at).getTime() - new Date(b.added_at).getTime()
+      ),
+    [sets]
+  );
+
+  const firstSetHref =
+    playOrder[0] && crateId
+      ? `/stream/${playOrder[0].video_id}?src=crate&crate=${encodeURIComponent(crateId)}`
+      : null;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 pb-16 text-zinc-900 dark:text-zinc-100">
@@ -122,7 +144,8 @@ export default function CrateDetailPage() {
             />
             <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-end sm:gap-8 sm:p-8">
               <CrateCover
-                thumbnails={thumbnails}
+                thumbnails={thumbnails.urls}
+                videoIds={thumbnails.videoIds}
                 name={crate.name}
                 size="lg"
                 className="shadow-xl"
@@ -222,6 +245,7 @@ export default function CrateDetailPage() {
                   key={set.id}
                   set={set}
                   index={i}
+                  crateId={crateId}
                   onRemove={() => handleRemove(set.video_id)}
                 />
               ))}
