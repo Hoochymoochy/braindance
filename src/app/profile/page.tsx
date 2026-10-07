@@ -14,15 +14,26 @@ import {
   listCratesWithPreviews,
   type CratePreview,
 } from "@/app/lib/profile/crates";
+import {
+  deleteMoment,
+  listMoments,
+  MAX_FAVORITE_MOMENTS,
+  pickTopMoments,
+  setMomentFavorite,
+  sortMomentsForProfile,
+  type Moment,
+} from "@/app/lib/profile/moments";
 import { supabase } from "@/app/lib/utils/supabaseClient";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
 import { CrateCard } from "@/app/components/profile/CrateCard";
 import { CreateCrateTile } from "@/app/components/profile/CreateCrateTile";
+import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [crates, setCrates] = useState<CratePreview[]>([]);
+  const [moments, setMoments] = useState<Moment[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -31,18 +42,24 @@ export default function ProfilePage() {
     setError("");
     try {
       const id = await ensureProfileForCurrentUser();
-      const [p, c] = await Promise.all([
+      const [p, c, m] = await Promise.all([
         getProfile(id),
         listCratesWithPreviews(id),
+        listMoments(id),
       ]);
       setProfile(p);
       setCrates(c);
+      setMoments(sortMomentsForProfile(m));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile");
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const favoriteCount = moments.filter(
+    (m) => typeof m.favorite_rank === "number"
+  ).length;
 
   useEffect(() => {
     refresh();
@@ -93,6 +110,7 @@ export default function ProfilePage() {
           <ProfileHeader
             profile={profile}
             isOwner
+            topMoments={pickTopMoments(moments)}
             onSave={handleSaveProfile}
             onLogout={handleLogout}
           />
@@ -129,6 +147,59 @@ export default function ProfilePage() {
                 />
               ))}
             </div>
+          </section>
+
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Moments</h2>
+              <p className="mt-1 text-sm text-zinc-500">
+                Moments grouped by set — open one to see the tracklist. Star up
+                to {MAX_FAVORITE_MOMENTS} for your profile card.
+              </p>
+            </div>
+
+            {moments.length === 0 ? (
+              <p className="text-sm text-zinc-500">
+                No moments yet. Save a track from any stream page.
+              </p>
+            ) : (
+              <MomentsSetFolders
+                moments={moments}
+                favoriteCount={favoriteCount}
+                maxFavorites={MAX_FAVORITE_MOMENTS}
+                onToggleFavorite={async (moment) => {
+                  try {
+                    const next = typeof moment.favorite_rank !== "number";
+                    const updated = await setMomentFavorite(moment.id, next);
+                    setMoments((prev) =>
+                      sortMomentsForProfile(
+                        prev.map((m) => (m.id === updated.id ? updated : m))
+                      )
+                    );
+                  } catch (err) {
+                    setError(
+                      err instanceof Error
+                        ? err.message
+                        : "Could not update favorite"
+                    );
+                  }
+                }}
+                onDelete={async (moment) => {
+                  try {
+                    await deleteMoment(moment.id);
+                    setMoments((prev) =>
+                      prev.filter((m) => m.id !== moment.id)
+                    );
+                  } catch (err) {
+                    setError(
+                      err instanceof Error
+                        ? err.message
+                        : "Could not delete moment"
+                    );
+                  }
+                }}
+              />
+            )}
           </section>
         </>
       )}

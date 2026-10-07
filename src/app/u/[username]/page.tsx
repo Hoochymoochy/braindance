@@ -10,10 +10,15 @@ import {
   listCratesWithPreviews,
   type CratePreview,
 } from "@/app/lib/profile/crates";
-import { listMoments, type Moment } from "@/app/lib/profile/moments";
+import {
+  listMoments,
+  pickTopMoments,
+  sortMomentsForProfile,
+  type Moment,
+} from "@/app/lib/profile/moments";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
 import { CrateCard } from "@/app/components/profile/CrateCard";
-import { MomentsTrackRow } from "@/app/components/profile/MomentsTrackRow";
+import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
 
 export default function PublicProfilePage() {
   const { username } = useParams<{ username: string }>();
@@ -43,7 +48,7 @@ export default function PublicProfilePage() {
       ]);
       setProfile(p);
       setCrates(c);
-      setMoments(m);
+      setMoments(sortMomentsForProfile(m));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile");
     } finally {
@@ -75,7 +80,10 @@ export default function PublicProfilePage() {
         </div>
       ) : (
         <>
-          <ProfileHeader profile={profile} />
+          <ProfileHeader
+            profile={profile}
+            topMoments={pickTopMoments(moments)}
+          />
 
           <section className="space-y-4">
             <div>
@@ -111,15 +119,7 @@ export default function PublicProfilePage() {
             {moments.length === 0 ? (
               <p className="text-sm text-zinc-500">No moments shared yet.</p>
             ) : (
-              <div className="rounded-xl border border-black/8 bg-white/40 px-1 py-1 dark:border-brand-from/15 dark:bg-black/20">
-                {moments.map((moment, i) => (
-                  <MomentsTrackRow
-                    key={moment.id}
-                    moment={moment}
-                    index={i}
-                  />
-                ))}
-              </div>
+              <MomentsSetFolders moments={moments} />
             )}
           </section>
         </>

@@ -4,16 +4,21 @@ import { useState } from "react";
 import { Check, Link2, LogOut, Pencil } from "lucide-react";
 import type { Profile } from "@/app/lib/profile/profile";
 import { profileSharePath } from "@/app/lib/profile/profile";
+import type { Moment } from "@/app/lib/profile/moments";
+import { ProfileMomentSpotlight } from "@/app/components/profile/ProfileMomentSpotlight";
 import { cn } from "@/lib/utils";
 
 export function ProfileHeader({
   profile,
   isOwner,
+  topMoments = [],
   onSave,
   onLogout,
 }: {
   profile: Profile;
   isOwner?: boolean;
+  /** Up to three moments shown beside the name dashboard. */
+  topMoments?: Moment[];
   onSave?: (patch: { display_name: string; bio: string }) => Promise<void>;
   onLogout?: () => void;
 }) {
@@ -114,67 +119,75 @@ export function ProfileHeader({
           aria-hidden
         />
 
-        <div className="relative space-y-3 p-6 sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-from/90">
-            Profile
-          </p>
+        <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10 sm:p-8">
+          <div className="min-w-0 flex-1 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-from/90">
+              Profile
+            </p>
 
-          {editing ? (
-            <div className="space-y-3">
-              <input
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="input-bends w-full max-w-md text-2xl font-bold"
-                placeholder="Display name"
-                aria-label="Display name"
-              />
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={2}
-                className="input-bends w-full max-w-lg resize-y"
-                placeholder="A short bio"
-                aria-label="Bio"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={handleSave}
-                  className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
-                >
-                  {saving ? "Saving…" : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(false);
-                    setDisplayName(profile.display_name ?? "");
-                    setBio(profile.bio ?? "");
-                  }}
-                  className="rounded-xl border border-black/10 px-3 py-2 text-sm dark:border-brand-from/20"
-                >
-                  Cancel
-                </button>
+            {editing ? (
+              <div className="space-y-3">
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="input-bends w-full max-w-md text-2xl font-bold"
+                  placeholder="Display name"
+                  aria-label="Display name"
+                />
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={2}
+                  className="input-bends w-full max-w-lg resize-y"
+                  placeholder="A short bio"
+                  aria-label="Bio"
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={handleSave}
+                    className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
+                  >
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(false);
+                      setDisplayName(profile.display_name ?? "");
+                      setBio(profile.bio ?? "");
+                    }}
+                    className="rounded-xl border border-black/10 px-3 py-2 text-sm dark:border-brand-from/20"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+                  {title}
+                </h1>
+                <p className="text-sm text-zinc-500">@{profile.username}</p>
+                {profile.bio ? (
+                  <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-300">
+                    {profile.bio}
+                  </p>
+                ) : isOwner ? (
+                  <p className="text-sm text-zinc-400">
+                    Add a bio so people know your vibe.
+                  </p>
+                ) : null}
+              </>
+            )}
+          </div>
+
+          {!editing ? (
+            <div className="min-w-0 w-full flex-1 sm:max-w-md">
+              <ProfileMomentSpotlight moments={topMoments.slice(0, 3)} />
             </div>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
-                {title}
-              </h1>
-              <p className="text-sm text-zinc-500">@{profile.username}</p>
-              {profile.bio ? (
-                <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-300">
-                  {profile.bio}
-                </p>
-              ) : isOwner ? (
-                <p className="text-sm text-zinc-400">
-                  Add a bio so people know your vibe.
-                </p>
-              ) : null}
-            </>
-          )}
+          ) : null}
         </div>
       </header>
     </div>

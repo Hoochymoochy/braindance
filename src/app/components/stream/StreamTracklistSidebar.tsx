@@ -2,11 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Music2, BookmarkPlus } from "lucide-react";
+import { BookmarkCheck, ChevronDown, Music2, BookmarkPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent, type SetAnalyticsMeta } from "@/app/lib/analytics";
-import { addMoment } from "@/app/lib/profile/moments";
+import {
+  addMoment,
+  deleteMoment,
+  listMomentsForVideo,
+} from "@/app/lib/profile/moments";
 import { useAuthUserId } from "@/app/lib/hooks/useAuthUserId";
+import { timestampToSeconds } from "@/app/lib/utils/timestamp";
 
 export type TrackRow = {
   id: string;
@@ -67,11 +72,52 @@ export function StreamTracklistSidebar({
   const userId = useAuthUserId();
   const [minimized, setMinimized] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [savedId, setSavedId] = useState<string | null>(null);
+  /** track row id → saved moment id (so we can unsave). */
+  const [savedByTrackId, setSavedByTrackId] = useState<Map<string, string>>(
+    () => new Map()
+  );
   const [saveError, setSaveError] = useState("");
   const openedTrackedRef = useRef(false);
   const analyticsRef = useRef(analytics);
   analyticsRef.current = analytics;
+
+  const momentKey = (timestamp: string, title: string, artist: string) =>
+    `${timestampToSeconds(timestamp)}|${title.trim().toLowerCase()}|${artist.trim().toLowerCase()}`;
+
+  useEffect(() => {
+    if (!userId || !videoId || tracks.length === 0) {
+      setSavedByTrackId(new Map());
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const existing = await listMomentsForVideo(userId, videoId);
+        if (cancelled) return;
+        const byKey = new Map(
+          existing.map((m) => [
+            `${m.timestamp_seconds}|${m.track_title.trim().toLowerCase()}|${m.track_artist.trim().toLowerCase()}`,
+            m.id,
+          ])
+        );
+        const next = new Map<string, string>();
+        for (const t of tracks) {
+          const momentId = byKey.get(momentKey(t.timestamp, t.title, t.artist));
+          if (momentId) next.set(t.id, momentId);
+        }
+        setSavedByTrackId(next);
+      } catch {
+        if (!cancelled) setSavedByTrackId(new Map());
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // Re-sync when the clip or tracklist identity changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, videoId, tracks]);
 
   const fireTracklistOpened = () => {
     if (openedTrackedRef.current) return;
@@ -115,7 +161,7 @@ export function StreamTracklistSidebar({
     timestamp: t.timestamp,
   });
 
-  const handleSaveMoment = async (t: TrackRow) => {
+  const handleToggleMoment = async (t: TrackRow) => {
     if (!videoId) return;
 
     if (!userId) {
@@ -123,21 +169,36 @@ export function StreamTracklistSidebar({
       return;
     }
 
+    const existingId = savedByTrackId.get(t.id);
     setSavingId(t.id);
     setSaveError("");
     try {
-      await addMoment({
-        video_id: videoId,
-        set_title: setTitle ?? analytics?.set_title ?? "",
-        track_title: t.title,
-        track_artist: t.artist,
-        timestamp_label: t.timestamp,
-      });
-      setSavedId(t.id);
-      trackEvent("moment_saved", trackPayload(t));
+      if (existingId) {
+        await deleteMoment(existingId);
+        setSavedByTrackId((prev) => {
+          const next = new Map(prev);
+          next.delete(t.id);
+          return next;
+        });
+        trackEvent("moment_removed", trackPayload(t));
+      } else {
+        const created = await addMoment({
+          video_id: videoId,
+          set_title: setTitle ?? analytics?.set_title ?? "",
+          track_title: t.title,
+          track_artist: t.artist,
+          timestamp_label: t.timestamp,
+        });
+        setSavedByTrackId((prev) => {
+          const next = new Map(prev);
+          next.set(t.id, created.id);
+          return next;
+        });
+        trackEvent("moment_saved", trackPayload(t));
+      }
     } catch (err) {
       setSaveError(
-        err instanceof Error ? err.message : "Could not save moment"
+        err instanceof Error ? err.message : "Could not update moment"
       );
     } finally {
       setSavingId(null);
@@ -267,22 +328,34 @@ export function StreamTracklistSidebar({
                         </p>
                       )}
                     </div>
-                    {videoId && userId ? (
+                    {videoId ? (
                       <button
                         type="button"
-                        title="Save moment to profile"
-                        aria-label={`Save moment: ${t.title}`}
+                        title={
+                          savedByTrackId.has(t.id)
+                            ? "Remove moment from profile"
+                            : "Save moment to profile"
+                        }
+                        aria-label={
+                          savedByTrackId.has(t.id)
+                            ? `Remove moment: ${t.title}`
+                            : `Save moment: ${t.title}`
+                        }
                         disabled={savingId === t.id}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSaveMoment(t);
+                          handleToggleMoment(t);
                         }}
                         className={cn(
-                          "shrink-0 self-start rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-brand-from/10 hover:text-brand-from",
-                          savedId === t.id && "text-brand-from"
+                          "shrink-0 self-start rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-brand-from/10 hover:text-brand-from disabled:opacity-60",
+                          savedByTrackId.has(t.id) && "text-brand-from"
                         )}
                       >
-                        <BookmarkPlus className="h-3.5 w-3.5" aria-hidden />
+                        {savedByTrackId.has(t.id) ? (
+                          <BookmarkCheck className="h-3.5 w-3.5" aria-hidden />
+                        ) : (
+                          <BookmarkPlus className="h-3.5 w-3.5" aria-hidden />
+                        )}
                       </button>
                     ) : null}
                   </div>
