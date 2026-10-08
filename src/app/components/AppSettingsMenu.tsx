@@ -126,20 +126,6 @@ export default function AppSettingsMenu({
             </button>
           )}
 
-          {userId && !isOnProfilePage ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOpen(false);
-                router.push("/profile?edit=1");
-              }}
-              className={menuItemClass}
-            >
-              Edit profile
-            </button>
-          ) : null}
-
           <div
             role="menuitem"
             className="flex items-center justify-between gap-3 rounded-lg px-3 py-2"

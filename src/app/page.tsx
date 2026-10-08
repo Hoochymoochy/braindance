@@ -37,9 +37,46 @@ type DjSetsResponse = {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="mt-4 flex flex-col gap-1">
+    <div className="flex flex-col gap-1">
       <h2 className="text-2xl font-bold text-zinc-900">{title}</h2>
     </div>
+  );
+}
+
+function SetsSearchField({
+  value,
+  onChange,
+  onClear,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onClear: () => void;
+}) {
+  return (
+    <label className="relative block w-full max-w-sm shrink-0 sm:w-72">
+      <span className="sr-only">Search DJ sets</span>
+      <Search
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+        aria-hidden
+      />
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Search all sets…"
+        className="w-full rounded-full border border-black/10 bg-white/70 py-2.5 pl-10 pr-10 text-sm text-zinc-900 outline-none backdrop-blur-sm transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-400 focus:border-brand-from/40 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] dark:border-brand-from/20 dark:bg-black/30 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+      />
+      {value ? (
+        <button
+          type="button"
+          onClick={onClear}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
+          aria-label="Clear search"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      ) : null}
+    </label>
   );
 }
 
@@ -260,39 +297,6 @@ export default function Home() {
         <div ref={heroSentinelRef} className="h-px w-full" aria-hidden />
 
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
-          <div className="mb-10 flex flex-wrap items-center justify-between gap-3">
-            <label className="relative block w-full max-w-sm">
-              <span className="sr-only">Search DJ sets</span>
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
-                aria-hidden
-              />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search all sets…"
-                className="w-full rounded-full border border-black/10 bg-white/70 py-2.5 pl-10 pr-10 text-sm text-zinc-900 outline-none backdrop-blur-sm transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-400 focus:border-brand-from/40 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] dark:border-brand-from/20 dark:bg-black/30 dark:text-zinc-100 dark:placeholder:text-zinc-500"
-              />
-              {searchQuery ? (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
-                  aria-label="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              ) : null}
-            </label>
-            {!loading && isSearching && (
-              <p className="tabular-nums text-xs text-brand-from/65">
-                {filteredSets.length}{" "}
-                {filteredSets.length === 1 ? "result" : "results"}
-              </p>
-            )}
-          </div>
-
           {!isSearching ? (
             <div className="mb-12">
               <div className="mb-5">
@@ -315,15 +319,31 @@ export default function Home() {
           ) : null}
 
           <div>
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-              <SectionHeader
-                title={isSearching ? "Search results" : "Current DJ Sets"}
+            {/* One search input stays mounted so focus isn't lost when results kick in */}
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <SectionHeader
+                  title={isSearching ? "Search results" : "Current DJ Sets"}
+                />
+                {!loading && isSearching ? (
+                  <p
+                    className="mt-1 tabular-nums text-xs text-brand-from/65"
+                    aria-live="polite"
+                  >
+                    {filteredSets.length}{" "}
+                    {filteredSets.length === 1 ? "result" : "results"}
+                  </p>
+                ) : !loading && allDjSets.length > 0 ? (
+                  <p className="mt-1 tabular-nums text-xs text-brand-from/65">
+                    Showing {visibleDjSets.length} of {allDjSets.length}
+                  </p>
+                ) : null}
+              </div>
+              <SetsSearchField
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery("")}
               />
-              {!loading && !isSearching && allDjSets.length > 0 && (
-                <p className="tabular-nums text-xs text-brand-from/65">
-                  Showing {visibleDjSets.length} of {allDjSets.length}
-                </p>
-              )}
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading && skeletons(6)}
