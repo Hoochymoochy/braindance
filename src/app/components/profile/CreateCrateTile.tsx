@@ -33,13 +33,13 @@ export function CreateCrateTile({
 
   if (naming) {
     return (
-      <div className="flex flex-col gap-3 rounded-xl p-3">
+      <div className="flex flex-col gap-3 rounded-sm p-2">
         <div
           className={cn(
-            "flex aspect-square w-full items-center justify-center rounded-md border border-dashed border-black/15 bg-black/[0.03] dark:border-brand-from/25 dark:bg-white/[0.04]"
+            "flex aspect-square w-full items-center justify-center rounded-sm border border-dashed border-black/12 bg-black/[0.02] dark:border-white/15 dark:bg-white/[0.03]"
           )}
         >
-          <Plus className="h-10 w-10 text-zinc-400" aria-hidden />
+          <Plus className="h-8 w-8 text-zinc-400" aria-hidden />
         </div>
         <form
           className="min-w-0 space-y-2 px-0.5"
@@ -62,7 +62,7 @@ export function CreateCrateTile({
             <button
               type="submit"
               disabled={saving || !name.trim()}
-              className="rounded-lg border border-brand-to/50 bg-brand-to/80 px-2.5 py-1.5 text-xs font-semibold text-zinc-950 disabled:opacity-50"
+              className="rounded-md border border-brand-to/50 bg-brand-to/80 px-2.5 py-1.5 text-xs font-medium text-zinc-950 disabled:opacity-50"
             >
               {saving ? "Creating…" : "Create"}
             </button>
@@ -70,7 +70,7 @@ export function CreateCrateTile({
               type="button"
               disabled={saving}
               onClick={reset}
-              className="rounded-lg border border-black/10 px-2.5 py-1.5 text-xs dark:border-brand-from/20"
+              className="rounded-md border border-black/10 px-2.5 py-1.5 text-xs dark:border-white/15"
             >
               Cancel
             </button>
@@ -84,20 +84,20 @@ export function CreateCrateTile({
     <button
       type="button"
       onClick={() => setNaming(true)}
-      className="flex flex-col gap-3 rounded-xl p-3 text-left transition-colors duration-bends-fast ease-bends hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+      className="flex flex-col gap-3 rounded-sm p-2 text-left transition-opacity duration-bends-fast ease-bends hover:opacity-85"
     >
       <div
         className={cn(
-          "flex aspect-square w-full items-center justify-center rounded-md border border-dashed border-black/15 bg-black/[0.03] transition-colors hover:border-brand-from/40 hover:bg-brand-from/5 dark:border-brand-from/25 dark:bg-white/[0.04] dark:hover:border-brand-from/50"
+          "flex aspect-square w-full items-center justify-center rounded-sm border border-dashed border-black/12 bg-black/[0.02] transition-colors duration-bends-fast ease-bends hover:border-brand-from/35 dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-brand-from/40"
         )}
       >
-        <Plus className="h-10 w-10 text-zinc-500 dark:text-zinc-400" aria-hidden />
+        <Plus className="h-8 w-8 text-zinc-500 dark:text-zinc-500" aria-hidden />
       </div>
       <div className="min-w-0 px-0.5">
-        <p className="truncate font-semibold text-zinc-900 dark:text-zinc-50">
-          Create crate
+        <p className="truncate text-sm font-medium tracking-tight text-zinc-900 dark:text-zinc-50">
+          New crate
         </p>
-        <p className="mt-0.5 truncate text-xs text-zinc-500">Add a playlist</p>
+        <p className="mt-0.5 truncate text-xs text-zinc-500">Start a collection</p>
       </div>
     </button>
   );

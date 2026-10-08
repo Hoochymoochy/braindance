@@ -23,7 +23,7 @@ export function MomentsTrackRow({
   return (
     <div
       className={cn(
-        "group grid items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
+        "group grid items-center gap-3 rounded-sm px-1 py-2 transition-opacity duration-bends-fast ease-bends hover:opacity-80",
         nested
           ? "grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:grid-cols-[2rem_minmax(0,1fr)_5rem_auto]"
           : "grid-cols-[2.5rem_2.5rem_minmax(0,1fr)_auto] sm:grid-cols-[2rem_2.5rem_minmax(0,1fr)_5rem_auto]"

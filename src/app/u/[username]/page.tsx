@@ -15,8 +15,8 @@ import {
   type Moment,
 } from "@/app/lib/profile/moments";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
-import { ListenerArchetypeSection } from "@/app/components/profile/ListenerArchetypeSection";
-import { CrateCard } from "@/app/components/profile/CrateCard";
+import { ProfileIntro } from "@/app/components/profile/ProfileIntro";
+import { CratesCollection } from "@/app/components/profile/CratesCollection";
 import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
 
 export default function PublicProfilePage() {
@@ -60,9 +60,9 @@ export default function PublicProfilePage() {
   }, [load]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10 px-4 pb-16 text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-6xl px-4 pb-20 pt-4 text-zinc-900 dark:text-zinc-100 sm:pt-8">
       {error ? (
-        <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+        <p className="mb-8 rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
@@ -71,45 +71,45 @@ export default function PublicProfilePage() {
         <p className="text-sm text-zinc-500">Loading profile…</p>
       ) : notFound || !profile ? (
         <div className="space-y-2 py-16 text-center">
-          <h1 className="text-2xl font-bold">Profile not found</h1>
+          <h1 className="text-2xl font-medium tracking-tight">
+            Profile not found
+          </h1>
           <p className="text-sm text-zinc-500">
             This share link may be wrong or the user hasn&apos;t set up a
             profile yet.
           </p>
         </div>
       ) : (
-        <>
-          <ProfileHeader profile={profile} />
+        <div className="space-y-16 sm:space-y-20">
+          <ProfileIntro userId={profile.id}>
+            <ProfileHeader profile={profile} />
+          </ProfileIntro>
 
-          <ListenerArchetypeSection userId={profile.id} />
-
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Crates</h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                Public crates from @{profile.username}
+          <section className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-brand-from/70">
+                Crates
+              </h2>
+              <p className="text-sm text-zinc-500">
+                Record collection from @{profile.username}
               </p>
             </div>
 
-            {crates.length === 0 ? (
-              <p className="text-sm text-zinc-500">No crates to show yet.</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {crates.map((crate) => (
-                  <CrateCard
-                    key={crate.id}
-                    crate={crate}
-                    href={`/u/${encodeURIComponent(profile.username)}/crates/${crate.id}`}
-                  />
-                ))}
-              </div>
-            )}
+            <CratesCollection
+              crates={crates}
+              hrefFor={(crate) =>
+                `/u/${encodeURIComponent(profile.username)}/crates/${crate.id}`
+              }
+              emptyLabel="No crates to show yet."
+            />
           </section>
 
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Moments</h2>
-              <p className="mt-1 text-sm text-zinc-500">
+          <section className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-brand-from/70">
+                Moments
+              </h2>
+              <p className="text-sm text-zinc-500">
                 Tracks saved from sets.
               </p>
             </div>
@@ -120,7 +120,7 @@ export default function PublicProfilePage() {
               <MomentsSetFolders moments={moments} />
             )}
           </section>
-        </>
+        </div>
       )}
     </div>
   );

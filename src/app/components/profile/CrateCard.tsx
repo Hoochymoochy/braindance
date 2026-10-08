@@ -33,7 +33,7 @@ export function CrateCard({
     <div className="group relative">
       <Link
         href={href}
-        className="flex flex-col gap-3 rounded-xl p-3 transition-colors duration-bends-fast ease-bends hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+        className="flex flex-col gap-3 rounded-sm p-2 transition-opacity duration-bends-fast ease-bends hover:opacity-85"
       >
         <CrateCover
           thumbnails={crate.thumbnails}
@@ -41,11 +41,11 @@ export function CrateCard({
           name={crate.name}
         />
         <div className="min-w-0 px-0.5">
-          <p className="truncate font-semibold text-zinc-900 dark:text-zinc-50">
+          <p className="truncate text-sm font-medium tracking-tight text-zinc-900 dark:text-zinc-50">
             {crate.name}
           </p>
           <p className="mt-0.5 truncate text-xs text-zinc-500">
-            Crate · {crate.set_count} {crate.set_count === 1 ? "set" : "sets"}
+            {crate.set_count} {crate.set_count === 1 ? "set" : "sets"}
           </p>
         </div>
       </Link>

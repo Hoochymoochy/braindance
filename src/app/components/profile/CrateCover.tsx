@@ -18,29 +18,35 @@ export function CrateCover({
   videoIds?: string[];
   name: string;
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "feature";
 }) {
   const sizeClass =
-    size === "lg"
-      ? "h-40 w-40 sm:h-52 sm:w-52"
-      : size === "sm"
-        ? "h-14 w-14"
-        : "aspect-square w-full";
+    size === "feature"
+      ? "aspect-[4/3] w-full sm:aspect-[16/11]"
+      : size === "lg"
+        ? "h-40 w-40 sm:h-52 sm:w-52"
+        : size === "sm"
+          ? "h-14 w-14"
+          : "aspect-square w-full";
 
   // Oversize `sizes` so retina picks a sharper source.
   const imageSizes =
-    size === "lg"
-      ? "416px"
-      : size === "sm"
-        ? "112px"
-        : "(max-width: 640px) 90vw, (max-width: 1024px) 40vw, 416px";
+    size === "feature"
+      ? "(max-width: 1024px) 90vw, 640px"
+      : size === "lg"
+        ? "416px"
+        : size === "sm"
+          ? "112px"
+          : "(max-width: 640px) 90vw, (max-width: 1024px) 40vw, 416px";
 
   const mosaicSizes =
-    size === "lg"
-      ? "208px"
-      : size === "sm"
-        ? "56px"
-        : "(max-width: 640px) 45vw, (max-width: 1024px) 20vw, 208px";
+    size === "feature"
+      ? "(max-width: 1024px) 45vw, 320px"
+      : size === "lg"
+        ? "208px"
+        : size === "sm"
+          ? "56px"
+          : "(max-width: 640px) 45vw, (max-width: 1024px) 20vw, 208px";
 
   const arts = thumbnails
     .slice(0, 4)
@@ -53,15 +59,15 @@ export function CrateCover({
   return (
     <div
       className={cn(
-        "relative shrink-0 overflow-hidden rounded-md bg-zinc-200 shadow-md dark:bg-zinc-800",
+        "relative shrink-0 overflow-hidden rounded-sm bg-zinc-200 shadow-md dark:bg-zinc-900",
         sizeClass,
         className
       )}
       aria-hidden
     >
       {arts.length === 0 ? (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-from/40 via-brand-via/30 to-brand-to/40">
-          <Music2 className="h-1/3 w-1/3 text-white/80" />
+        <div className="flex h-full w-full items-center justify-center bg-zinc-300/80 dark:bg-zinc-800">
+          <Music2 className="h-1/4 w-1/4 text-zinc-500 dark:text-zinc-600" />
         </div>
       ) : arts.length === 1 ? (
         <YoutubeThumbImage
@@ -84,7 +90,7 @@ export function CrateCover({
             ) : (
               <div
                 key={i}
-                className="bg-gradient-to-br from-brand-from/30 to-brand-to/30"
+                className="bg-zinc-300/70 dark:bg-zinc-800"
               />
             );
           })}

@@ -49,21 +49,25 @@ export function MomentsSetFolders({
   if (groups.length === 0) return null;
 
   return (
-    <div className="space-y-1">
-      {groups.map((group) => {
+    <div className="divide-y divide-black/[0.06] dark:divide-white/[0.06]">
+      {groups.map((group, gi) => {
         const open = openIds.has(group.video_id);
         const panelId = `moments-set-${group.video_id}`;
 
         return (
-          <div key={group.video_id}>
-            <div className="flex items-center gap-1 rounded-xl px-1 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]">
+          <div
+            key={group.video_id}
+            className="motion-enter py-1 first:pt-0"
+            style={{ animationDelay: `${gi * 40}ms` }}
+          >
+            <div className="flex items-center gap-1 transition-opacity duration-bends-fast ease-bends hover:opacity-90">
               <button
                 type="button"
                 onClick={() => toggle(group.video_id)}
                 aria-expanded={open}
                 aria-controls={panelId}
                 aria-label={open ? "Collapse set" : "Expand set"}
-                className="shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
+                className="shrink-0 rounded-sm p-2 text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
               >
                 <ChevronRight
                   className={cn(
@@ -75,16 +79,16 @@ export function MomentsSetFolders({
               </button>
               <Link
                 href={`/stream/${group.video_id}`}
-                className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-2"
+                className="flex min-w-0 flex-1 items-center gap-3 py-3 pr-1"
               >
-                <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-800">
+                <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-zinc-200 shadow-sm dark:bg-zinc-900 sm:h-14 sm:w-20">
                   <YoutubeThumbImage
                     videoId={group.video_id}
-                    sizes="88px"
+                    sizes="160px"
                   />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  <span className="block truncate text-sm font-medium tracking-tight text-zinc-900 dark:text-zinc-50">
                     {group.set_title}
                   </span>
                   <span className="mt-0.5 block text-xs text-zinc-500">
@@ -96,10 +100,7 @@ export function MomentsSetFolders({
             </div>
 
             {open ? (
-              <div
-                id={panelId}
-                className="border-t border-black/5 py-1 dark:border-white/10"
-              >
+              <div id={panelId} className="pb-2 pl-2 sm:pl-10">
                 {group.moments.map((moment, i) => (
                   <MomentsTrackRow
                     key={moment.id}

@@ -89,94 +89,81 @@ export function ProfileHeader({
   };
 
   return (
-    <header className="relative overflow-hidden rounded-2xl">
-      <div
-        className="absolute inset-0 bg-gradient-to-br from-brand-from/35 via-brand-via/20 to-brand-to/30"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 bg-gradient-to-t from-[var(--page-bg)] via-transparent to-transparent"
-        aria-hidden
-      />
-
-      <div className="relative space-y-3 p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-from/90">
-          Profile
-        </p>
-
-        {editing ? (
-          <div className="space-y-3">
-            <input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="input-bends w-full max-w-md text-2xl font-bold"
-              placeholder="Display name"
-              aria-label="Display name"
-            />
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={2}
-              className="input-bends w-full max-w-lg resize-y"
-              placeholder="A short bio"
-              aria-label="Bio"
-            />
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={handleSave}
-                className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
-              >
-                {saving ? "Saving…" : "Save"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditing(false);
-                  setDisplayName(profile.display_name ?? "");
-                  setBio(profile.bio ?? "");
-                  clearEditParam();
-                }}
-                className="rounded-xl border border-black/10 px-3 py-2 text-sm dark:border-brand-from/20"
-              >
-                Cancel
-              </button>
-            </div>
+    <header className="space-y-4">
+      {editing ? (
+        <div className="space-y-3">
+          <input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="input-bends w-full max-w-md text-2xl font-medium tracking-tight"
+            placeholder="Display name"
+            aria-label="Display name"
+          />
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={2}
+            className="input-bends w-full max-w-lg resize-y"
+            placeholder="A short bio"
+            aria-label="Bio"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={handleSave}
+              className="rounded-md border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-60"
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false);
+                setDisplayName(profile.display_name ?? "");
+                setBio(profile.bio ?? "");
+                clearEditParam();
+              }}
+              className="rounded-md border border-black/10 px-3 py-2 text-sm dark:border-white/15"
+            >
+              Cancel
+            </button>
           </div>
-        ) : (
-          <>
-            <div className="flex items-start gap-2">
-              <h1 className="min-w-0 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
-                {title}
-              </h1>
-              <button
-                type="button"
-                onClick={handleShare}
-                className="mt-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-black/[0.06] hover:text-brand-from dark:text-zinc-400 dark:hover:bg-white/[0.08] sm:mt-2.5"
-                aria-label={copied ? "Link copied" : "Share profile"}
-                title={copied ? "Link copied" : "Share profile"}
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-brand-from" aria-hidden />
-                ) : (
-                  <Share2 className="h-4 w-4" aria-hidden />
-                )}
-              </button>
-            </div>
-            <p className="text-sm text-zinc-500">@{profile.username}</p>
-            {profile.bio ? (
-              <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-300">
-                {profile.bio}
-              </p>
-            ) : isOwner ? (
-              <p className="text-sm text-zinc-400">
-                Add a bio so people know your vibe.
-              </p>
-            ) : null}
-          </>
-        )}
-      </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-baseline gap-3">
+            <h1 className="min-w-0 text-4xl font-medium tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl sm:leading-[1.1]">
+              {title}
+            </h1>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-zinc-400 transition-colors duration-bends-fast ease-bends hover:text-zinc-700 dark:hover:text-brand-from"
+              aria-label={copied ? "Link copied" : "Share profile"}
+              title={copied ? "Link copied" : "Share profile"}
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-brand-from" aria-hidden />
+              ) : (
+                <Share2 className="h-3.5 w-3.5" aria-hidden />
+              )}
+            </button>
+          </div>
+          <p className="text-sm tracking-wide text-zinc-500">
+            @{profile.username}
+          </p>
+          {profile.bio ? (
+            <p className="max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              {profile.bio}
+            </p>
+          ) : isOwner ? (
+            <p className="text-sm text-zinc-400">
+              Add a bio so people know your vibe.
+            </p>
+          ) : null}
+        </>
+      )}
     </header>
   );
 }

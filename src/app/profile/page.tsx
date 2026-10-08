@@ -19,9 +19,8 @@ import {
   type Moment,
 } from "@/app/lib/profile/moments";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
-import { ListenerArchetypeSection } from "@/app/components/profile/ListenerArchetypeSection";
-import { CrateCard } from "@/app/components/profile/CrateCard";
-import { CreateCrateTile } from "@/app/components/profile/CreateCrateTile";
+import { ProfileIntro } from "@/app/components/profile/ProfileIntro";
+import { CratesCollection } from "@/app/components/profile/CratesCollection";
 import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
 
 export default function ProfilePage() {
@@ -80,9 +79,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10 px-4 pb-16 text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-6xl px-4 pb-20 pt-4 text-zinc-900 dark:text-zinc-100 sm:pt-8">
       {error ? (
-        <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+        <p className="mb-8 rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
           {error}
         </p>
       ) : null}
@@ -90,54 +89,51 @@ export default function ProfilePage() {
       {loading || !profile ? (
         <p className="text-sm text-zinc-500">Loading profile…</p>
       ) : (
-        <>
-          <ProfileHeader
-            profile={profile}
-            isOwner
-            onSave={handleSaveProfile}
-          />
+        <div className="space-y-16 sm:space-y-20">
+          <ProfileIntro userId={profile.id}>
+            <ProfileHeader
+              profile={profile}
+              isOwner
+              onSave={handleSaveProfile}
+            />
+          </ProfileIntro>
 
-          <ListenerArchetypeSection userId={profile.id} />
-
-          <section className="space-y-4">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Crates</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Playlists of sets you want to keep.
-                </p>
-              </div>
+          <section className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-brand-from/70">
+                Crates
+              </h2>
+              <p className="text-sm text-zinc-500">
+                Your record collection — sets worth keeping.
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              <CreateCrateTile onCreate={handleCreateCrate} />
-              {crates.map((crate) => (
-                <CrateCard
-                  key={crate.id}
-                  crate={crate}
-                  href={`/profile/crates/${crate.id}`}
-                  onDelete={async () => {
-                    try {
-                      await handleDeleteCrate(crate.id);
-                    } catch (err) {
-                      setError(
-                        err instanceof Error
-                          ? err.message
-                          : "Could not delete crate"
-                      );
-                      throw err;
-                    }
-                  }}
-                />
-              ))}
-            </div>
+            <CratesCollection
+              crates={crates}
+              hrefFor={(crate) => `/profile/crates/${crate.id}`}
+              onCreate={handleCreateCrate}
+              onDelete={async (id) => {
+                try {
+                  await handleDeleteCrate(id);
+                } catch (err) {
+                  setError(
+                    err instanceof Error
+                      ? err.message
+                      : "Could not delete crate"
+                  );
+                  throw err;
+                }
+              }}
+            />
           </section>
 
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Moments</h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                Tracks you saved from sets.
+          <section className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-brand-from/70">
+                Moments
+              </h2>
+              <p className="text-sm text-zinc-500">
+                Tracks pulled from a night out — saved for later.
               </p>
             </div>
 
@@ -165,7 +161,7 @@ export default function ProfilePage() {
               />
             )}
           </section>
-        </>
+        </div>
       )}
     </div>
   );
