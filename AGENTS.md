@@ -4,7 +4,7 @@ Use this file to orient quickly when editing or reviewing the codebase.
 
 ## What this repo is
 
-A **Next.js App Router** frontend: marketing home + DJ set discovery (`/`), public stream page (`/stream/[eventId]`), host tools, and thin **API routes** that proxy an optional **external Braindance backend** (`BACKEND_URL`). **Supabase** holds hosted events, links, feedback/contact, and stream metadata for the “hosted event” path.
+A **Next.js App Router** frontend: marketing home + DJ set discovery (`/`), public stream page (`/stream/[eventId]`), listener **profile** (`/profile`) with **crates** and **moments**, and thin **API routes** that proxy an optional **external Braindance backend** (`BACKEND_URL`). **Supabase** holds profiles, crates, moments, feedback/contact, and (legacy) hosted-event metadata still used by the stream UUID path.
 
 ## Find things fast
 
@@ -13,7 +13,10 @@ A **Next.js App Router** frontend: marketing home + DJ set discovery (`/`), publ
 | Global layout, nav chrome | `src/app/layout.tsx` (Header, Footer, main padding vars `--nav-header-h`, `--nav-footer-h`) |
 | Home (hero + DJ sets grid) | `src/app/page.tsx` → fetches `/api/dj-sets` |
 | Public stream + tracklist | `src/app/stream/[eventId]/page.tsx` |
-| Host live stream + photos | `src/app/host/[hostId]/[eventId]/stream/page.tsx` |
+| Profile / crates / moments | `src/app/profile/page.tsx`, `src/app/profile/crates/[crateId]/page.tsx` |
+| Public shareable profile | `src/app/u/[username]/page.tsx`, crates at `.../crates/[crateId]` |
+| Profile data libs | `src/app/lib/profile/{profile,crates,moments}.ts` |
+| Auth (login + JWT cookie) | `src/app/login/page.tsx`, `src/app/lib/auth/*`, `POST /api/auth/token` |
 | DJ sets proxy | `src/app/api/dj-sets/route.ts` |
 | Pipeline streams proxy | `src/app/api/streams/[id]/route.ts`, `.../tracks/route.ts` |
 | Shared backend fetch | `src/app/lib/backend/http.ts` |
@@ -21,9 +24,9 @@ A **Next.js App Router** frontend: marketing home + DJ set discovery (`/`), publ
 | Stream UI mocks | `src/app/lib/mocks/streamFixtures.ts`, `streamMocks.ts`; env `STREAM_UI_MOCKS` |
 | Supabase client | `src/app/lib/utils/supabaseClient.ts` |
 | Glass / motion tokens | `src/app/globals.css` (`glass-bends-card`, `ease-bends`, `motion-enter`) |
-| DJ set cards | `src/app/components/dj-sets/StreamCard.tsx` |
-| Event posters | `src/app/components/user/Poster.tsx` |
-| Globe heatmap | `src/app/components/GlobeHeatmap.tsx` — **must** be imported with `next/dynamic({ ssr: false })` from pages (not SSR-safe) |
+| DJ set cards | `src/app/components/dj-sets/StreamCard.tsx` (➕ adds to crate) |
+| Tracklist + save moment | `src/app/components/stream/StreamTracklistSidebar.tsx` |
+| Schema SQL | `supabase/migrations/001_profiles_crates_moments.sql` |
 
 ## Stream page resolution order (`/stream/[eventId]`)
 

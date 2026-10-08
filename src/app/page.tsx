@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
-import { Shuffle, ChevronDown } from "lucide-react";
-import { EventsLayout } from "@/app/EventLayout";
-import { EventPosterProps } from "@/app/components/user/Poster";
-import { getAllEvents } from "@/app/lib/events/event";
-import { getAllStreams } from "@/app/lib/events/stream";
+import { Search, Shuffle, X } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
@@ -41,29 +43,36 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-type HomeEventsCache = {
-  live: EventPosterProps[];
-  upcoming: EventPosterProps[];
-};
+function matchesQuery(set: DjSet, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    set.title.toLowerCase().includes(q) ||
+    set.channel.toLowerCase().includes(q) ||
+    set.video_id.toLowerCase().includes(q)
+  );
+}
 
 const PAGE_SIZE = 9;
 const DJ_SETS_CACHE_KEY = "home:dj-sets";
-const EVENTS_CACHE_KEY = "home:events";
 const CLIENT_CACHE_MS = CATALOG_REVALIDATE_SECONDS * 1000;
 
 export default function Home() {
   const router = useRouter();
-  const [liveEvents, setLiveEvents] = useState<EventPosterProps[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = useState<EventPosterProps[]>([]);
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
+  const [catalogSets, setCatalogSets] = useState<DjSet[]>([]);
   const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [searchQuery, setSearchQuery] = useState("");
+  const deferredQuery = useDeferredValue(searchQuery);
   const djSetsPromiseRef = useRef<Promise<DjSetsResponse | null> | null>(null);
   const randomPoolRef = useRef<DjSet[]>([]);
   const allDjSetsRef = useRef<DjSet[]>([]);
   const heroSentinelRef = useRef<HTMLDivElement | null>(null);
   const heroPassedRef = useRef(false);
+  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
+  const isSearching = deferredQuery.trim().length > 0;
 
   useEffect(() => {
     const el = heroSentinelRef.current;
@@ -95,46 +104,10 @@ export default function Home() {
       allDjSetsRef.current = current;
       randomPoolRef.current = pool;
       setAllDjSets(current);
+      setCatalogSets(pool);
       setFeaturedWeekly(
         Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
       );
-    };
-
-    const getEvents = async () => {
-      const cached = ttlGet<HomeEventsCache>(EVENTS_CACHE_KEY);
-      if (cached) {
-        setLiveEvents(cached.live);
-        setUpcomingEvents(cached.upcoming);
-      }
-
-      const events = (await getAllEvents()) ?? [];
-      const streams = await getAllStreams();
-      const streamsByEvent = new Map<string, typeof streams>();
-      for (const row of streams) {
-        const list = streamsByEvent.get(row.event_id) ?? [];
-        list.push(row);
-        streamsByEvent.set(row.event_id, list);
-      }
-
-      const live: EventPosterProps[] = [];
-      const upcoming: EventPosterProps[] = [];
-
-      for (const event of events) {
-        const eventStreams = streamsByEvent.get(event.id) ?? [];
-        const liveStream = eventStreams.find((s) => s.link !== null);
-        if (liveStream) {
-          live.push({
-            ...event,
-            link: liveStream.link ?? undefined,
-          });
-        } else {
-          upcoming.push(event);
-        }
-      }
-
-      ttlSet(EVENTS_CACHE_KEY, { live, upcoming }, CLIENT_CACHE_MS);
-      setLiveEvents(live);
-      setUpcomingEvents(upcoming);
     };
 
     const getDjSets = async (): Promise<DjSetsResponse | null> => {
@@ -156,6 +129,7 @@ export default function Home() {
           allDjSetsRef.current = [];
           randomPoolRef.current = [];
           setAllDjSets([]);
+          setCatalogSets([]);
           setFeaturedWeekly([]);
         }
         return cached;
@@ -165,19 +139,44 @@ export default function Home() {
     };
 
     djSetsPromiseRef.current = getDjSets();
-    void getEvents();
   }, []);
 
+  const filteredSets = useMemo(() => {
+    if (!isSearching) return allDjSets;
+    return catalogSets.filter((set) => matchesQuery(set, deferredQuery));
+  }, [isSearching, allDjSets, catalogSets, deferredQuery]);
+
   const visibleDjSets = useMemo(
-    () => allDjSets.slice(0, visibleCount),
-    [allDjSets, visibleCount]
+    () => filteredSets.slice(0, visibleCount),
+    [filteredSets, visibleCount]
   );
 
-  const hasMore = visibleCount < allDjSets.length;
+  const hasMore = visibleCount < filteredSets.length;
 
-  const loadMore = () => {
-    setVisibleCount((c) => c + PAGE_SIZE);
-  };
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [deferredQuery]);
+
+  useEffect(() => {
+    if (loading || !hasMore) return;
+    const el = loadMoreSentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        setVisibleCount((c) =>
+          c >= filteredSets.length
+            ? c
+            : Math.min(c + PAGE_SIZE, filteredSets.length)
+        );
+      },
+      { rootMargin: "400px 0px", threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loading, hasMore, filteredSets.length, visibleCount]);
 
   const goRandomSet = async () => {
     let pool =
@@ -258,48 +257,69 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Marks the start of set discovery; used once for hero_passed. */}
         <div ref={heroSentinelRef} className="h-px w-full" aria-hidden />
 
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
-          {/* Old catalog Random set bar — kept for easy restore
-          <div className="glass-bends-card mb-10 flex flex-wrap items-center gap-3 rounded-xl p-4">
-            <button
-              type="button"
-              onClick={goRandomSet}
-              disabled={
-                loading || (randomPool.length === 0 && allDjSets.length === 0)
-              }
-              className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/35 disabled:pointer-events-none disabled:opacity-40"
-            >
-              <Shuffle className="h-3.5 w-3.5 shrink-0 text-brand-from" />
-              <span className="font-medium text-brand-from">Random set</span>
-            </button>
+          <div className="mb-10 flex flex-wrap items-center justify-between gap-3">
+            <label className="relative block w-full max-w-sm">
+              <span className="sr-only">Search DJ sets</span>
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search all sets…"
+                className="w-full rounded-full border border-black/10 bg-white/70 py-2.5 pl-10 pr-10 text-sm text-zinc-900 outline-none backdrop-blur-sm transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-400 focus:border-brand-from/40 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] dark:border-brand-from/20 dark:bg-black/30 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </label>
+            {!loading && isSearching && (
+              <p className="tabular-nums text-xs text-brand-from/65">
+                {filteredSets.length}{" "}
+                {filteredSets.length === 1 ? "result" : "results"}
+              </p>
+            )}
           </div>
-          */}
 
-          <div className="mb-12">
-            <div className="mb-5">
-              <SectionHeader title="Featured This Week" />
+          {!isSearching ? (
+            <div className="mb-12">
+              <div className="mb-5">
+                <SectionHeader title="Featured This Week" />
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {loading && skeletons(3)}
+                {!loading &&
+                  featuredWeekly.map((set, i) => (
+                    <StreamCard key={set.video_id} set={set} index={i} />
+                  ))}
+                {!loading && featuredWeekly.length === 0 && (
+                  <p className="col-span-full py-4 text-sm text-[#7a7a7a]">
+                    No featured picks yet. Refresh the DJ feed or check back
+                    soon.
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {loading && skeletons(3)}
-              {!loading &&
-                featuredWeekly.map((set, i) => (
-                  <StreamCard key={set.video_id} set={set} index={i} />
-                ))}
-              {!loading && featuredWeekly.length === 0 && (
-                <p className="col-span-full py-4 text-sm text-[#7a7a7a]">
-                  No featured picks yet. Refresh the DJ feed or check back soon.
-                </p>
-              )}
-            </div>
-          </div>
+          ) : null}
 
           <div>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-              <SectionHeader title="Current DJ Sets" />
-              {!loading && allDjSets.length > 0 && (
+              <SectionHeader
+                title={isSearching ? "Search results" : "Current DJ Sets"}
+              />
+              {!loading && !isSearching && allDjSets.length > 0 && (
                 <p className="tabular-nums text-xs text-brand-from/65">
                   Showing {visibleDjSets.length} of {allDjSets.length}
                 </p>
@@ -311,28 +331,22 @@ export default function Home() {
                 visibleDjSets.map((set, i) => (
                   <StreamCard key={set.video_id} set={set} index={i} />
                 ))}
+              {!loading && isSearching && filteredSets.length === 0 && (
+                <p className="col-span-full py-8 text-sm text-[#7a7a7a]">
+                  No sets match &ldquo;{deferredQuery.trim()}&rdquo;.
+                </p>
+              )}
             </div>
             {!loading && hasMore && (
-              <div className="mb-8 mt-16 flex justify-center">
-                <button
-                  type="button"
-                  onClick={loadMore}
-                  className="hover-glow-brand inline-flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-300/70 bg-white/70 px-6 py-3 text-sm font-medium text-zinc-800 backdrop-blur-sm transition-[border-color,background-color,box-shadow] duration-bends ease-bends hover:border-brand-from/40 hover:bg-brand-to/10 active:opacity-90"
-                >
-                  Load more
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-              </div>
+              <div
+                ref={loadMoreSentinelRef}
+                className="mb-8 mt-12 h-px w-full"
+                aria-hidden
+              />
             )}
           </div>
         </section>
       </div>
-
-      <EventsLayout
-        liveEvents={liveEvents}
-        upcomingEvents={upcomingEvents}
-        hideStuff={{}}
-      />
     </div>
   );
 }

@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Music2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { BookmarkCheck, ChevronDown, Music2, BookmarkPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent, type SetAnalyticsMeta } from "@/app/lib/analytics";
+import {
+  addMoment,
+  deleteMoment,
+  listMomentsForVideo,
+} from "@/app/lib/profile/moments";
+import { useAuthUserId } from "@/app/lib/hooks/useAuthUserId";
+import { timestampToSeconds } from "@/app/lib/utils/timestamp";
 
 export type TrackRow = {
   id: string;
@@ -47,6 +55,8 @@ export function StreamTracklistSidebar({
   className,
   analytics,
   onExpandedChange,
+  videoId,
+  setTitle,
 }: {
   tracks: TrackRow[];
   emptyHint?: string;
@@ -54,11 +64,58 @@ export function StreamTracklistSidebar({
   analytics?: Partial<SetAnalyticsMeta>;
   /** Fires when mobile expand/collapse changes (`true` = open). Desktop always reports open. */
   onExpandedChange?: (expanded: boolean) => void;
+  /** When set, each track can be saved as a profile moment. */
+  videoId?: string;
+  setTitle?: string;
 }) {
+  const router = useRouter();
+  const userId = useAuthUserId();
   const [minimized, setMinimized] = useState(true);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  /** track row id → saved moment id (so we can unsave). */
+  const [savedByTrackId, setSavedByTrackId] = useState<Map<string, string>>(
+    () => new Map()
+  );
+  const [saveError, setSaveError] = useState("");
   const openedTrackedRef = useRef(false);
   const analyticsRef = useRef(analytics);
   analyticsRef.current = analytics;
+
+  const momentKey = (timestamp: string, title: string, artist: string) =>
+    `${timestampToSeconds(timestamp)}|${title.trim().toLowerCase()}|${artist.trim().toLowerCase()}`;
+
+  useEffect(() => {
+    if (!userId || !videoId || tracks.length === 0) {
+      setSavedByTrackId(new Map());
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const existing = await listMomentsForVideo(userId, videoId);
+        if (cancelled) return;
+        const byKey = new Map(
+          existing.map((m) => [
+            `${m.timestamp_seconds}|${m.track_title.trim().toLowerCase()}|${m.track_artist.trim().toLowerCase()}`,
+            m.id,
+          ])
+        );
+        const next = new Map<string, string>();
+        for (const t of tracks) {
+          const momentId = byKey.get(momentKey(t.timestamp, t.title, t.artist));
+          if (momentId) next.set(t.id, momentId);
+        }
+        setSavedByTrackId(next);
+      } catch {
+        if (!cancelled) setSavedByTrackId(new Map());
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, videoId, tracks]);
 
   const fireTracklistOpened = () => {
     if (openedTrackedRef.current) return;
@@ -102,6 +159,50 @@ export function StreamTracklistSidebar({
     timestamp: t.timestamp,
   });
 
+  const handleToggleMoment = async (t: TrackRow) => {
+    if (!videoId) return;
+
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+
+    const existingId = savedByTrackId.get(t.id);
+    setSavingId(t.id);
+    setSaveError("");
+    try {
+      if (existingId) {
+        await deleteMoment(existingId);
+        setSavedByTrackId((prev) => {
+          const next = new Map(prev);
+          next.delete(t.id);
+          return next;
+        });
+        trackEvent("moment_removed", trackPayload(t));
+      } else {
+        const created = await addMoment({
+          video_id: videoId,
+          set_title: setTitle ?? analytics?.set_title ?? "",
+          track_title: t.title,
+          track_artist: t.artist,
+          timestamp_label: t.timestamp,
+        });
+        setSavedByTrackId((prev) => {
+          const next = new Map(prev);
+          next.set(t.id, created.id);
+          return next;
+        });
+        trackEvent("moment_saved", trackPayload(t));
+      }
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "Could not update moment"
+      );
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -140,6 +241,12 @@ export function StreamTracklistSidebar({
           />
         </button>
 
+        {saveError ? (
+          <p className="px-4 py-2 text-xs text-red-400" role="alert">
+            {saveError}
+          </p>
+        ) : null}
+
         <div
           id="stream-tracklist"
           data-scroll-lock-ignore
@@ -149,81 +256,111 @@ export function StreamTracklistSidebar({
             minimized && "max-lg:hidden"
           )}
         >
-        {tracks.length === 0 ? (
-          <p className="px-2 py-6 text-center text-sm text-zinc-500">
-            {emptyHint ??
-              "No tracks yet. The pipeline may still be linking this set."}
-          </p>
-        ) : (
-          <ul className="space-y-1">
-            {tracks.map((t) => (
-              <li
-                key={t.id}
-                className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-black/8 hover:bg-black/[0.03]"
-                onClick={() => {
-                  trackEvent("track_clicked", trackPayload(t));
-                }}
-              >
-                <div className="flex gap-2">
-                  <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
-                    {t.timestamp}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <ScrollableLine
-                      text={t.title}
-                      className="text-sm font-medium text-zinc-900"
-                    />
-                    <ScrollableLine
-                      text={t.artist}
-                      className="text-xs text-zinc-500"
-                    />
-                    {(t.spotify_url || t.soundcloud_url) && (
-                      <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-zinc-500">
-                        {t.spotify_url && (
-                          <a
-                            href={t.spotify_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rounded-sm hover:text-[#1ed760] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#1ed760]/50"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const payload = trackPayload(t);
-                              trackEvent("track_clicked", payload);
-                              trackEvent("track_external_clicked", payload);
-                            }}
-                          >
-                            Spotify
-                          </a>
+          {tracks.length === 0 ? (
+            <p className="px-2 py-6 text-center text-sm text-zinc-500">
+              {emptyHint ??
+                "No tracks yet. The pipeline may still be linking this set."}
+            </p>
+          ) : (
+            <ul className="space-y-1">
+              {tracks.map((t) => (
+                <li
+                  key={t.id}
+                  className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-black/8 hover:bg-black/[0.03]"
+                  onClick={() => {
+                    trackEvent("track_clicked", trackPayload(t));
+                  }}
+                >
+                  <div className="flex gap-2">
+                    <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
+                      {t.timestamp}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <ScrollableLine
+                        text={t.title}
+                        className="text-sm font-medium text-zinc-900"
+                      />
+                      <ScrollableLine
+                        text={t.artist}
+                        className="text-xs text-zinc-500"
+                      />
+                      {(t.spotify_url || t.soundcloud_url) && (
+                        <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-zinc-500">
+                          {t.spotify_url && (
+                            <a
+                              href={t.spotify_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded-sm hover:text-[#1ed760] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#1ed760]/50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const payload = trackPayload(t);
+                                trackEvent("track_clicked", payload);
+                                trackEvent("track_external_clicked", payload);
+                              }}
+                            >
+                              Spotify
+                            </a>
+                          )}
+                          {t.spotify_url && t.soundcloud_url && (
+                            <span className="text-zinc-400" aria-hidden>
+                              ·
+                            </span>
+                          )}
+                          {t.soundcloud_url && (
+                            <a
+                              href={t.soundcloud_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded-sm hover:text-[#ff5500] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#ff5500]/50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const payload = trackPayload(t);
+                                trackEvent("track_clicked", payload);
+                                trackEvent("track_external_clicked", payload);
+                              }}
+                            >
+                              SoundCloud
+                            </a>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                    {videoId ? (
+                      <button
+                        type="button"
+                        title={
+                          savedByTrackId.has(t.id)
+                            ? "Remove moment from profile"
+                            : "Save moment to profile"
+                        }
+                        aria-label={
+                          savedByTrackId.has(t.id)
+                            ? `Remove moment: ${t.title}`
+                            : `Save moment: ${t.title}`
+                        }
+                        disabled={savingId === t.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleMoment(t);
+                        }}
+                        className={cn(
+                          "shrink-0 self-start rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-brand-from/10 hover:text-brand-from disabled:opacity-60",
+                          savedByTrackId.has(t.id) && "text-brand-from"
                         )}
-                        {t.spotify_url && t.soundcloud_url && (
-                          <span className="text-zinc-400" aria-hidden>
-                            ·
-                          </span>
+                      >
+                        {savedByTrackId.has(t.id) ? (
+                          <BookmarkCheck className="h-3.5 w-3.5" aria-hidden />
+                        ) : (
+                          <BookmarkPlus className="h-3.5 w-3.5" aria-hidden />
                         )}
-                        {t.soundcloud_url && (
-                          <a
-                            href={t.soundcloud_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rounded-sm hover:text-[#ff5500] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#ff5500]/50"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const payload = trackPayload(t);
-                              trackEvent("track_clicked", payload);
-                              trackEvent("track_external_clicked", payload);
-                            }}
-                          >
-                            SoundCloud
-                          </a>
-                        )}
-                      </p>
-                    )}
+                      </button>
+                    ) : null}
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

@@ -32,7 +32,7 @@ npm test        # Jest
 |----------|---------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (browser) |
-| `JWT_SECRET` | Host auth (JWT verify in `ProtectedRoute` / host flows) |
+| `JWT_SECRET` | App auth JWT (`auth_token` cookie; `/profile` + `/api/auth/token`) |
 | `BACKEND_URL` | Origin of the **external** API (e.g. `http://localhost:3000` or `https://api.example.com`). Used by `/api/dj-sets` and `/api/streams/*`. Trailing paths like `/dj-sets` are normalized away. |
 | `BACKEND_URL_BACKUP` | Optional second origin; used when primary fails or returns empty for DJ sets |
 | `STREAM_UI_MOCKS` | Set to `1` / `true` / `yes` so **`/api/streams/:id`** and **`/api/streams/:id/tracks`** return **mock JSON** (no backend). Good for UI work. |
@@ -41,6 +41,7 @@ npm test        # Jest
 | `NEXT_PUBLIC_TWITCH_PARENT` | Hostname Twitch allows for embeds (e.g. `localhost` locally, your domain in prod). Defaults to `localhost` if unset. |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website UUID (public). When set, loads the analytics script site-wide. |
 | `NEXT_PUBLIC_UMAMI_SCRIPT_URL` | Optional. Defaults to `https://analytics.hoochymoochy.xyz/script.js`. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role secret key (server-side only) used for listener analytics aggregation and archetype caching. |
 
 Copy from your hoster / Supabase dashboard; there is no committed `.env` in-repo.
 
@@ -52,13 +53,15 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 
 | Route | What it does |
 |-------|----------------|
-| `/` | Home: hero, then DJ set grid (“Random set”, featured + paginated sets from **`GET /api/dj-sets`**); **`EventLayout`** may show live/upcoming **Supabase events** as posters. **`/events`** redirects here. |
-| `/stream/[eventId]` | Public stream viewer. **`eventId`** interpretation below. |
-| `/stream/[eventId]/photo-upload` | Photo upload for an event |
+| `/` | Home: hero, then DJ set grid (“Random set”, featured + paginated sets from **`GET /api/dj-sets`**). **`/events`** redirects here. |
+| `/stream/[eventId]` | Public stream viewer. **`eventId`** interpretation below. Tracklist can save **moments**; cards can add sets to **crates**. |
+| `/stream/[eventId]/photo-upload` | Photo upload for a legacy hosted event |
 | `/policy`, `/feedback`, `/contact` | Static-ish content + forms writing to Supabase utilities |
-| `/host/login`, `/host/sign-up` | Host auth |
-| `/host/[hostId]/dashboard` | Host dashboard |
-| `/host/[hostId]/[eventId]/stream` | Host view: stream + photo review + stats + globe |
+| `/login` | Login / sign-up (Supabase + JWT cookie) → `/profile` |
+| `/profile` | Your profile: edit, share, crates + moments (JWT-protected) |
+| `/profile/crates/[crateId]` | Own crate (Spotify-style playlist view) |
+| `/u/[username]` | **Public shareable profile** |
+| `/u/[username]/crates/[crateId]` | Public crate view |
 
 ---
 
@@ -79,7 +82,11 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 3. **YouTube video id** (11 chars, common fallback)  
    - `POST /api/dj-sets` with `{ "videoId": eventId }` → proxies to backend `GET /dj-sets/:videoId`.
 
-**Globe:** `GlobeHeatmap` is loaded with **`next/dynamic({ ssr: false })`** from the stream/host pages so `react-globe.gl` never runs on the server (`window` / WebGL).
+**Globe:** `GlobeHeatmap` is loaded with **`next/dynamic({ ssr: false })`** from the stream page so `react-globe.gl` never runs on the server (`window` / WebGL).
+
+### Profiles / crates / moments / listener archetypes
+
+Run `supabase/migrations/001_profiles_crates_moments.sql`, then `002_profile_on_signup_trigger.sql`, `003_public_profile_read.sql`, and `20261007011500_listener_archetypes.sql` in the Supabase SQL editor. Tables: `profiles`, `crates`, `crate_sets`, `moments`, `listener_archetypes`, `listening_sessions`.
 
 ---
 
@@ -93,6 +100,7 @@ Implemented in `src/app/api/`. They call **`BACKEND_URL`** (and optional backup)
 | `POST /api/dj-sets` | `GET {BACKEND_URL}/dj-sets/:videoId` | Body: `{ "videoId": "..." }` |
 | `GET /api/streams/[id]` | `GET {BACKEND_URL}/streams/:id` | Mock if `STREAM_UI_MOCKS` |
 | `GET /api/streams/[id]/tracks` | `GET {BACKEND_URL}/streams/:id/tracks` | Response may normalize to `{ tracks: [...] }` |
+| `GET /api/listener-profile` | Local rule-based classifier | Listening style + header stats (`?userId=...`, `?force=true`) |
 
 Shared fetch helpers: `src/app/lib/backend/http.ts`.
 

@@ -1,15 +1,16 @@
 import { supabase } from "@/app/lib/utils/supabaseClient";
+import { ensureProfileForCurrentUser } from "@/app/lib/profile/profile";
 
-type SignUpResult = 
-  | { success: true; id: string }
-  | { error: string };
+type SignUpResult = { success: true; id: string } | { error: string };
 
-export async function signUpHost(email: string, password: string): Promise<SignUpResult> {
+export async function signUpUser(
+  email: string,
+  password: string
+): Promise<SignUpResult> {
   if (!email || !password) {
     return { error: "Email and password are required" };
   }
 
-  // Step 1: Sign up via Supabase Auth
   const {
     data: { user },
     error: authError,
@@ -19,14 +20,17 @@ export async function signUpHost(email: string, password: string): Promise<SignU
     return { error: authError?.message || "Failed to create user" };
   }
 
-  // Step 2: Create the host profile (username = email, no raw password stored)
-  const { error: hostError } = await supabase
-    .from("hosts")
-    .insert([{ id: user.id, username: email }]);
-
-  if (hostError) {
-    return { error: hostError.message };
+  try {
+    // Profile must exist before crates/moments (FK → profiles.id).
+    await ensureProfileForCurrentUser();
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Failed to create profile",
+    };
   }
 
   return { success: true, id: user.id };
 }
+
+/** @deprecated Use signUpUser */
+export const signUpHost = signUpUser;

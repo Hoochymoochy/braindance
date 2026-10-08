@@ -10,8 +10,8 @@ import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
 import { cn } from "@/lib/utils";
 
-function isDashboardPath(pathname: string): boolean {
-  return /\/host\/[^/]+\/dashboard(?:\/|$)/.test(pathname);
+function isProfilePath(pathname: string): boolean {
+  return pathname === "/profile" || pathname.startsWith("/profile/");
 }
 
 /** Public stream watch page (`/stream/:id`), not photo-upload etc. */
@@ -21,7 +21,7 @@ function isStreamWatchPath(pathname: string): boolean {
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const showMobileFooter = isDashboardPath(pathname);
+  const showMobileFooter = isProfilePath(pathname);
   const isHome = pathname === "/";
   const isStreamWatch = isStreamWatchPath(pathname);
   const pastHero = usePastHomeHero();
