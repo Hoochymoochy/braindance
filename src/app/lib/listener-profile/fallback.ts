@@ -87,7 +87,6 @@ export function scoreArchetypes(
  */
 export function classifyListenerFallback({
   stats,
-  traits: _traits,
 }: {
   stats: ListenerStats;
   traits?: ListenerTraits;
@@ -117,10 +116,7 @@ export function classifyListenerFallback({
 }
 
 /** @deprecated Evidence is now the header stats; kept for test compatibility. */
-export function buildEvidenceList(
-  stats: ListenerStats,
-  _archetype: ListenerArchetypeId
-): string[] {
+export function buildEvidenceList(stats: ListenerStats): string[] {
   return formatHeaderStats(stats)
     .filter((s) => s.value !== "0" && s.value !== "0m")
     .slice(0, 3)

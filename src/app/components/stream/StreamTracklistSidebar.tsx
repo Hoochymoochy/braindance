@@ -115,8 +115,6 @@ export function StreamTracklistSidebar({
     return () => {
       cancelled = true;
     };
-    // Re-sync when the clip or tracklist identity changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, videoId, tracks]);
 
   const fireTracklistOpened = () => {

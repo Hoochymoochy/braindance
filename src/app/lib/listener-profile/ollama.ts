@@ -38,10 +38,11 @@ export class OllamaError extends Error {
 }
 
 /** @deprecated Classification is rule-based; this always throws. */
-export async function generateListenerArchetypeWithOllama(_args: {
+export async function generateListenerArchetypeWithOllama(_args?: {
   stats: ListenerStats;
   traits: ListenerTraits;
 }): Promise<ListenerArchetypeResult> {
+  void _args;
   void ARCHETYPE_CATALOG;
   void ALL_ARCHETYPE_IDS;
   throw new OllamaError(

@@ -203,14 +203,11 @@ describe("Listener Archetype System", () => {
     });
 
     it("buildEvidenceList stays non-empty for active stats", () => {
-      const evidence = buildEvidenceList(
-        {
-          ...ZERO_STATS,
-          uniqueDjs: 4,
-          savedSets: 3,
-        },
-        "explorer"
-      );
+      const evidence = buildEvidenceList({
+        ...ZERO_STATS,
+        uniqueDjs: 4,
+        savedSets: 3,
+      });
       expect(evidence.length).toBeGreaterThan(0);
     });
   });
