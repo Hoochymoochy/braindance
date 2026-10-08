@@ -71,6 +71,7 @@ export default function AppSettingsMenu({
 
   const menuItemClass =
     "block w-full rounded-lg px-3 py-2.5 text-left text-sm text-zinc-700 transition-colors duration-bends-fast ease-bends hover:bg-black/[0.04] hover:text-brand-from dark:text-zinc-200 dark:hover:bg-brand-from/10";
+  const isOnProfilePage = pathname === "/profile";
 
   return (
     <div
@@ -98,29 +99,39 @@ export default function AppSettingsMenu({
             openUp ? "bottom-full mb-2" : "top-full mt-2"
           )}
         >
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              trackEvent("profile_clicked", { placement: menuPlacement });
-              setOpen(false);
-              router.push("/profile");
-            }}
-            className={menuItemClass}
-          >
-            Profile
-          </button>
-
-          {userId ? (
+          {isOnProfilePage && userId ? (
             <button
               type="button"
               role="menuitem"
               onClick={() => {
                 setOpen(false);
-                if (pathname === "/profile") {
-                  window.dispatchEvent(new Event(EDIT_PROFILE_EVENT));
-                  return;
-                }
+                window.dispatchEvent(new Event(EDIT_PROFILE_EVENT));
+              }}
+              className={menuItemClass}
+            >
+              Edit profile
+            </button>
+          ) : (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                trackEvent("profile_clicked", { placement: menuPlacement });
+                setOpen(false);
+                router.push("/profile");
+              }}
+              className={menuItemClass}
+            >
+              Profile
+            </button>
+          )}
+
+          {userId && !isOnProfilePage ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
                 router.push("/profile?edit=1");
               }}
               className={menuItemClass}
