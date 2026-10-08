@@ -41,6 +41,7 @@ npm test        # Jest
 | `NEXT_PUBLIC_TWITCH_PARENT` | Hostname Twitch allows for embeds (e.g. `localhost` locally, your domain in prod). Defaults to `localhost` if unset. |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website UUID (public). When set, loads the analytics script site-wide. |
 | `NEXT_PUBLIC_UMAMI_SCRIPT_URL` | Optional. Defaults to `https://analytics.hoochymoochy.xyz/script.js`. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role secret key (server-side only) used for listener analytics aggregation and archetype caching. |
 
 Copy from your hoster / Supabase dashboard; there is no committed `.env` in-repo.
 
@@ -83,9 +84,9 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 
 **Globe:** `GlobeHeatmap` is loaded with **`next/dynamic({ ssr: false })`** from the stream page so `react-globe.gl` never runs on the server (`window` / WebGL).
 
-### Profiles / crates / moments
+### Profiles / crates / moments / listener archetypes
 
-Run `supabase/migrations/001_profiles_crates_moments.sql`, then `002_profile_on_signup_trigger.sql`, then `003_public_profile_read.sql` in the Supabase SQL editor. Tables: `profiles`, `crates`, `crate_sets`, `moments` (public read; owner-only write).
+Run `supabase/migrations/001_profiles_crates_moments.sql`, then `002_profile_on_signup_trigger.sql`, `003_public_profile_read.sql`, and `20261007011500_listener_archetypes.sql` in the Supabase SQL editor. Tables: `profiles`, `crates`, `crate_sets`, `moments`, `listener_archetypes`, `listening_sessions`.
 
 ---
 
@@ -99,6 +100,7 @@ Implemented in `src/app/api/`. They call **`BACKEND_URL`** (and optional backup)
 | `POST /api/dj-sets` | `GET {BACKEND_URL}/dj-sets/:videoId` | Body: `{ "videoId": "..." }` |
 | `GET /api/streams/[id]` | `GET {BACKEND_URL}/streams/:id` | Mock if `STREAM_UI_MOCKS` |
 | `GET /api/streams/[id]/tracks` | `GET {BACKEND_URL}/streams/:id/tracks` | Response may normalize to `{ tracks: [...] }` |
+| `GET /api/listener-profile` | Local rule-based classifier | Listening style + header stats (`?userId=...`, `?force=true`) |
 
 Shared fetch helpers: `src/app/lib/backend/http.ts`.
 

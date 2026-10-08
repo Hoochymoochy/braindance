@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Play, Star, Trash2 } from "lucide-react";
 import type { Moment } from "@/app/lib/profile/moments";
-import { youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
+import { YoutubeThumbImage } from "@/app/components/ui/YoutubeThumbImage";
 import { cn } from "@/lib/utils";
 
 export function MomentsTrackRow({
@@ -25,7 +24,6 @@ export function MomentsTrackRow({
   favoriteDisabled?: boolean;
 }) {
   const href = `/stream/${moment.video_id}?t=${moment.timestamp_seconds}`;
-  const thumb = youtubeThumbnailUrl(moment.video_id, "mqdefault");
   const isFavorite = typeof moment.favorite_rank === "number";
 
   return (
@@ -63,7 +61,7 @@ export function MomentsTrackRow({
           href={href}
           className="relative h-10 w-10 shrink-0 overflow-hidden rounded-sm bg-zinc-200 dark:bg-zinc-800"
         >
-          <Image src={thumb} alt="" fill className="object-cover" sizes="40px" />
+          <YoutubeThumbImage videoId={moment.video_id} sizes="80px" />
         </Link>
       ) : null}
 

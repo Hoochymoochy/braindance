@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   ensureProfileForCurrentUser,
   getProfile,
@@ -21,16 +20,16 @@ import {
   pickTopMoments,
   setMomentFavorite,
   sortMomentsForProfile,
+  updateMomentNote,
   type Moment,
 } from "@/app/lib/profile/moments";
-import { supabase } from "@/app/lib/utils/supabaseClient";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
+import { ListenerArchetypeSection } from "@/app/components/profile/ListenerArchetypeSection";
 import { CrateCard } from "@/app/components/profile/CrateCard";
 import { CreateCrateTile } from "@/app/components/profile/CreateCrateTile";
 import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
 
 export default function ProfilePage() {
-  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [crates, setCrates] = useState<CratePreview[]>([]);
   const [moments, setMoments] = useState<Moment[]>([]);
@@ -89,10 +88,18 @@ export default function ProfilePage() {
     await refresh();
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    await fetch("/api/auth/token", { method: "DELETE" });
-    router.push("/login");
+  const handleSaveMomentNote = async (momentId: string, note: string) => {
+    try {
+      const updated = await updateMomentNote(momentId, note);
+      setMoments((prev) =>
+        sortMomentsForProfile(
+          prev.map((m) => (m.id === updated.id ? updated : m))
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save note");
+      throw err;
+    }
   };
 
   return (
@@ -112,8 +119,10 @@ export default function ProfilePage() {
             isOwner
             topMoments={pickTopMoments(moments)}
             onSave={handleSaveProfile}
-            onLogout={handleLogout}
+            onSaveMomentNote={handleSaveMomentNote}
           />
+
+          <ListenerArchetypeSection userId={profile.id} />
 
           <section className="space-y-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -154,7 +163,8 @@ export default function ProfilePage() {
               <h2 className="text-2xl font-bold tracking-tight">Moments</h2>
               <p className="mt-1 text-sm text-zinc-500">
                 Moments grouped by set — open one to see the tracklist. Star up
-                to {MAX_FAVORITE_MOMENTS} for your profile card.
+                to {MAX_FAVORITE_MOMENTS} and add a short note for your profile
+                card.
               </p>
             </div>
 

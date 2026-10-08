@@ -17,6 +17,7 @@ import {
   type Moment,
 } from "@/app/lib/profile/moments";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
+import { ListenerArchetypeSection } from "@/app/components/profile/ListenerArchetypeSection";
 import { CrateCard } from "@/app/components/profile/CrateCard";
 import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
 
@@ -84,6 +85,8 @@ export default function PublicProfilePage() {
             profile={profile}
             topMoments={pickTopMoments(moments)}
           />
+
+          <ListenerArchetypeSection userId={profile.id} />
 
           <section className="space-y-4">
             <div>

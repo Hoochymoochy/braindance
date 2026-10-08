@@ -1,57 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import { Music2 } from "lucide-react";
-import {
-  upgradeYoutubeThumbnail,
-  youtubeThumbnailFallbackUrl,
-} from "@/app/lib/utils/youtube";
+import { upgradeYoutubeThumbnail } from "@/app/lib/utils/youtube";
+import { YoutubeThumbImage } from "@/app/components/ui/YoutubeThumbImage";
 import { cn } from "@/lib/utils";
-
-/** YouTube often returns HTTP 200 for maxres with a ~120px gray stub — step down. */
-const MIN_REAL_THUMB_WIDTH = 200;
-
-function CoverThumb({
-  src,
-  videoId,
-  sizes,
-}: {
-  src: string;
-  videoId?: string | null;
-  sizes: string;
-}) {
-  const hiRes = upgradeYoutubeThumbnail(src, videoId) ?? src;
-  const [thumbSrc, setThumbSrc] = useState(hiRes);
-
-  useEffect(() => {
-    setThumbSrc(hiRes);
-  }, [hiRes]);
-
-  const stepDown = () => {
-    const next = youtubeThumbnailFallbackUrl(thumbSrc);
-    if (next !== thumbSrc) setThumbSrc(next);
-  };
-
-  return (
-    <Image
-      src={thumbSrc}
-      alt=""
-      fill
-      unoptimized
-      quality={100}
-      className="object-cover"
-      sizes={sizes}
-      onLoad={(e) => {
-        const img = e.currentTarget;
-        if (img.naturalWidth > 0 && img.naturalWidth < MIN_REAL_THUMB_WIDTH) {
-          stepDown();
-        }
-      }}
-      onError={stepDown}
-    />
-  );
-}
 
 /** Spotify-style playlist cover: 2×2 mosaic or single art / empty state. */
 export function CrateCover({
@@ -112,7 +64,7 @@ export function CrateCover({
           <Music2 className="h-1/3 w-1/3 text-white/80" />
         </div>
       ) : arts.length === 1 ? (
-        <CoverThumb
+        <YoutubeThumbImage
           src={arts[0]!.src}
           videoId={arts[0]!.videoId}
           sizes={imageSizes}
@@ -123,7 +75,7 @@ export function CrateCover({
             const art = arts[i];
             return art ? (
               <div key={i} className="relative">
-                <CoverThumb
+                <YoutubeThumbImage
                   src={art.src}
                   videoId={art.videoId}
                   sizes={mosaicSizes}

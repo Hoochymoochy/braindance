@@ -177,6 +177,28 @@ export async function deleteMoment(momentId: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/** Max length for favorite spotlight notes on the profile card. */
+export const MAX_MOMENT_NOTE_LENGTH = 40;
+
+export async function updateMomentNote(
+  momentId: string,
+  note: string
+): Promise<Moment> {
+  const userId = await ensureProfileForCurrentUser();
+  const trimmed = note.trim().slice(0, MAX_MOMENT_NOTE_LENGTH);
+
+  const { data, error } = await supabase
+    .from("moments")
+    .update({ note: trimmed })
+    .eq("id", momentId)
+    .eq("user_id", userId)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return normalizeMoment(data as Moment);
+}
+
 /**
  * Pin or unpin a moment as a profile favorite.
  * When pinning, assigns the next free rank (1–3). Max 3 favorites.

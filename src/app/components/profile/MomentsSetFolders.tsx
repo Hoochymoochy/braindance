@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import {
   groupMomentsBySet,
   type Moment,
 } from "@/app/lib/profile/moments";
-import { youtubeThumbnailUrl } from "@/app/lib/utils/youtube";
 import { MomentsTrackRow } from "@/app/components/profile/MomentsTrackRow";
+import { YoutubeThumbImage } from "@/app/components/ui/YoutubeThumbImage";
 import { cn } from "@/lib/utils";
 
 function defaultOpenIds(moments: Moment[]): Set<string> {
@@ -59,7 +58,6 @@ export function MomentsSetFolders({
     <div className="space-y-2">
       {groups.map((group) => {
         const open = openIds.has(group.video_id);
-        const thumb = youtubeThumbnailUrl(group.video_id, "mqdefault");
         const panelId = `moments-set-${group.video_id}`;
 
         return (
@@ -83,12 +81,9 @@ export function MomentsSetFolders({
                   aria-hidden
                 />
                 <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-800">
-                  <Image
-                    src={thumb}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="44px"
+                  <YoutubeThumbImage
+                    videoId={group.video_id}
+                    sizes="88px"
                   />
                 </span>
                 <span className="min-w-0 flex-1">
