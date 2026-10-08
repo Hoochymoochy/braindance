@@ -89,13 +89,13 @@ export function ProfileHeader({
   };
 
   return (
-    <header className="space-y-4">
+    <header className="space-y-2.5">
       {editing ? (
         <div className="space-y-3">
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="input-bends w-full max-w-md text-2xl font-medium tracking-tight"
+            className="input-bends w-full max-w-md text-xl font-medium tracking-tight"
             placeholder="Display name"
             aria-label="Display name"
           />
@@ -132,8 +132,8 @@ export function ProfileHeader({
         </div>
       ) : (
         <>
-          <div className="flex items-baseline gap-3">
-            <h1 className="min-w-0 text-4xl font-medium tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl sm:leading-[1.1]">
+          <div className="flex items-baseline gap-2.5">
+            <h1 className="min-w-0 text-[2.75rem] font-medium leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-[3rem]">
               {title}
             </h1>
             <button
@@ -150,15 +150,15 @@ export function ProfileHeader({
               )}
             </button>
           </div>
-          <p className="text-sm tracking-wide text-zinc-500">
+          <p className="text-[13px] tracking-wide text-zinc-500">
             @{profile.username}
           </p>
           {profile.bio ? (
-            <p className="max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            <p className="max-w-md text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-300 sm:text-base">
               {profile.bio}
             </p>
           ) : isOwner ? (
-            <p className="text-sm text-zinc-400">
+            <p className="text-[15px] text-zinc-400">
               Add a bio so people know your vibe.
             </p>
           ) : null}
