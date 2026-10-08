@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Play, Star, Trash2 } from "lucide-react";
+import { Play, Trash2 } from "lucide-react";
 import type { Moment } from "@/app/lib/profile/moments";
 import { YoutubeThumbImage } from "@/app/components/ui/YoutubeThumbImage";
 import { cn } from "@/lib/utils";
@@ -11,20 +11,14 @@ export function MomentsTrackRow({
   index,
   nested = false,
   onDelete,
-  onToggleFavorite,
-  favoriteDisabled,
 }: {
   moment: Moment;
   index: number;
   /** Inside a set folder: tracklist-style row (no set name / redundant thumb). */
   nested?: boolean;
   onDelete?: () => void;
-  onToggleFavorite?: () => void;
-  /** True when 3 favorites are already pinned and this row isn't one. */
-  favoriteDisabled?: boolean;
 }) {
   const href = `/stream/${moment.video_id}?t=${moment.timestamp_seconds}`;
-  const isFavorite = typeof moment.favorite_rank === "number";
 
   return (
     <div
@@ -36,24 +30,13 @@ export function MomentsTrackRow({
       )}
     >
       <div className="relative flex h-8 w-8 items-center justify-center">
-        {isFavorite ? (
-          <span
-            className="text-xs font-semibold tabular-nums text-brand-from"
-            title={`Favorite #${moment.favorite_rank}`}
-          >
-            ★{moment.favorite_rank}
-          </span>
-        ) : (
-          <>
-            <span className="text-sm tabular-nums text-zinc-400 group-hover:hidden">
-              {index + 1}
-            </span>
-            <Play
-              className="absolute hidden h-3.5 w-3.5 fill-current text-zinc-800 group-hover:block dark:text-zinc-100"
-              aria-hidden
-            />
-          </>
-        )}
+        <span className="text-sm tabular-nums text-zinc-400 group-hover:hidden">
+          {index + 1}
+        </span>
+        <Play
+          className="absolute hidden h-3.5 w-3.5 fill-current text-zinc-800 group-hover:block dark:text-zinc-100"
+          aria-hidden
+        />
       </div>
 
       {!nested ? (
@@ -83,38 +66,6 @@ export function MomentsTrackRow({
       </Link>
 
       <div className="flex items-center gap-0.5">
-        {onToggleFavorite ? (
-          <button
-            type="button"
-            aria-label={
-              isFavorite
-                ? "Remove from top moments"
-                : favoriteDisabled
-                  ? "Top moments full — unpin one first"
-                  : "Add to top moments"
-            }
-            title={
-              isFavorite
-                ? "Remove from top 3"
-                : favoriteDisabled
-                  ? "Top 3 full — unpin one first"
-                  : "Pin to top 3"
-            }
-            disabled={favoriteDisabled && !isFavorite}
-            onClick={onToggleFavorite}
-            className={cn(
-              "rounded-lg p-1.5 transition-colors",
-              isFavorite
-                ? "text-brand-from"
-                : "text-zinc-400 opacity-0 group-hover:opacity-100 hover:text-brand-from disabled:cursor-not-allowed disabled:opacity-30"
-            )}
-          >
-            <Star
-              className={cn("h-3.5 w-3.5", isFavorite && "fill-current")}
-            />
-          </button>
-        ) : null}
-
         {onDelete ? (
           <button
             type="button"
@@ -124,11 +75,11 @@ export function MomentsTrackRow({
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
-        ) : !onToggleFavorite ? (
+        ) : (
           <span className="font-mono text-xs tabular-nums text-zinc-500 sm:hidden">
             {moment.timestamp_label}
           </span>
-        ) : null}
+        )}
       </div>
     </div>
   );

@@ -12,8 +12,6 @@ import {
 } from "@/app/lib/profile/crates";
 import {
   listMoments,
-  pickTopMoments,
-  sortMomentsForProfile,
   type Moment,
 } from "@/app/lib/profile/moments";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
@@ -49,7 +47,7 @@ export default function PublicProfilePage() {
       ]);
       setProfile(p);
       setCrates(c);
-      setMoments(sortMomentsForProfile(m));
+      setMoments(m);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile");
     } finally {
@@ -81,10 +79,7 @@ export default function PublicProfilePage() {
         </div>
       ) : (
         <>
-          <ProfileHeader
-            profile={profile}
-            topMoments={pickTopMoments(moments)}
-          />
+          <ProfileHeader profile={profile} />
 
           <ListenerArchetypeSection userId={profile.id} />
 
@@ -115,7 +110,7 @@ export default function PublicProfilePage() {
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Moments</h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Saved timestamps from sets they love.
+                Tracks saved from sets.
               </p>
             </div>
 

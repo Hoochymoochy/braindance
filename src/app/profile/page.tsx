@@ -16,11 +16,6 @@ import {
 import {
   deleteMoment,
   listMoments,
-  MAX_FAVORITE_MOMENTS,
-  pickTopMoments,
-  setMomentFavorite,
-  sortMomentsForProfile,
-  updateMomentNote,
   type Moment,
 } from "@/app/lib/profile/moments";
 import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
@@ -48,17 +43,13 @@ export default function ProfilePage() {
       ]);
       setProfile(p);
       setCrates(c);
-      setMoments(sortMomentsForProfile(m));
+      setMoments(m);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile");
     } finally {
       setLoading(false);
     }
   }, []);
-
-  const favoriteCount = moments.filter(
-    (m) => typeof m.favorite_rank === "number"
-  ).length;
 
   useEffect(() => {
     refresh();
@@ -88,20 +79,6 @@ export default function ProfilePage() {
     await refresh();
   };
 
-  const handleSaveMomentNote = async (momentId: string, note: string) => {
-    try {
-      const updated = await updateMomentNote(momentId, note);
-      setMoments((prev) =>
-        sortMomentsForProfile(
-          prev.map((m) => (m.id === updated.id ? updated : m))
-        )
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save note");
-      throw err;
-    }
-  };
-
   return (
     <div className="mx-auto max-w-5xl space-y-10 px-4 pb-16 text-zinc-900 dark:text-zinc-100">
       {error ? (
@@ -117,9 +94,7 @@ export default function ProfilePage() {
           <ProfileHeader
             profile={profile}
             isOwner
-            topMoments={pickTopMoments(moments)}
             onSave={handleSaveProfile}
-            onSaveMomentNote={handleSaveMomentNote}
           />
 
           <ListenerArchetypeSection userId={profile.id} />
@@ -162,9 +137,7 @@ export default function ProfilePage() {
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Moments</h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Moments grouped by set — open one to see the tracklist. Star up
-                to {MAX_FAVORITE_MOMENTS} and add a short note for your profile
-                card.
+                Tracks you saved from sets.
               </p>
             </div>
 
@@ -175,25 +148,6 @@ export default function ProfilePage() {
             ) : (
               <MomentsSetFolders
                 moments={moments}
-                favoriteCount={favoriteCount}
-                maxFavorites={MAX_FAVORITE_MOMENTS}
-                onToggleFavorite={async (moment) => {
-                  try {
-                    const next = typeof moment.favorite_rank !== "number";
-                    const updated = await setMomentFavorite(moment.id, next);
-                    setMoments((prev) =>
-                      sortMomentsForProfile(
-                        prev.map((m) => (m.id === updated.id ? updated : m))
-                      )
-                    );
-                  } catch (err) {
-                    setError(
-                      err instanceof Error
-                        ? err.message
-                        : "Could not update favorite"
-                    );
-                  }
-                }}
                 onDelete={async (moment) => {
                   try {
                     await deleteMoment(moment.id);

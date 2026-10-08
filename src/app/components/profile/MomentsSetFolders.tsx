@@ -20,15 +20,9 @@ function defaultOpenIds(moments: Moment[]): Set<string> {
 
 export function MomentsSetFolders({
   moments,
-  favoriteCount = 0,
-  maxFavorites,
-  onToggleFavorite,
   onDelete,
 }: {
   moments: Moment[];
-  favoriteCount?: number;
-  maxFavorites?: number;
-  onToggleFavorite?: (moment: Moment) => void | Promise<void>;
   onDelete?: (moment: Moment) => void | Promise<void>;
 }) {
   const groups = groupMomentsBySet(moments);
@@ -55,31 +49,34 @@ export function MomentsSetFolders({
   if (groups.length === 0) return null;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {groups.map((group) => {
         const open = openIds.has(group.video_id);
         const panelId = `moments-set-${group.video_id}`;
 
         return (
-          <div
-            key={group.video_id}
-            className="overflow-hidden rounded-xl border border-black/8 bg-white/40 dark:border-brand-from/15 dark:bg-black/20"
-          >
-            <div className="flex items-center gap-2 px-3 py-2.5">
+          <div key={group.video_id}>
+            <div className="flex items-center gap-1 rounded-xl px-1 transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]">
               <button
                 type="button"
                 onClick={() => toggle(group.video_id)}
                 aria-expanded={open}
                 aria-controls={panelId}
-                className="flex min-w-0 flex-1 items-center gap-3 text-left transition-colors"
+                aria-label={open ? "Collapse set" : "Expand set"}
+                className="shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
               >
                 <ChevronRight
                   className={cn(
-                    "h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-bends-fast ease-bends",
+                    "h-4 w-4 transition-transform duration-bends-fast ease-bends",
                     open && "rotate-90"
                   )}
                   aria-hidden
                 />
+              </button>
+              <Link
+                href={`/stream/${group.video_id}`}
+                className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pr-2"
+              >
                 <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-800">
                   <YoutubeThumbImage
                     videoId={group.video_id}
@@ -95,19 +92,13 @@ export function MomentsSetFolders({
                     {group.moments.length === 1 ? "moment" : "moments"}
                   </span>
                 </span>
-              </button>
-              <Link
-                href={`/stream/${group.video_id}`}
-                className="shrink-0 rounded-full border border-black/8 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:border-brand-from/35 hover:text-brand-from dark:border-brand-from/20 dark:text-zinc-300"
-              >
-                Open set
               </Link>
             </div>
 
             {open ? (
               <div
                 id={panelId}
-                className="border-t border-black/6 px-1 py-1 dark:border-brand-from/10"
+                className="border-t border-black/5 py-1 dark:border-white/10"
               >
                 {group.moments.map((moment, i) => (
                   <MomentsTrackRow
@@ -115,16 +106,6 @@ export function MomentsSetFolders({
                     moment={moment}
                     index={i}
                     nested
-                    favoriteDisabled={
-                      typeof maxFavorites === "number" &&
-                      favoriteCount >= maxFavorites &&
-                      typeof moment.favorite_rank !== "number"
-                    }
-                    onToggleFavorite={
-                      onToggleFavorite
-                        ? () => onToggleFavorite(moment)
-                        : undefined
-                    }
                     onDelete={onDelete ? () => onDelete(moment) : undefined}
                   />
                 ))}
