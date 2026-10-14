@@ -541,6 +541,39 @@ body {
   .shadow-glow-brand-via {
     box-shadow: 0 0 24px rgb(var(--brand-via-rgb) / 0.35);
   }
+
+  /** Rotating brand shine around the home search field */
+  .search-shine {
+    isolation: isolate;
+  }
+  .search-shine-ring {
+    pointer-events: none;
+    position: absolute;
+    inset: -1.5px;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 9999px;
+  }
+  .search-shine-ring::before {
+    content: "";
+    position: absolute;
+    inset: -60%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0%,
+      transparent 62%,
+      rgb(var(--brand-from-rgb) / 0.15) 70%,
+      rgb(var(--brand-from-rgb) / 0.95) 78%,
+      rgb(var(--brand-via-rgb) / 0.95) 84%,
+      rgb(var(--brand-to-rgb) / 0.75) 90%,
+      transparent 96%,
+      transparent 100%
+    );
+    animation: search-shine-spin 3.2s linear infinite;
+  }
+  .search-shine:focus-within .search-shine-ring::before {
+    animation-duration: 2.2s;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -554,6 +587,21 @@ body {
   }
   .motion-enter-float.is-inview:hover {
     transform: none;
+  }
+  .search-shine-ring::before {
+    animation: none !important;
+    background: linear-gradient(
+      120deg,
+      rgb(var(--brand-from-rgb) / 0.55),
+      rgb(var(--brand-via-rgb) / 0.45),
+      rgb(var(--brand-to-rgb) / 0.4)
+    );
+  }
+}
+
+@keyframes search-shine-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

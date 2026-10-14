@@ -49,10 +49,11 @@ function SetsSearchField({
   onClear: () => void;
 }) {
   return (
-    <label className="relative block w-full max-w-sm shrink-0 sm:w-72">
+    <label className="search-shine relative block w-full max-w-md shrink-0 sm:w-[22rem]">
+      <span className="search-shine-ring" aria-hidden />
       <span className="sr-only">Search DJ sets</span>
       <Search
-        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+        className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-zinc-500"
         aria-hidden
       />
       <input
@@ -60,13 +61,13 @@ function SetsSearchField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search all sets…"
-        className="w-full rounded-full border border-black/10 bg-white/70 py-2.5 pl-10 pr-10 text-sm text-zinc-900 outline-none backdrop-blur-sm transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-400 focus:border-brand-from/40 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] dark:border-brand-from/20 dark:bg-black/30 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+        className="relative z-[1] w-full rounded-full border border-white/10 bg-black py-3 pl-11 pr-11 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-500 focus:border-transparent"
       />
       {value ? (
         <button
           type="button"
           onClick={onClear}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
+          className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full p-1 text-zinc-500 transition-colors hover:text-zinc-200"
           aria-label="Clear search"
         >
           <X className="h-3.5 w-3.5" />
