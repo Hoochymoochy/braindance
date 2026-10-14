@@ -27,6 +27,7 @@ import {
 import { StreamCrateQueue } from "@/app/components/stream/StreamCrateQueue";
 import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
 import type { VaultWeek } from "@/app/lib/vault/types";
+import { isLikelySpamTracklist } from "@/app/lib/utils/tracklistQuality";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
 
@@ -426,12 +427,17 @@ export default function BraindanceUserStream() {
             typeof body.error === "string" && body.error.trim()
               ? body.error.trim()
               : null;
+          const spammy = mapped.length > 0 && isLikelySpamTracklist(mapped);
 
           if (!tr.ok) {
             setDjSetTracks([]);
             setDjSetTracklistError(
               upstreamErr ?? `Tracklist request failed (HTTP ${tr.status}).`
             );
+          } else if (spammy) {
+            // YouTube-comment scrapes sometimes store meme cues (same title on every stamp).
+            setDjSetTracks([]);
+            setDjSetTracklistError("No reliable tracklist found.");
           } else if (mapped.length > 0) {
             setDjSetTracks(mapped);
             setDjSetTracklistError(null);
