@@ -29,10 +29,6 @@ type DjSetsResponse = {
   currentSets?: DjSet[];
   /** Full catalog (duration-filtered only); used for Random, includes sets older than 90 days. */
   allSets?: DjSet[];
-  featured?: {
-    daily?: DjSet[];
-    weekly?: DjSet[];
-  };
 };
 
 function SectionHeader({ title }: { title: string }) {
@@ -98,7 +94,6 @@ export default function Home() {
   const router = useRouter();
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
   const [catalogSets, setCatalogSets] = useState<DjSet[]>([]);
-  const [featuredWeekly, setFeaturedWeekly] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,9 +137,6 @@ export default function Home() {
       randomPoolRef.current = pool;
       setAllDjSets(current);
       setCatalogSets(pool);
-      setFeaturedWeekly(
-        Array.isArray(data.featured?.weekly) ? data.featured.weekly : []
-      );
     };
 
     const getDjSets = async (): Promise<DjSetsResponse | null> => {
@@ -167,7 +159,6 @@ export default function Home() {
           randomPoolRef.current = [];
           setAllDjSets([]);
           setCatalogSets([]);
-          setFeaturedWeekly([]);
         }
         return cached;
       } finally {
@@ -297,32 +288,6 @@ export default function Home() {
         <div ref={heroSentinelRef} className="h-px w-full" aria-hidden />
 
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
-          {!isSearching ? (
-            <div className="mb-12">
-              <div className="mb-5">
-                <SectionHeader title="Featured This Week" />
-              </div>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {loading && skeletons(3)}
-                {!loading &&
-                  featuredWeekly.map((set, i) => (
-                    <StreamCard
-                      key={set.video_id}
-                      set={set}
-                      index={i}
-                      showAddToCrate={false}
-                    />
-                  ))}
-                {!loading && featuredWeekly.length === 0 && (
-                  <p className="col-span-full py-4 text-sm text-[#7a7a7a]">
-                    No featured picks yet. Refresh the DJ feed or check back
-                    soon.
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : null}
-
           <div>
             {/* One search input stays mounted so focus isn't lost when results kick in */}
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
