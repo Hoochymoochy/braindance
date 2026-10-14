@@ -105,7 +105,12 @@ export async function fetchJsonWithTimeout(
   url: string,
   timeoutMs: number,
   logTag: string,
-  options?: { revalidateSeconds?: number | false }
+  options?: {
+    revalidateSeconds?: number | false;
+    method?: string;
+    headers?: Record<string, string>;
+    body?: string;
+  }
 ): Promise<unknown> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -113,13 +118,20 @@ export async function fetchJsonWithTimeout(
     const nodeUrl = new URL(url);
     const isHttps = nodeUrl.protocol === "https:";
     const revalidate = options?.revalidateSeconds;
+    const method = (options?.method ?? "GET").toUpperCase();
 
     const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
-      method: "GET",
-      headers: { "content-type": "application/json" },
+      method,
+      headers: {
+        "content-type": "application/json",
+        ...(options?.headers ?? {}),
+      },
       signal: controller.signal,
     };
-    if (revalidate === false) {
+    if (options?.body != null) {
+      fetchOptions.body = options.body;
+    }
+    if (method !== "GET" || revalidate === false) {
       fetchOptions.cache = "no-store";
     } else {
       fetchOptions.next = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Settings } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
@@ -112,18 +113,17 @@ export default function AppSettingsMenu({
               Edit profile
             </button>
           ) : (
-            <button
-              type="button"
+            <Link
+              href="/profile"
               role="menuitem"
               onClick={() => {
                 trackEvent("profile_clicked", { placement: menuPlacement });
                 setOpen(false);
-                router.push("/profile");
               }}
               className={menuItemClass}
             >
               Profile
-            </button>
+            </Link>
           )}
 
           <div

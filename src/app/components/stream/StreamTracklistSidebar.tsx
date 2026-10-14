@@ -12,6 +12,8 @@ import {
 } from "@/app/lib/profile/moments";
 import { useAuthUserId } from "@/app/lib/hooks/useAuthUserId";
 import { timestampToSeconds } from "@/app/lib/utils/timestamp";
+import { reportVaultEvent } from "@/app/lib/vault/client";
+import { vaultTrackKey } from "@/app/lib/vault/week";
 
 export type TrackRow = {
   id: string;
@@ -57,6 +59,7 @@ export function StreamTracklistSidebar({
   onExpandedChange,
   videoId,
   setTitle,
+  onSeek,
 }: {
   tracks: TrackRow[];
   emptyHint?: string;
@@ -67,6 +70,8 @@ export function StreamTracklistSidebar({
   /** When set, each track can be saved as a profile moment. */
   videoId?: string;
   setTitle?: string;
+  /** Jump the stream player to a track timestamp (seconds). */
+  onSeek?: (seconds: number) => void;
 }) {
   const router = useRouter();
   const userId = useAuthUserId();
@@ -171,6 +176,11 @@ export function StreamTracklistSidebar({
     setSavingId(t.id);
     setSaveError("");
     try {
+      const trackKey = vaultTrackKey({
+        artist: t.artist,
+        title: t.title,
+        timestamp: t.timestamp,
+      });
       if (existingId) {
         await deleteMoment(existingId);
         setSavedByTrackId((prev) => {
@@ -179,6 +189,13 @@ export function StreamTracklistSidebar({
           return next;
         });
         trackEvent("moment_removed", trackPayload(t));
+        void reportVaultEvent({
+          type: "unsave_track",
+          videoId,
+          trackKey,
+          djName: analytics?.artist,
+          setTitle: setTitle ?? analytics?.set_title ?? "",
+        });
       } else {
         const created = await addMoment({
           video_id: videoId,
@@ -193,6 +210,14 @@ export function StreamTracklistSidebar({
           return next;
         });
         trackEvent("moment_saved", trackPayload(t));
+        void reportVaultEvent({
+          type: "save_track",
+          videoId,
+          momentId: created.id,
+          trackKey,
+          djName: analytics?.artist,
+          setTitle: setTitle ?? analytics?.set_title ?? "",
+        });
       }
     } catch (err) {
       setSaveError(
@@ -272,9 +297,26 @@ export function StreamTracklistSidebar({
                   }}
                 >
                   <div className="flex gap-2">
-                    <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
-                      {t.timestamp}
-                    </span>
+                    {onSeek && t.timestamp !== "—" ? (
+                      <button
+                        type="button"
+                        title={`Jump to ${t.timestamp}`}
+                        aria-label={`Jump to ${t.timestamp}: ${t.title}`}
+                        className="shrink-0 rounded-sm bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const seconds = timestampToSeconds(t.timestamp);
+                          trackEvent("track_clicked", trackPayload(t));
+                          onSeek(seconds);
+                        }}
+                      >
+                        {t.timestamp}
+                      </button>
+                    ) : (
+                      <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
+                        {t.timestamp}
+                      </span>
+                    )}
                     <div className="min-w-0 flex-1">
                       <ScrollableLine
                         text={t.title}
@@ -326,7 +368,7 @@ export function StreamTracklistSidebar({
                         </p>
                       )}
                     </div>
-                    {videoId ? (
+                    {videoId && userId ? (
                       <button
                         type="button"
                         title={

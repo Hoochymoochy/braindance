@@ -12,6 +12,12 @@ import {
 } from "@/app/lib/cache/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
 import { upgradeYoutubeThumbnail } from "@/app/lib/utils/youtube";
+import { getVaultUserId } from "@/app/lib/vault/auth";
+import {
+  getVaultProgress,
+  getVaultWeekByVideoId,
+  listVaultVideoIds,
+} from "@/app/lib/vault/queries";
 
 export const revalidate = 60;
 export const runtime = "nodejs";
@@ -227,8 +233,16 @@ export async function GET(request: NextRequest) {
         backendPayload.updated ??
         null);
 
+    let vaultIds = new Set<string>();
+    try {
+      vaultIds = await listVaultVideoIds();
+    } catch {
+      /* catalog still works if vault table unavailable */
+    }
+
     const filtered = items
       .filter((item) => Boolean(item.video_id) && passesDurationFilter(item))
+      .filter((item) => !vaultIds.has(item.video_id))
       .map(withHiResThumbnail);
 
     const listSets = filtered.filter((item) =>
@@ -241,6 +255,7 @@ export async function GET(request: NextRequest) {
 
     const backendWeekly = backendFeatured?.weekly
       ?.filter((item) => withinDays(item.published_at, MAX_LIST_AGE_DAYS))
+      .filter((item) => !vaultIds.has(item.video_id))
       .map(withHiResThumbnail);
 
     const payload = {
@@ -304,6 +319,25 @@ export async function POST(request: NextRequest) {
       BACKEND_URL: getPrimaryBackendUrl(),
       BACKEND_URL_BACKUP: getBackupBackendUrl(LOG) ?? "(not set)",
     });
+
+    // Do not leak vault exclusive metadata until the caller has unlocked it.
+    const vaultWeek = await getVaultWeekByVideoId(videoId);
+    if (vaultWeek) {
+      const userId = await getVaultUserId();
+      const progress = userId
+        ? await getVaultProgress(userId, vaultWeek.week_start)
+        : null;
+      if (!progress?.unlocked_at) {
+        routeLog("api/dj-sets", "POST vault-locked; withholding item", {
+          videoId,
+        });
+        return NextResponse.json({
+          item: null,
+          vaultLocked: true,
+          backendSource: null,
+        });
+      }
+    }
 
     const { raw, source } = await fetchDjSetByIdWithFallback(videoId, 30_000);
     const item = parseDjSetPayload(raw);

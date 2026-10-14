@@ -22,6 +22,9 @@ import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
 import { ProfileIntro } from "@/app/components/profile/ProfileIntro";
 import { CratesCollection } from "@/app/components/profile/CratesCollection";
 import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
+import { VaultSectionOwner } from "@/app/components/vault/VaultSection";
+import { reportVaultEvent } from "@/app/lib/vault/client";
+import { vaultTrackKey } from "@/app/lib/vault/week";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -101,6 +104,18 @@ export default function ProfilePage() {
           <section className="space-y-6">
             <div className="space-y-1">
               <h2 className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-brand-from/70">
+                Vault
+              </h2>
+              <p className="text-sm text-zinc-500">
+                Hit 100 this week for one exclusive set. Resets Monday UTC.
+              </p>
+            </div>
+            <VaultSectionOwner />
+          </section>
+
+          <section className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-brand-from/70">
                 Crates
               </h2>
               <p className="text-sm text-zinc-500">
@@ -150,6 +165,15 @@ export default function ProfilePage() {
                     setMoments((prev) =>
                       prev.filter((m) => m.id !== moment.id)
                     );
+                    void reportVaultEvent({
+                      type: "unsave_track",
+                      videoId: moment.video_id,
+                      trackKey: vaultTrackKey({
+                        artist: moment.track_artist,
+                        title: moment.track_title,
+                        timestamp: moment.timestamp_label,
+                      }),
+                    });
                   } catch (err) {
                     setError(
                       err instanceof Error

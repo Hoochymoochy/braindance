@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import AppSettingsMenu from "@/app/components/AppSettingsMenu";
+import AuthSessionSync from "@/app/components/AuthSessionSync";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
 import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
@@ -41,6 +42,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <AuthSessionSync />
       <Header />
       <header
         className={cn(

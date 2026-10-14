@@ -41,7 +41,7 @@ npm test        # Jest
 | `NEXT_PUBLIC_TWITCH_PARENT` | Hostname Twitch allows for embeds (e.g. `localhost` locally, your domain in prod). Defaults to `localhost` if unset. |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website UUID (public). When set, loads the analytics script site-wide. |
 | `NEXT_PUBLIC_UMAMI_SCRIPT_URL` | Optional. Defaults to `https://analytics.hoochymoochy.xyz/script.js`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role secret key (server-side only) used for listener analytics aggregation and archetype caching. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role secret key (server-side only) used for listener analytics aggregation, archetype caching, and vault progress writes. |
 
 Copy from your hoster / Supabase dashboard; there is no committed `.env` in-repo.
 
@@ -60,8 +60,30 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 | `/login` | Login / sign-up (Supabase + JWT cookie) → `/profile` |
 | `/profile` | Your profile: edit, share, crates + moments (JWT-protected) |
 | `/profile/crates/[crateId]` | Own crate (Spotify-style playlist view) |
-| `/u/[username]` | **Public shareable profile** |
+| `/u/[username]` | **Public shareable profile** (includes vault flex shelf) |
 | `/u/[username]/crates/[crateId]` | Public crate view |
+
+### Weekly Vault
+
+One hand-picked exclusive YouTube set per week. Users fill a shared meter to **100** (resets Monday 00:00 UTC). Unlocks are flex-only on profiles — strangers still need their own unlock to play.
+
+| Action | Points |
+|--------|--------|
+| Listen (per 10 min real playback) | +5 |
+| Save a track (like) | +5 (unlike removes it this week; re-like only counts next week) |
+| Finish a set | +10 |
+| Discover a new DJ | +15 |
+| New calendar day this week (UTC) | +5 |
+
+Set this week’s exclusive on the **backend** (ingests like `/dj-sets/add`, then upserts `vault_weeks`):
+
+```bash
+curl -X POST http://localhost:8000/vault/weeks \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.youtube.com/watch?v=XXXX"}'
+```
+
+Frontend also proxies the same call at `POST /api/vault/weeks`. Progress/unlock routes stay on Next: `GET /api/vault/me`, `POST /api/vault/events`, `GET /api/vault/week`, `GET /api/vault/access?videoId=`, `GET /api/vault/unlocks?userId=`.
 
 ---
 

@@ -5,6 +5,8 @@ export const YOUTUBE_IFRAME_ALLOW =
 type YoutubeEmbedOptions = {
   autoplay?: boolean;
   mute?: boolean;
+  /** Start playback at this offset (seconds). */
+  start?: number;
 };
 
 /**
@@ -23,7 +25,7 @@ export function buildYoutubeEmbedSrc(
 ): string {
   const trimmed = rawVideoIdOrUrl.trim();
   if (!trimmed) return "";
-  const { autoplay = false, mute = false } = options;
+  const { autoplay = false, mute = false, start } = options;
 
   let id = trimmed;
   if (
@@ -42,6 +44,14 @@ export function buildYoutubeEmbedSrc(
     modestbranding: "1",
     enablejsapi: "1",
   });
+
+  if (
+    typeof start === "number" &&
+    Number.isFinite(start) &&
+    start > 0
+  ) {
+    params.set("start", String(Math.floor(start)));
+  }
 
   const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
   if (site) {

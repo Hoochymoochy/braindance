@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
@@ -20,8 +20,13 @@ import {
   YOUTUBE_IFRAME_ALLOW,
 } from "@/app/lib/utils/youtube";
 import { trackEvent } from "@/app/lib/analytics";
-import { useYoutubePlaybackAnalytics } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
+import {
+  useYoutubePlaybackAnalytics,
+  type YoutubePlayerApi,
+} from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
 import { StreamCrateQueue } from "@/app/components/stream/StreamCrateQueue";
+import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
+import type { VaultWeek } from "@/app/lib/vault/types";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
 
@@ -147,25 +152,108 @@ export default function BraindanceUserStream() {
     null
   );
   const [isPlayerActivated, setIsPlayerActivated] = useState(false);
+  /** Initial YouTube embed offset (from `?t=` or first tracklist seek before play). */
+  const [startSeconds, setStartSeconds] = useState<number | undefined>();
+  const playerApiRef = useRef<YoutubePlayerApi | null>(null);
   const [analyticsSource, setAnalyticsSource] = useState<string | undefined>();
   const [crateId, setCrateId] = useState<string | null>(null);
+  const [vaultGate, setVaultGate] = useState<{
+    checking: boolean;
+    gated: boolean;
+    unlocked: boolean;
+    week: VaultWeek | null;
+    points: number;
+    reason: string | null;
+  }>({
+    checking: true,
+    gated: false,
+    unlocked: true,
+    week: null,
+    points: 0,
+    reason: null,
+  });
 
   useEffect(() => {
+    setIsPlayerActivated(false);
+    setStartSeconds(undefined);
+    setAnalyticsSource(undefined);
+    setCrateId(null);
+
     try {
       const params = new URLSearchParams(window.location.search);
       const src = params.get("src");
       if (src) setAnalyticsSource(src);
       const crate = params.get("crate");
       setCrateId(crate && crate.length > 0 ? crate : null);
+      const t = params.get("t");
+      if (t != null && t !== "") {
+        const seconds = Number(t);
+        if (Number.isFinite(seconds) && seconds >= 0) {
+          setStartSeconds(Math.floor(seconds));
+          setIsPlayerActivated(true);
+        }
+      }
     } catch {
       /* ignore */
     }
   }, [eventId]);
 
+  const handleSeek = useCallback(
+    (seconds: number) => {
+      const s = Math.max(0, Math.floor(seconds));
+      if (!Number.isFinite(s)) return;
+
+      if (!isPlayerActivated) {
+        setStartSeconds(s);
+        setIsPlayerActivated(true);
+        return;
+      }
+
+      playerApiRef.current?.seekTo(s);
+    },
+    [isPlayerActivated]
+  );
+
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       value
     );
+
+  const checkVaultAccess = useCallback(async (videoId: string) => {
+    const res = await fetch(
+      `/api/vault/access?videoId=${encodeURIComponent(videoId)}`,
+      { credentials: "same-origin", cache: "no-store" }
+    );
+    if (!res.ok) {
+      setVaultGate({
+        checking: false,
+        gated: false,
+        unlocked: true,
+        week: null,
+        points: 0,
+        reason: null,
+      });
+      return { locked: false as const };
+    }
+    const body = (await res.json()) as {
+      gated?: boolean;
+      unlocked?: boolean;
+      week?: VaultWeek | null;
+      points?: number;
+      reason?: string | null;
+    };
+    const gated = Boolean(body.gated);
+    const unlocked = body.unlocked !== false;
+    setVaultGate({
+      checking: false,
+      gated,
+      unlocked,
+      week: body.week ?? null,
+      points: body.points ?? 0,
+      reason: body.reason ?? null,
+    });
+    return { locked: gated && !unlocked };
+  }, []);
 
   const fetchEventData = useCallback(async () => {
     if (!eventId) {
@@ -179,8 +267,20 @@ export default function BraindanceUserStream() {
     setPipelineTracks([]);
     setDjSetTracks([]);
     setDjSetTracklistError(null);
+    setDjSet(null);
+    setMerchItems([]);
+    setVaultGate((prev) => ({ ...prev, checking: true }));
 
     try {
+      // Gate YouTube-id routes before any metadata fetch (keeps the set secret).
+      if (!isUuid(eventId)) {
+        const { locked } = await checkVaultAccess(eventId);
+        if (locked) {
+          setStreamLoading(false);
+          return;
+        }
+      }
+
       if (isUuid(eventId)) {
         const streamRes = await fetch(`/api/streams/${encodeURIComponent(eventId)}`);
         if (streamRes.ok) {
@@ -191,6 +291,12 @@ export default function BraindanceUserStream() {
           if (body.youtube_url) {
             const videoId =
               youtubeVideoIdFromUrl(body.youtube_url) ?? body.youtube_url.trim();
+            const { locked } = await checkVaultAccess(videoId);
+            if (locked) {
+              setStreamLoading(false);
+              return;
+            }
+
             const tracksRes = await fetch(
               `/api/streams/${encodeURIComponent(eventId)}/tracks`
             );
@@ -342,8 +448,11 @@ export default function BraindanceUserStream() {
       }
     } finally {
       setStreamLoading(false);
+      setVaultGate((prev) =>
+        prev.checking ? { ...prev, checking: false } : prev
+      );
     }
-  }, [eventId]);
+  }, [eventId, checkVaultAccess]);
 
   const getEmbedUrl = () => {
     if (!url) return "";
@@ -355,12 +464,15 @@ export default function BraindanceUserStream() {
     return buildYoutubeEmbedSrc(url, {
       autoplay: isPlayerActivated,
       mute: !isPlayerActivated,
+      start: startSeconds,
     });
   };
 
   useEffect(() => {
     fetchEventData();
   }, [fetchEventData]);
+
+  const vaultLocked = vaultGate.gated && !vaultGate.unlocked;
 
   const headerTitle = useMemo(() => {
     if (pipelineStream) return pipelineStream.title;
@@ -406,13 +518,18 @@ export default function BraindanceUserStream() {
   }, [pipelineStream, djSet, event, eventId, headerTitle]);
 
   useYoutubePlaybackAnalytics({
-    enabled: isPlayerActivated && platform === "youtube" && Boolean(stream),
+    enabled:
+      !vaultLocked &&
+      isPlayerActivated &&
+      platform === "youtube" &&
+      Boolean(stream),
     iframeId: PLAYER_IFRAME_ID,
     meta: analyticsMeta,
     source: analyticsSource,
+    playerApiRef,
   });
 
-  if (streamLoading) {
+  if (streamLoading || vaultGate.checking) {
     return <StreamLoadingScreen />;
   }
 
@@ -493,6 +610,31 @@ export default function BraindanceUserStream() {
     );
   };
 
+  if (vaultLocked) {
+    return (
+      <div className="relative text-zinc-900 overscroll-none">
+        <div className="relative z-10 mx-auto max-w-3xl px-5 pb-16 pt-4 md:p-8">
+          <VaultLockedTeaser
+            week={
+              vaultGate.week ?? {
+                week_start: "",
+                video_id: "",
+                youtube_url: "",
+                title: "",
+                channel: "",
+                thumbnail: null,
+                created_at: "",
+                hidden: true,
+              }
+            }
+            points={vaultGate.points}
+            reason={vaultGate.reason}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative text-zinc-900 overscroll-none">
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-5 pt-0 md:p-8">
@@ -553,6 +695,7 @@ export default function BraindanceUserStream() {
                     analytics={analyticsMeta}
                     videoId={analyticsMeta.set_id}
                     setTitle={headerTitle}
+                    onSeek={platform === "youtube" ? handleSeek : undefined}
                   />
                 </aside>
               </div>
