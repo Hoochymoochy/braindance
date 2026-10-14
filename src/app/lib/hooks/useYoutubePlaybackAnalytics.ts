@@ -104,6 +104,8 @@ export function useYoutubePlaybackAnalytics({
   meta,
   source,
   playerApiRef,
+  /** Bump when the embed iframe remounts so we re-bind YT.Player. */
+  playerMountKey,
 }: {
   enabled: boolean;
   iframeId: string;
@@ -111,6 +113,7 @@ export function useYoutubePlaybackAnalytics({
   source?: string;
   /** Optional bridge so UI (tracklist / moments) can seek the same player instance. */
   playerApiRef?: MutableRefObject<YoutubePlayerApi | null>;
+  playerMountKey?: string | number;
 }) {
   const metaRef = useRef(meta);
   const sourceRef = useRef(source);
@@ -332,5 +335,5 @@ export function useYoutubePlaybackAnalytics({
         /* ignore */
       }
     };
-  }, [enabled, iframeId, playerApiRef]);
+  }, [enabled, iframeId, playerApiRef, playerMountKey]);
 }

@@ -25,6 +25,7 @@ import {
   type YoutubePlayerApi,
 } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
 import { StreamCrateQueue } from "@/app/components/stream/StreamCrateQueue";
+import { AddSetToCrateButton } from "@/app/components/profile/AddSetToCrateButton";
 import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
 import type { VaultWeek } from "@/app/lib/vault/types";
 import { isLikelySpamTracklist } from "@/app/lib/utils/tracklistQuality";
@@ -210,7 +211,13 @@ export default function BraindanceUserStream() {
         return;
       }
 
-      playerApiRef.current?.seekTo(s);
+      if (playerApiRef.current) {
+        playerApiRef.current.seekTo(s);
+        return;
+      }
+
+      // API not ready yet — remount embed at this offset.
+      setStartSeconds(s);
     },
     [isPlayerActivated]
   );
@@ -523,6 +530,8 @@ export default function BraindanceUserStream() {
     };
   }, [pipelineStream, djSet, event, eventId, headerTitle]);
 
+  const playerMountKey = `${PLAYER_IFRAME_ID}-${startSeconds ?? "live"}`;
+
   useYoutubePlaybackAnalytics({
     enabled:
       !vaultLocked &&
@@ -533,6 +542,7 @@ export default function BraindanceUserStream() {
     meta: analyticsMeta,
     source: analyticsSource,
     playerApiRef,
+    playerMountKey,
   });
 
   if (streamLoading || vaultGate.checking) {
@@ -545,6 +555,28 @@ export default function BraindanceUserStream() {
   const tracklistEmptyHint = pipelineStream
     ? undefined
     : djSetTracklistError ?? "No tracklist found.";
+  const crateVideoId =
+    djSet?.video_id ||
+    youtubeVideoIdFromUrl(pipelineStream?.youtube_url ?? "") ||
+    youtubeVideoIdFromUrl(url) ||
+    (platform === "youtube" && !isUuid(eventId) ? eventId : "") ||
+    "";
+  const crateSet = crateVideoId
+    ? {
+        video_id: crateVideoId,
+        title: headerTitle,
+        channel:
+          djSet?.channel ||
+          pipelineStream?.artist ||
+          event?.location ||
+          "Unknown",
+        thumbnail:
+          djSet?.thumbnail ||
+          pipelineStream?.thumbnail ||
+          event?.image_url ||
+          null,
+      }
+    : null;
   const streamArtwork =
     upgradeYoutubeThumbnail(
       event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail || "",
@@ -601,6 +633,8 @@ export default function BraindanceUserStream() {
 
     return (
       <iframe
+        // Remount when start offset is used as a seek fallback (API not ready).
+        key={playerMountKey}
         id={PLAYER_IFRAME_ID}
         className="absolute left-0 top-0 h-full w-full border-0 bg-black"
         src={getEmbedUrl()}
@@ -674,7 +708,7 @@ export default function BraindanceUserStream() {
                             <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
                           )}
                         </div>
-                        <div className="min-w-0 text-sm">
+                        <div className="min-w-0 flex-1 text-sm">
                           <h2 className="truncate font-semibold leading-tight text-gradient-bends">
                             {headerTitle}
                           </h2>
@@ -686,6 +720,9 @@ export default function BraindanceUserStream() {
                                 "Curated DJ set inside Braindance stream player."}
                           </p>
                         </div>
+                        {crateSet ? (
+                          <AddSetToCrateButton set={crateSet} />
+                        ) : null}
                       </div>
                     )}
                   </div>
@@ -741,7 +778,7 @@ export default function BraindanceUserStream() {
                           <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
                         )}
                       </div>
-                      <div className="min-w-0 text-sm">
+                      <div className="min-w-0 flex-1 text-sm">
                         <h2 className="truncate font-semibold leading-tight text-gradient-bends">
                           {headerTitle}
                         </h2>
@@ -753,6 +790,9 @@ export default function BraindanceUserStream() {
                               "Curated DJ set inside Braindance stream player."}
                         </p>
                       </div>
+                      {crateSet ? (
+                        <AddSetToCrateButton set={crateSet} />
+                      ) : null}
                     </div>
                   )}
                 </div>

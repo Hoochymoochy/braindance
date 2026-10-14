@@ -306,7 +306,12 @@ export default function Home() {
                 {loading && skeletons(3)}
                 {!loading &&
                   featuredWeekly.map((set, i) => (
-                    <StreamCard key={set.video_id} set={set} index={i} />
+                    <StreamCard
+                      key={set.video_id}
+                      set={set}
+                      index={i}
+                      showAddToCrate={false}
+                    />
                   ))}
                 {!loading && featuredWeekly.length === 0 && (
                   <p className="col-span-full py-4 text-sm text-[#7a7a7a]">
@@ -349,7 +354,12 @@ export default function Home() {
               {loading && skeletons(6)}
               {!loading &&
                 visibleDjSets.map((set, i) => (
-                  <StreamCard key={set.video_id} set={set} index={i} />
+                  <StreamCard
+                    key={set.video_id}
+                    set={set}
+                    index={i}
+                    showAddToCrate={false}
+                  />
                 ))}
               {!loading && isSearching && filteredSets.length === 0 && (
                 <p className="col-span-full py-8 text-sm text-[#7a7a7a]">

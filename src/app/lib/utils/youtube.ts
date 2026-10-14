@@ -13,8 +13,9 @@ type YoutubeEmbedOptions = {
  * Build an embed URL that plays reliably across browsers:
  * configurable autoplay, `playsinline` (iOS), `enablejsapi`, modest branding.
  *
- * **Production:** set `NEXT_PUBLIC_SITE_URL` (e.g. `https://braindance.live`) so the
- * `origin` query param is included consistently; YouTube uses this for embed security.
+ * **Origin:** the embed `origin` param must match the page host (set from
+ * `window.location.origin` in the browser). A mismatched `NEXT_PUBLIC_SITE_URL`
+ * would break IFrame API seeks on localhost.
  *
  * **Privacy / blocked cookies:** set `NEXT_PUBLIC_YOUTUBE_EMBED_HOST=nocookie` to use
  * `youtube-nocookie.com` instead of `youtube.com`.
@@ -53,16 +54,20 @@ export function buildYoutubeEmbedSrc(
     params.set("start", String(Math.floor(start)));
   }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  if (site) {
-    try {
-      const originUrl = site.startsWith("http") ? site : `https://${site}`;
-      params.set("origin", new URL(originUrl).origin);
-    } catch {
-      /* ignore invalid env */
-    }
-  } else if (typeof window !== "undefined") {
+  // Must match the page the iframe is on or the IFrame API cannot seek/control.
+  // Prefer the live window origin (localhost vs production) over SITE_URL.
+  if (typeof window !== "undefined") {
     params.set("origin", window.location.origin);
+  } else {
+    const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+    if (site) {
+      try {
+        const originUrl = site.startsWith("http") ? site : `https://${site}`;
+        params.set("origin", new URL(originUrl).origin);
+      } catch {
+        /* ignore invalid env */
+      }
+    }
   }
 
   const host =
