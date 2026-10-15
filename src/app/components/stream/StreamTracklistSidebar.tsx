@@ -423,15 +423,23 @@ export function StreamTracklistSidebar({
                           }}
                           className={cn(
                             "shrink-0 self-center rounded-md p-1 text-zinc-600 transition-[opacity,color,background-color] ease-bends hover:bg-brand-from/10 hover:text-brand-from disabled:opacity-60 dark:text-zinc-400",
-                            actionVisible
+                            saved
                               ? cn(
-                                  "pointer-events-auto",
-                                  revealedFading
-                                    ? "opacity-0 duration-[2000ms]"
-                                    : "opacity-100 duration-bends-fast"
+                                  "pointer-events-auto text-brand-from",
+                                  actionVisible && revealedFading
+                                    ? "opacity-40 duration-[2000ms]"
+                                    : actionVisible
+                                      ? "opacity-100 duration-bends-fast"
+                                      : "opacity-40 duration-bends-fast group-hover:opacity-100 group-focus-within:opacity-100"
                                 )
-                              : "pointer-events-none opacity-0 duration-bends-fast group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100",
-                            saved && "text-brand-from"
+                              : actionVisible
+                                ? cn(
+                                    "pointer-events-auto",
+                                    revealedFading
+                                      ? "opacity-0 duration-[2000ms]"
+                                      : "opacity-100 duration-bends-fast"
+                                  )
+                                : "pointer-events-none opacity-0 duration-bends-fast group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
                           )}
                         >
                           {saved ? (
