@@ -29,6 +29,7 @@ import { AddSetToCrateButton } from "@/app/components/profile/AddSetToCrateButto
 import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
 import type { VaultWeek } from "@/app/lib/vault/types";
 import { isLikelySpamTracklist } from "@/app/lib/utils/tracklistQuality";
+import { cleanTracklistDisplayLabels } from "@/app/lib/utils/tracklistText";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
 
@@ -85,13 +86,14 @@ function StreamLoadingScreen() {
 }
 
 function parseTracksPayload(raw: unknown): TrackRow[] {
-  if (Array.isArray(raw)) return raw as TrackRow[];
-  if (raw && typeof raw === "object") {
+  let rows: TrackRow[] = [];
+  if (Array.isArray(raw)) rows = raw as TrackRow[];
+  else if (raw && typeof raw === "object") {
     const o = raw as Record<string, unknown>;
     const list = o.tracks ?? o.data;
-    if (Array.isArray(list)) return list as TrackRow[];
+    if (Array.isArray(list)) rows = list as TrackRow[];
   }
-  return [];
+  return cleanTracklistDisplayLabels(rows);
 }
 
 type DjNativeTrack = {
@@ -110,11 +112,19 @@ function mapDjSetTracklistResponse(data: unknown): TrackRow[] {
     [];
   const first = items.find((i) => i.payload?.tracks?.length);
   const tracks = first?.payload?.tracks ?? [];
-  return tracks.map((t, idx) => ({
+  const cleaned = cleanTracklistDisplayLabels(
+    tracks.map((t) => ({
+      artist: (t.artist ?? "").trim(),
+      title: (t.title ?? t.raw ?? "Track").trim(),
+      position: t.position,
+      timestamp_label: t.timestamp_label,
+    }))
+  );
+  return cleaned.map((t, idx) => ({
     id: `dj-${String(t.position ?? idx + 1)}-${idx}`,
     timestamp: t.timestamp_label?.trim() || "—",
     artist: (t.artist ?? "").trim() || "—",
-    title: (t.title ?? t.raw ?? "Track").trim(),
+    title: (t.title ?? "Track").trim(),
     spotify_url: null,
     soundcloud_url: null,
   }));
