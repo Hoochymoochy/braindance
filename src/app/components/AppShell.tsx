@@ -7,6 +7,11 @@ import Footer from "@/app/components/Footer";
 import AppSettingsMenu from "@/app/components/AppSettingsMenu";
 import AuthSessionSync from "@/app/components/AuthSessionSync";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
+import {
+  HomeSearchProvider,
+  useHomeSearch,
+} from "@/app/components/dj-sets/HomeSearchContext";
+import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
 import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
 import { cn } from "@/lib/utils";
@@ -18,6 +23,44 @@ function isProfilePath(pathname: string): boolean {
 /** Public stream watch page (`/stream/:id`), not photo-upload etc. */
 function isStreamWatchPath(pathname: string): boolean {
   return /^\/stream\/[^/]+\/?$/.test(pathname);
+}
+
+function MobileHeader({
+  hidden,
+  isHome,
+}: {
+  hidden: boolean;
+  isHome: boolean;
+}) {
+  const { query, setQuery } = useHomeSearch();
+
+  return (
+    <header
+      className={cn(
+        "glass-nav-header fixed left-0 right-0 top-0 z-50 border-b pt-[env(safe-area-inset-top)] transition-[transform,opacity] duration-bends ease-bends md:hidden",
+        hidden
+          ? "pointer-events-none -translate-y-full opacity-0"
+          : "translate-y-0 opacity-100"
+      )}
+      aria-hidden={hidden}
+      inert={hidden ? true : undefined}
+      role="banner"
+    >
+      <div className="flex flex-col gap-2.5 px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <BraindanceBrandLink className="min-w-0" />
+          <AppSettingsMenu menuPlacement="mobile" />
+        </div>
+        {isHome ? (
+          <SetsSearchField
+            value={query}
+            onChange={setQuery}
+            onClear={() => setQuery("")}
+          />
+        ) : null}
+      </div>
+    </header>
+  );
 }
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -41,25 +84,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
   useLockBodyScroll(isStreamWatch && isMobileViewport);
 
   return (
-    <>
+    <HomeSearchProvider>
       <AuthSessionSync />
       <Header />
-      <header
-        className={cn(
-          "glass-nav-header fixed left-0 right-0 top-0 z-50 border-b pt-[env(safe-area-inset-top)] transition-[transform,opacity] duration-bends ease-bends md:hidden",
-          hideMobileSettings
-            ? "pointer-events-none -translate-y-full opacity-0"
-            : "translate-y-0 opacity-100"
-        )}
-        aria-hidden={hideMobileSettings}
-        inert={hideMobileSettings ? true : undefined}
-        role="banner"
-      >
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <BraindanceBrandLink className="min-w-0" />
-          <AppSettingsMenu menuPlacement="mobile" />
-        </div>
-      </header>
+      <MobileHeader hidden={hideMobileSettings} isHome={isHome} />
       <main
         className={cn(
           "min-h-svh",
@@ -77,6 +105,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <Footer showOnMobile={showMobileFooter} />
-    </>
+    </HomeSearchProvider>
   );
 }

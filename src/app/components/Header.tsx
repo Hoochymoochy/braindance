@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import AppSettingsMenu from "@/app/components/AppSettingsMenu";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
+import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
+import { useHomeSearch } from "@/app/components/dj-sets/HomeSearchContext";
 import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +13,7 @@ export default function Header() {
   const isHome = pathname === "/";
   const pastHero = usePastHomeHero();
   const hidden = isHome && !pastHero;
+  const { query, setQuery } = useHomeSearch();
 
   return (
     <header
@@ -24,10 +27,22 @@ export default function Header() {
       inert={hidden ? true : undefined}
       role="banner"
     >
-      <div className="container mx-auto flex flex-col items-center justify-between gap-3 px-4 py-3 md:flex-row md:gap-0 md:py-4">
-        <BraindanceBrandLink />
+      <div className="container mx-auto flex items-center gap-4 px-4 py-3 md:py-4">
+        <BraindanceBrandLink className="shrink-0" />
 
-        <AppSettingsMenu menuPlacement="header" />
+        {isHome ? (
+          <div className="mx-auto min-w-0 flex-1 max-w-md">
+            <SetsSearchField
+              value={query}
+              onChange={setQuery}
+              onClear={() => setQuery("")}
+            />
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
+
+        <AppSettingsMenu menuPlacement="header" className="shrink-0" />
       </div>
     </header>
   );

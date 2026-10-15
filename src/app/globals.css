@@ -557,22 +557,24 @@ body {
   .search-shine-ring::before {
     content: "";
     position: absolute;
-    inset: -60%;
+    inset: 0;
+    border-radius: inherit;
+    /* Angle sweep (not element rotate) — avoids a seam flash at 0°/360°. */
     background: conic-gradient(
-      from 0deg,
-      transparent 0%,
-      transparent 62%,
-      rgb(var(--brand-from-rgb) / 0.15) 70%,
-      rgb(var(--brand-from-rgb) / 0.95) 78%,
-      rgb(var(--brand-via-rgb) / 0.95) 84%,
-      rgb(var(--brand-to-rgb) / 0.75) 90%,
-      transparent 96%,
-      transparent 100%
+      from var(--search-shine-angle, 0deg),
+      transparent 0deg,
+      transparent 210deg,
+      rgb(var(--brand-from-rgb) / 0) 235deg,
+      rgb(var(--brand-from-rgb) / 0.9) 275deg,
+      rgb(var(--brand-via-rgb) / 0.95) 300deg,
+      rgb(var(--brand-to-rgb) / 0.8) 325deg,
+      rgb(var(--brand-to-rgb) / 0) 348deg,
+      transparent 360deg
     );
-    animation: search-shine-spin 3.2s linear infinite;
+    animation: search-shine-spin 6.4s linear infinite;
   }
   .search-shine:focus-within .search-shine-ring::before {
-    animation-duration: 2.2s;
+    animation-duration: 4.4s;
   }
 }
 
@@ -599,9 +601,15 @@ body {
   }
 }
 
+@property --search-shine-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
 @keyframes search-shine-spin {
   to {
-    transform: rotate(360deg);
+    --search-shine-angle: 360deg;
   }
 }
 

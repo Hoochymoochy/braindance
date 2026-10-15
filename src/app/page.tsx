@@ -8,8 +8,9 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Shuffle, X } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
+import { useHomeSearch } from "@/app/components/dj-sets/HomeSearchContext";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
 import { trackEvent } from "@/app/lib/analytics";
@@ -39,44 +40,6 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-function SetsSearchField({
-  value,
-  onChange,
-  onClear,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  onClear: () => void;
-}) {
-  return (
-    <label className="search-shine relative block w-full max-w-md shrink-0 sm:w-[22rem]">
-      <span className="search-shine-ring" aria-hidden />
-      <span className="sr-only">Search DJ sets</span>
-      <Search
-        className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-zinc-500"
-        aria-hidden
-      />
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Search all sets…"
-        className="relative z-[1] w-full rounded-full border border-white/10 bg-black py-3 pl-11 pr-11 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-500 focus:border-transparent"
-      />
-      {value ? (
-        <button
-          type="button"
-          onClick={onClear}
-          className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full p-1 text-zinc-500 transition-colors hover:text-zinc-200"
-          aria-label="Clear search"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
-    </label>
-  );
-}
-
 function matchesQuery(set: DjSet, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
@@ -97,7 +60,7 @@ export default function Home() {
   const [catalogSets, setCatalogSets] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { query: searchQuery } = useHomeSearch();
   const deferredQuery = useDeferredValue(searchQuery);
   const djSetsPromiseRef = useRef<Promise<DjSetsResponse | null> | null>(null);
   const randomPoolRef = useRef<DjSet[]>([]);
@@ -291,30 +254,23 @@ export default function Home() {
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
           <div>
             {/* One search input stays mounted so focus isn't lost when results kick in */}
-            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <SectionHeader
-                  title={isSearching ? "Search results" : "Current DJ Sets"}
-                />
-                {!loading && isSearching ? (
-                  <p
-                    className="mt-1 tabular-nums text-xs text-brand-from/65"
-                    aria-live="polite"
-                  >
-                    {filteredSets.length}{" "}
-                    {filteredSets.length === 1 ? "result" : "results"}
-                  </p>
-                ) : !loading && allDjSets.length > 0 ? (
-                  <p className="mt-1 tabular-nums text-xs text-brand-from/65">
-                    Showing {visibleDjSets.length} of {allDjSets.length}
-                  </p>
-                ) : null}
-              </div>
-              <SetsSearchField
-                value={searchQuery}
-                onChange={setSearchQuery}
-                onClear={() => setSearchQuery("")}
+            <div className="mb-5 min-w-0">
+              <SectionHeader
+                title={isSearching ? "Search results" : "Current DJ Sets"}
               />
+              {!loading && isSearching ? (
+                <p
+                  className="mt-1 tabular-nums text-xs text-brand-from/65"
+                  aria-live="polite"
+                >
+                  {filteredSets.length}{" "}
+                  {filteredSets.length === 1 ? "result" : "results"}
+                </p>
+              ) : !loading && allDjSets.length > 0 ? (
+                <p className="mt-1 tabular-nums text-xs text-brand-from/65">
+                  Showing {visibleDjSets.length} of {allDjSets.length}
+                </p>
+              ) : null}
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading && skeletons(6)}
