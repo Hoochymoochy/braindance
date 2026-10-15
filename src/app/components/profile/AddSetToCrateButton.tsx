@@ -48,14 +48,9 @@ export function AddSetToCrateButton({
     };
   }, [userId, videoId]);
 
-  if (!videoId) return null;
+  if (!videoId || !userId) return null;
 
   const handleClick = async () => {
-    if (!userId) {
-      setOpen(true);
-      return;
-    }
-
     if (inCrate) {
       setBusy(true);
       try {
