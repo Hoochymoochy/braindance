@@ -231,7 +231,7 @@ export default function Home() {
               className="relative flex min-h-svh items-center overflow-x-hidden"
             >
               <div className="relative z-10 w-full py-16 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4 md:py-20">
-                <h1 className="max-w-full text-[clamp(2.75rem,calc((100vw-2rem)/7.6),7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
+                <h1 className="max-w-full text-[clamp(2.85rem,calc((100vw-2rem)/7.6),7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
                   <span
                     className="motion-enter block whitespace-nowrap"
                     style={{ animationDelay: "40ms" }}
@@ -242,9 +242,11 @@ export default function Home() {
                     className="motion-enter mt-[0.12em] block text-gradient-bends"
                     style={{ animationDelay: "110ms" }}
                   >
-                    <span className="whitespace-nowrap">Discover new</span>
-                    <span className="mt-[0.12em] block whitespace-nowrap pl-[0.08em] md:mt-0 md:inline md:pl-0">
-                      {" "}
+                    <span className="block whitespace-nowrap md:inline">
+                      Discover new
+                    </span>
+                    <span className="mt-[0.12em] block whitespace-nowrap md:mt-0 md:inline">
+                      <span className="hidden md:inline"> </span>
                       mixes
                     </span>
                   </span>
