@@ -4,9 +4,9 @@ import { ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
-import AppSettingsMenu from "@/app/components/AppSettingsMenu";
 import AuthSessionSync from "@/app/components/AuthSessionSync";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
+import ProfileNavLink from "@/app/components/ProfileNavLink";
 import {
   HomeSearchProvider,
   scrollToCurrentDjSets,
@@ -41,8 +41,8 @@ function MobileHeader({ isHome }: { isHome: boolean }) {
     >
       <div className="flex flex-col gap-2.5 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
-          <BraindanceBrandLink className="min-w-0" />
-          <AppSettingsMenu menuPlacement="mobile" />
+          <BraindanceBrandLink variant="icon" />
+          <ProfileNavLink placement="mobile" variant="icon" />
         </div>
         {isHome ? (
           <SetsSearchField

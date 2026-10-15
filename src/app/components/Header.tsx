@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import AppSettingsMenu from "@/app/components/AppSettingsMenu";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
+import ProfileNavLink from "@/app/components/ProfileNavLink";
 import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
 import {
   scrollToCurrentDjSets,
@@ -42,7 +42,7 @@ export default function Header() {
           <div className="flex-1" />
         )}
 
-        <AppSettingsMenu menuPlacement="header" className="shrink-0" />
+        <ProfileNavLink placement="header" className="shrink-0" />
       </div>
     </header>
   );

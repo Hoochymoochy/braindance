@@ -6,6 +6,7 @@ import { Check, Share2 } from "lucide-react";
 import type { Profile } from "@/app/lib/profile/profile";
 import { profileSharePath } from "@/app/lib/profile/profile";
 import { EDIT_PROFILE_EVENT } from "@/app/lib/profile/events";
+import { ProfileSettingsMenu } from "@/app/components/profile/ProfileSettingsMenu";
 
 export function ProfileHeader({
   profile,
@@ -132,23 +133,26 @@ export function ProfileHeader({
         </div>
       ) : (
         <>
-          <div className="flex items-baseline gap-2.5">
+          <div className="flex items-baseline gap-1.5">
             <h1 className="min-w-0 text-[2.75rem] font-medium leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-[3rem]">
               {title}
             </h1>
-            <button
-              type="button"
-              onClick={handleShare}
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-zinc-400 transition-colors duration-bends-fast ease-bends hover:text-zinc-700 dark:hover:text-brand-from"
-              aria-label={copied ? "Link copied" : "Share profile"}
-              title={copied ? "Link copied" : "Share profile"}
-            >
-              {copied ? (
-                <Check className="h-3.5 w-3.5 text-brand-from" aria-hidden />
-              ) : (
-                <Share2 className="h-3.5 w-3.5" aria-hidden />
-              )}
-            </button>
+            <div className="flex items-center gap-0.5 self-center">
+              {isOwner ? <ProfileSettingsMenu /> : null}
+              <button
+                type="button"
+                onClick={handleShare}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-zinc-400 transition-colors duration-bends-fast ease-bends hover:text-zinc-700 dark:hover:text-brand-from"
+                aria-label={copied ? "Link copied" : "Share profile"}
+                title={copied ? "Link copied" : "Share profile"}
+              >
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-brand-from" aria-hidden />
+                ) : (
+                  <Share2 className="h-3.5 w-3.5" aria-hidden />
+                )}
+              </button>
+            </div>
           </div>
           <p className="text-[13px] tracking-wide text-zinc-500">
             @{profile.username}
