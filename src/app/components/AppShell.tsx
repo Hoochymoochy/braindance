@@ -39,19 +39,24 @@ function MobileHeader({ isHome }: { isHome: boolean }) {
       role="banner"
       data-header-solid={solid ? "true" : "false"}
     >
-      <div className="flex flex-col gap-2.5 px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <BraindanceBrandLink variant="icon" />
-          <ProfileNavLink placement="mobile" variant="icon" />
-        </div>
+      <div className="flex items-center gap-2 px-4 py-3">
+        <BraindanceBrandLink variant="icon" className="size-10" />
         {isHome ? (
           <SetsSearchField
             value={query}
             onChange={setQuery}
             onClear={() => setQuery("")}
             onSubmit={scrollToCurrentDjSets}
+            className="max-w-none flex-1"
           />
-        ) : null}
+        ) : (
+          <div className="min-w-0 flex-1" aria-hidden />
+        )}
+        <ProfileNavLink
+          placement="mobile"
+          variant="icon"
+          className="size-10"
+        />
       </div>
     </header>
   );

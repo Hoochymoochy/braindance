@@ -230,8 +230,8 @@ export default function Home() {
               id="home-hero"
               className="relative flex min-h-svh items-center overflow-x-hidden"
             >
-              <div className="relative z-10 w-full py-20 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4">
-                <h1 className="text-[7rem] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
+              <div className="relative z-10 w-full py-16 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4 md:py-20">
+                <h1 className="max-w-full text-[clamp(2.75rem,calc((100vw-2rem)/7.6),7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
                   <span
                     className="motion-enter block whitespace-nowrap"
                     style={{ animationDelay: "40ms" }}
@@ -239,14 +239,18 @@ export default function Home() {
                     Stream DJ sets
                   </span>
                   <span
-                    className="motion-enter mt-[0.12em] block whitespace-nowrap text-gradient-bends"
+                    className="motion-enter mt-[0.12em] block text-gradient-bends"
                     style={{ animationDelay: "110ms" }}
                   >
-                    Discover new mixes
+                    <span className="whitespace-nowrap">Discover new</span>
+                    <span className="mt-[0.12em] block whitespace-nowrap pl-[0.08em] md:mt-0 md:inline md:pl-0">
+                      {" "}
+                      mixes
+                    </span>
                   </span>
                 </h1>
                 <div
-                  className="motion-enter mt-10"
+                  className="motion-enter mt-6 md:mt-10"
                   style={{ animationDelay: "180ms" }}
                 >
                   <button
@@ -270,7 +274,7 @@ export default function Home() {
           className={cn(
             "mx-auto flex w-full max-w-7xl flex-1 flex-col px-4",
             isSearching
-              ? "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+5.5rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1rem)]"
+              ? "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1rem)]"
               : "pt-10",
             emptySearch
               ? "min-h-0 overflow-hidden pb-[env(safe-area-inset-bottom,0px)]"
