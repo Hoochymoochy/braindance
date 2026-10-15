@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookmarkCheck, ChevronDown, Music2, BookmarkPlus } from "lucide-react";
+import { Check, ChevronDown, Music2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent, type SetAnalyticsMeta } from "@/app/lib/analytics";
 import {
@@ -12,6 +12,8 @@ import {
 } from "@/app/lib/profile/moments";
 import { useAuthUserId } from "@/app/lib/hooks/useAuthUserId";
 import { timestampToSeconds } from "@/app/lib/utils/timestamp";
+import { reportVaultEvent } from "@/app/lib/vault/client";
+import { vaultTrackKey } from "@/app/lib/vault/week";
 
 export type TrackRow = {
   id: string;
@@ -57,6 +59,7 @@ export function StreamTracklistSidebar({
   onExpandedChange,
   videoId,
   setTitle,
+  onSeek,
 }: {
   tracks: TrackRow[];
   emptyHint?: string;
@@ -67,6 +70,8 @@ export function StreamTracklistSidebar({
   /** When set, each track can be saved as a profile moment. */
   videoId?: string;
   setTitle?: string;
+  /** Jump the stream player to a track timestamp (seconds). */
+  onSeek?: (seconds: number) => void;
 }) {
   const router = useRouter();
   const userId = useAuthUserId();
@@ -77,9 +82,37 @@ export function StreamTracklistSidebar({
     () => new Map()
   );
   const [saveError, setSaveError] = useState("");
+  /** Touch: which row shows the save control after a tap. */
+  const [revealedId, setRevealedId] = useState<string | null>(null);
+  /** After 3s idle, fade out; cleared at 5s. */
+  const [revealedFading, setRevealedFading] = useState(false);
+  const listRef = useRef<HTMLUListElement | null>(null);
   const openedTrackedRef = useRef(false);
   const analyticsRef = useRef(analytics);
   analyticsRef.current = analytics;
+
+  useEffect(() => {
+    if (!revealedId) {
+      setRevealedFading(false);
+      return;
+    }
+    setRevealedFading(false);
+    const onPointerDown = (e: PointerEvent) => {
+      const list = listRef.current;
+      if (!list || !(e.target instanceof Node) || list.contains(e.target)) {
+        return;
+      }
+      setRevealedId(null);
+    };
+    const fadeTimer = window.setTimeout(() => setRevealedFading(true), 3000);
+    const hideTimer = window.setTimeout(() => setRevealedId(null), 5000);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(hideTimer);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [revealedId]);
 
   const momentKey = (timestamp: string, title: string, artist: string) =>
     `${timestampToSeconds(timestamp)}|${title.trim().toLowerCase()}|${artist.trim().toLowerCase()}`;
@@ -171,6 +204,11 @@ export function StreamTracklistSidebar({
     setSavingId(t.id);
     setSaveError("");
     try {
+      const trackKey = vaultTrackKey({
+        artist: t.artist,
+        title: t.title,
+        timestamp: t.timestamp,
+      });
       if (existingId) {
         await deleteMoment(existingId);
         setSavedByTrackId((prev) => {
@@ -179,6 +217,13 @@ export function StreamTracklistSidebar({
           return next;
         });
         trackEvent("moment_removed", trackPayload(t));
+        void reportVaultEvent({
+          type: "unsave_track",
+          videoId,
+          trackKey,
+          djName: analytics?.artist,
+          setTitle: setTitle ?? analytics?.set_title ?? "",
+        });
       } else {
         const created = await addMoment({
           video_id: videoId,
@@ -193,6 +238,14 @@ export function StreamTracklistSidebar({
           return next;
         });
         trackEvent("moment_saved", trackPayload(t));
+        void reportVaultEvent({
+          type: "save_track",
+          videoId,
+          momentId: created.id,
+          trackKey,
+          djName: analytics?.artist,
+          setTitle: setTitle ?? analytics?.set_title ?? "",
+        });
       }
     } catch (err) {
       setSaveError(
@@ -262,103 +315,152 @@ export function StreamTracklistSidebar({
                 "No tracks yet. The pipeline may still be linking this set."}
             </p>
           ) : (
-            <ul className="space-y-1">
-              {tracks.map((t) => (
-                <li
-                  key={t.id}
-                  className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-black/8 hover:bg-black/[0.03]"
-                  onClick={() => {
-                    trackEvent("track_clicked", trackPayload(t));
-                  }}
-                >
-                  <div className="flex gap-2">
-                    <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
-                      {t.timestamp}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <ScrollableLine
-                        text={t.title}
-                        className="text-sm font-medium text-zinc-900"
-                      />
-                      <ScrollableLine
-                        text={t.artist}
-                        className="text-xs text-zinc-500"
-                      />
-                      {(t.spotify_url || t.soundcloud_url) && (
-                        <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-zinc-500">
-                          {t.spotify_url && (
-                            <a
-                              href={t.spotify_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="rounded-sm hover:text-[#1ed760] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#1ed760]/50"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const payload = trackPayload(t);
-                                trackEvent("track_clicked", payload);
-                                trackEvent("track_external_clicked", payload);
-                              }}
-                            >
-                              Spotify
-                            </a>
-                          )}
-                          {t.spotify_url && t.soundcloud_url && (
-                            <span className="text-zinc-400" aria-hidden>
-                              ·
-                            </span>
-                          )}
-                          {t.soundcloud_url && (
-                            <a
-                              href={t.soundcloud_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="rounded-sm hover:text-[#ff5500] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#ff5500]/50"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const payload = trackPayload(t);
-                                trackEvent("track_clicked", payload);
-                                trackEvent("track_external_clicked", payload);
-                              }}
-                            >
-                              SoundCloud
-                            </a>
-                          )}
-                        </p>
+            <ul ref={listRef} className="space-y-1">
+              {tracks.map((t) => {
+                const saved = savedByTrackId.has(t.id);
+                const actionVisible = revealedId === t.id;
+                return (
+                  <li
+                    key={t.id}
+                    className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-black/8 hover:bg-black/[0.03]"
+                    onClick={() => {
+                      trackEvent("track_clicked", trackPayload(t));
+                      setRevealedId(t.id);
+                    }}
+                  >
+                    <div className="flex gap-2">
+                      {onSeek && t.timestamp !== "—" ? (
+                        <button
+                          type="button"
+                          title={`Jump to ${t.timestamp}`}
+                          aria-label={`Jump to ${t.timestamp}: ${t.title}`}
+                          className="shrink-0 rounded-sm bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const seconds = timestampToSeconds(t.timestamp);
+                            trackEvent("track_clicked", trackPayload(t));
+                            onSeek(seconds);
+                          }}
+                        >
+                          {t.timestamp}
+                        </button>
+                      ) : (
+                        <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
+                          {t.timestamp}
+                        </span>
                       )}
+                      <div className="min-w-0 flex-1">
+                        <ScrollableLine
+                          text={t.title}
+                          className="text-sm font-medium text-zinc-900"
+                        />
+                        {t.artist.trim() && t.artist.trim() !== "—" ? (
+                          <ScrollableLine
+                            text={t.artist}
+                            className="text-xs text-zinc-500"
+                          />
+                        ) : null}
+                        {(t.spotify_url || t.soundcloud_url) && (
+                          <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-zinc-500">
+                            {t.spotify_url && (
+                              <a
+                                href={t.spotify_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-sm hover:text-[#1ed760] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#1ed760]/50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const payload = trackPayload(t);
+                                  trackEvent("track_clicked", payload);
+                                  trackEvent("track_external_clicked", payload);
+                                }}
+                              >
+                                Spotify
+                              </a>
+                            )}
+                            {t.spotify_url && t.soundcloud_url && (
+                              <span className="text-zinc-400" aria-hidden>
+                                ·
+                              </span>
+                            )}
+                            {t.soundcloud_url && (
+                              <a
+                                href={t.soundcloud_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-sm hover:text-[#ff5500] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#ff5500]/50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const payload = trackPayload(t);
+                                  trackEvent("track_clicked", payload);
+                                  trackEvent("track_external_clicked", payload);
+                                }}
+                              >
+                                SoundCloud
+                              </a>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                      {videoId && userId ? (
+                        <button
+                          type="button"
+                          title={
+                            saved
+                              ? "Remove moment from profile"
+                              : "Save moment to profile"
+                          }
+                          aria-label={
+                            saved
+                              ? `Remove moment: ${t.title}`
+                              : `Save moment: ${t.title}`
+                          }
+                          disabled={savingId === t.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRevealedId(t.id);
+                            handleToggleMoment(t);
+                          }}
+                          className={cn(
+                            "shrink-0 self-center rounded-md p-1 text-zinc-600 transition-[opacity,color,background-color] ease-bends hover:bg-brand-from/10 hover:text-brand-from disabled:opacity-60 dark:text-zinc-400",
+                            saved
+                              ? cn(
+                                  "pointer-events-auto text-brand-from",
+                                  actionVisible && revealedFading
+                                    ? "opacity-40 duration-[2000ms]"
+                                    : actionVisible
+                                      ? "opacity-100 duration-bends-fast"
+                                      : "opacity-40 duration-bends-fast group-hover:opacity-100 group-focus-within:opacity-100"
+                                )
+                              : actionVisible
+                                ? cn(
+                                    "pointer-events-auto",
+                                    revealedFading
+                                      ? "opacity-0 duration-[2000ms]"
+                                      : "opacity-100 duration-bends-fast"
+                                  )
+                                : "pointer-events-none opacity-0 duration-bends-fast group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+                          )}
+                        >
+                          {saved ? (
+                            <Check
+                              className="h-3.5 w-3.5"
+                              strokeWidth={2}
+                              aria-hidden
+                            />
+                          ) : (
+                            <Plus
+                              className="h-3.5 w-3.5"
+                              strokeWidth={1.75}
+                              aria-hidden
+                            />
+                          )}
+                        </button>
+                      ) : null}
                     </div>
-                    {videoId ? (
-                      <button
-                        type="button"
-                        title={
-                          savedByTrackId.has(t.id)
-                            ? "Remove moment from profile"
-                            : "Save moment to profile"
-                        }
-                        aria-label={
-                          savedByTrackId.has(t.id)
-                            ? `Remove moment: ${t.title}`
-                            : `Save moment: ${t.title}`
-                        }
-                        disabled={savingId === t.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleMoment(t);
-                        }}
-                        className={cn(
-                          "shrink-0 self-start rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-brand-from/10 hover:text-brand-from disabled:opacity-60",
-                          savedByTrackId.has(t.id) && "text-brand-from"
-                        )}
-                      >
-                        {savedByTrackId.has(t.id) ? (
-                          <BookmarkCheck className="h-3.5 w-3.5" aria-hidden />
-                        ) : (
-                          <BookmarkPlus className="h-3.5 w-3.5" aria-hidden />
-                        )}
-                      </button>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

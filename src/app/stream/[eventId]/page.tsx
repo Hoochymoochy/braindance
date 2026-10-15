@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
@@ -20,8 +20,16 @@ import {
   YOUTUBE_IFRAME_ALLOW,
 } from "@/app/lib/utils/youtube";
 import { trackEvent } from "@/app/lib/analytics";
-import { useYoutubePlaybackAnalytics } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
+import {
+  useYoutubePlaybackAnalytics,
+  type YoutubePlayerApi,
+} from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
 import { StreamCrateQueue } from "@/app/components/stream/StreamCrateQueue";
+import { AddSetToCrateButton } from "@/app/components/profile/AddSetToCrateButton";
+import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
+import type { VaultWeek } from "@/app/lib/vault/types";
+import { isLikelySpamTracklist } from "@/app/lib/utils/tracklistQuality";
+import { cleanTracklistDisplayLabels } from "@/app/lib/utils/tracklistText";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
 
@@ -78,13 +86,14 @@ function StreamLoadingScreen() {
 }
 
 function parseTracksPayload(raw: unknown): TrackRow[] {
-  if (Array.isArray(raw)) return raw as TrackRow[];
-  if (raw && typeof raw === "object") {
+  let rows: TrackRow[] = [];
+  if (Array.isArray(raw)) rows = raw as TrackRow[];
+  else if (raw && typeof raw === "object") {
     const o = raw as Record<string, unknown>;
     const list = o.tracks ?? o.data;
-    if (Array.isArray(list)) return list as TrackRow[];
+    if (Array.isArray(list)) rows = list as TrackRow[];
   }
-  return [];
+  return cleanTracklistDisplayLabels(rows);
 }
 
 type DjNativeTrack = {
@@ -103,11 +112,19 @@ function mapDjSetTracklistResponse(data: unknown): TrackRow[] {
     [];
   const first = items.find((i) => i.payload?.tracks?.length);
   const tracks = first?.payload?.tracks ?? [];
-  return tracks.map((t, idx) => ({
+  const cleaned = cleanTracklistDisplayLabels(
+    tracks.map((t) => ({
+      artist: (t.artist ?? "").trim(),
+      title: (t.title ?? t.raw ?? "Track").trim(),
+      position: t.position,
+      timestamp_label: t.timestamp_label,
+    }))
+  );
+  return cleaned.map((t, idx) => ({
     id: `dj-${String(t.position ?? idx + 1)}-${idx}`,
     timestamp: t.timestamp_label?.trim() || "—",
     artist: (t.artist ?? "").trim() || "—",
-    title: (t.title ?? t.raw ?? "Track").trim(),
+    title: (t.title ?? "Track").trim(),
     spotify_url: null,
     soundcloud_url: null,
   }));
@@ -147,25 +164,114 @@ export default function BraindanceUserStream() {
     null
   );
   const [isPlayerActivated, setIsPlayerActivated] = useState(false);
+  /** Initial YouTube embed offset (from `?t=` or first tracklist seek before play). */
+  const [startSeconds, setStartSeconds] = useState<number | undefined>();
+  const playerApiRef = useRef<YoutubePlayerApi | null>(null);
   const [analyticsSource, setAnalyticsSource] = useState<string | undefined>();
   const [crateId, setCrateId] = useState<string | null>(null);
+  const [vaultGate, setVaultGate] = useState<{
+    checking: boolean;
+    gated: boolean;
+    unlocked: boolean;
+    week: VaultWeek | null;
+    points: number;
+    reason: string | null;
+  }>({
+    checking: true,
+    gated: false,
+    unlocked: true,
+    week: null,
+    points: 0,
+    reason: null,
+  });
 
   useEffect(() => {
+    setIsPlayerActivated(false);
+    setStartSeconds(undefined);
+    setAnalyticsSource(undefined);
+    setCrateId(null);
+
     try {
       const params = new URLSearchParams(window.location.search);
       const src = params.get("src");
       if (src) setAnalyticsSource(src);
       const crate = params.get("crate");
       setCrateId(crate && crate.length > 0 ? crate : null);
+      const t = params.get("t");
+      if (t != null && t !== "") {
+        const seconds = Number(t);
+        if (Number.isFinite(seconds) && seconds >= 0) {
+          setStartSeconds(Math.floor(seconds));
+          setIsPlayerActivated(true);
+        }
+      }
     } catch {
       /* ignore */
     }
   }, [eventId]);
 
+  const handleSeek = useCallback(
+    (seconds: number) => {
+      const s = Math.max(0, Math.floor(seconds));
+      if (!Number.isFinite(s)) return;
+
+      if (!isPlayerActivated) {
+        setStartSeconds(s);
+        setIsPlayerActivated(true);
+        return;
+      }
+
+      if (playerApiRef.current) {
+        playerApiRef.current.seekTo(s);
+        return;
+      }
+
+      // API not ready yet — remount embed at this offset.
+      setStartSeconds(s);
+    },
+    [isPlayerActivated]
+  );
+
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       value
     );
+
+  const checkVaultAccess = useCallback(async (videoId: string) => {
+    const res = await fetch(
+      `/api/vault/access?videoId=${encodeURIComponent(videoId)}`,
+      { credentials: "same-origin", cache: "no-store" }
+    );
+    if (!res.ok) {
+      setVaultGate({
+        checking: false,
+        gated: false,
+        unlocked: true,
+        week: null,
+        points: 0,
+        reason: null,
+      });
+      return { locked: false as const };
+    }
+    const body = (await res.json()) as {
+      gated?: boolean;
+      unlocked?: boolean;
+      week?: VaultWeek | null;
+      points?: number;
+      reason?: string | null;
+    };
+    const gated = Boolean(body.gated);
+    const unlocked = body.unlocked !== false;
+    setVaultGate({
+      checking: false,
+      gated,
+      unlocked,
+      week: body.week ?? null,
+      points: body.points ?? 0,
+      reason: body.reason ?? null,
+    });
+    return { locked: gated && !unlocked };
+  }, []);
 
   const fetchEventData = useCallback(async () => {
     if (!eventId) {
@@ -179,8 +285,20 @@ export default function BraindanceUserStream() {
     setPipelineTracks([]);
     setDjSetTracks([]);
     setDjSetTracklistError(null);
+    setDjSet(null);
+    setMerchItems([]);
+    setVaultGate((prev) => ({ ...prev, checking: true }));
 
     try {
+      // Gate YouTube-id routes before any metadata fetch (keeps the set secret).
+      if (!isUuid(eventId)) {
+        const { locked } = await checkVaultAccess(eventId);
+        if (locked) {
+          setStreamLoading(false);
+          return;
+        }
+      }
+
       if (isUuid(eventId)) {
         const streamRes = await fetch(`/api/streams/${encodeURIComponent(eventId)}`);
         if (streamRes.ok) {
@@ -191,6 +309,12 @@ export default function BraindanceUserStream() {
           if (body.youtube_url) {
             const videoId =
               youtubeVideoIdFromUrl(body.youtube_url) ?? body.youtube_url.trim();
+            const { locked } = await checkVaultAccess(videoId);
+            if (locked) {
+              setStreamLoading(false);
+              return;
+            }
+
             const tracksRes = await fetch(
               `/api/streams/${encodeURIComponent(eventId)}/tracks`
             );
@@ -320,12 +444,17 @@ export default function BraindanceUserStream() {
             typeof body.error === "string" && body.error.trim()
               ? body.error.trim()
               : null;
+          const spammy = mapped.length > 0 && isLikelySpamTracklist(mapped);
 
           if (!tr.ok) {
             setDjSetTracks([]);
             setDjSetTracklistError(
               upstreamErr ?? `Tracklist request failed (HTTP ${tr.status}).`
             );
+          } else if (spammy) {
+            // YouTube-comment scrapes sometimes store meme cues (same title on every stamp).
+            setDjSetTracks([]);
+            setDjSetTracklistError("No reliable tracklist found.");
           } else if (mapped.length > 0) {
             setDjSetTracks(mapped);
             setDjSetTracklistError(null);
@@ -342,8 +471,11 @@ export default function BraindanceUserStream() {
       }
     } finally {
       setStreamLoading(false);
+      setVaultGate((prev) =>
+        prev.checking ? { ...prev, checking: false } : prev
+      );
     }
-  }, [eventId]);
+  }, [eventId, checkVaultAccess]);
 
   const getEmbedUrl = () => {
     if (!url) return "";
@@ -355,12 +487,15 @@ export default function BraindanceUserStream() {
     return buildYoutubeEmbedSrc(url, {
       autoplay: isPlayerActivated,
       mute: !isPlayerActivated,
+      start: startSeconds,
     });
   };
 
   useEffect(() => {
     fetchEventData();
   }, [fetchEventData]);
+
+  const vaultLocked = vaultGate.gated && !vaultGate.unlocked;
 
   const headerTitle = useMemo(() => {
     if (pipelineStream) return pipelineStream.title;
@@ -405,14 +540,22 @@ export default function BraindanceUserStream() {
     };
   }, [pipelineStream, djSet, event, eventId, headerTitle]);
 
+  const playerMountKey = `${PLAYER_IFRAME_ID}-${startSeconds ?? "live"}`;
+
   useYoutubePlaybackAnalytics({
-    enabled: isPlayerActivated && platform === "youtube" && Boolean(stream),
+    enabled:
+      !vaultLocked &&
+      isPlayerActivated &&
+      platform === "youtube" &&
+      Boolean(stream),
     iframeId: PLAYER_IFRAME_ID,
     meta: analyticsMeta,
     source: analyticsSource,
+    playerApiRef,
+    playerMountKey,
   });
 
-  if (streamLoading) {
+  if (streamLoading || vaultGate.checking) {
     return <StreamLoadingScreen />;
   }
 
@@ -422,6 +565,28 @@ export default function BraindanceUserStream() {
   const tracklistEmptyHint = pipelineStream
     ? undefined
     : djSetTracklistError ?? "No tracklist found.";
+  const crateVideoId =
+    djSet?.video_id ||
+    youtubeVideoIdFromUrl(pipelineStream?.youtube_url ?? "") ||
+    youtubeVideoIdFromUrl(url) ||
+    (platform === "youtube" && !isUuid(eventId) ? eventId : "") ||
+    "";
+  const crateSet = crateVideoId
+    ? {
+        video_id: crateVideoId,
+        title: headerTitle,
+        channel:
+          djSet?.channel ||
+          pipelineStream?.artist ||
+          event?.location ||
+          "Unknown",
+        thumbnail:
+          djSet?.thumbnail ||
+          pipelineStream?.thumbnail ||
+          event?.image_url ||
+          null,
+      }
+    : null;
   const streamArtwork =
     upgradeYoutubeThumbnail(
       event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail || "",
@@ -478,6 +643,8 @@ export default function BraindanceUserStream() {
 
     return (
       <iframe
+        // Remount when start offset is used as a seek fallback (API not ready).
+        key={playerMountKey}
         id={PLAYER_IFRAME_ID}
         className="absolute left-0 top-0 h-full w-full border-0 bg-black"
         src={getEmbedUrl()}
@@ -492,6 +659,31 @@ export default function BraindanceUserStream() {
       />
     );
   };
+
+  if (vaultLocked) {
+    return (
+      <div className="relative text-zinc-900 overscroll-none">
+        <div className="relative z-10 mx-auto max-w-3xl px-5 pb-16 pt-4 md:p-8">
+          <VaultLockedTeaser
+            week={
+              vaultGate.week ?? {
+                week_start: "",
+                video_id: "",
+                youtube_url: "",
+                title: "",
+                channel: "",
+                thumbnail: null,
+                created_at: "",
+                hidden: true,
+              }
+            }
+            points={vaultGate.points}
+            reason={vaultGate.reason}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative text-zinc-900 overscroll-none">
@@ -526,7 +718,7 @@ export default function BraindanceUserStream() {
                             <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
                           )}
                         </div>
-                        <div className="min-w-0 text-sm">
+                        <div className="min-w-0 flex-1 text-sm">
                           <h2 className="truncate font-semibold leading-tight text-gradient-bends">
                             {headerTitle}
                           </h2>
@@ -538,6 +730,9 @@ export default function BraindanceUserStream() {
                                 "Curated DJ set inside Braindance stream player."}
                           </p>
                         </div>
+                        {crateSet ? (
+                          <AddSetToCrateButton set={crateSet} />
+                        ) : null}
                       </div>
                     )}
                   </div>
@@ -553,6 +748,7 @@ export default function BraindanceUserStream() {
                     analytics={analyticsMeta}
                     videoId={analyticsMeta.set_id}
                     setTitle={headerTitle}
+                    onSeek={platform === "youtube" ? handleSeek : undefined}
                   />
                 </aside>
               </div>
@@ -592,7 +788,7 @@ export default function BraindanceUserStream() {
                           <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
                         )}
                       </div>
-                      <div className="min-w-0 text-sm">
+                      <div className="min-w-0 flex-1 text-sm">
                         <h2 className="truncate font-semibold leading-tight text-gradient-bends">
                           {headerTitle}
                         </h2>
@@ -604,6 +800,9 @@ export default function BraindanceUserStream() {
                               "Curated DJ set inside Braindance stream player."}
                         </p>
                       </div>
+                      {crateSet ? (
+                        <AddSetToCrateButton set={crateSet} />
+                      ) : null}
                     </div>
                   )}
                 </div>

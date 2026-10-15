@@ -1,33 +1,54 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import AppSettingsMenu from "@/app/components/AppSettingsMenu";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
-import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
+import ProfileNavLink from "@/app/components/ProfileNavLink";
+import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
+import {
+  scrollToCurrentDjSets,
+  useHomeSearch,
+} from "@/app/components/dj-sets/HomeSearchContext";
+import {
+  homeHeaderChromeClass,
+  useHomeHeaderSolid,
+} from "@/app/lib/hooks/useHomeHeaderSolid";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const pastHero = usePastHomeHero();
-  const hidden = isHome && !pastHero;
+  const { query, setQuery } = useHomeSearch();
+  const solid = useHomeHeaderSolid();
 
   return (
     <header
-      className={cn(
-        "glass-nav-header fixed left-0 right-0 top-0 z-50 hidden border-b pt-[env(safe-area-inset-top)] transition-[transform,opacity] duration-bends ease-bends md:block",
-        hidden
-          ? "pointer-events-none -translate-y-full opacity-0"
-          : "translate-y-0 opacity-100"
-      )}
-      aria-hidden={hidden}
-      inert={hidden ? true : undefined}
+      className={cn(homeHeaderChromeClass(solid), "hidden md:block")}
       role="banner"
+      data-header-solid={solid ? "true" : "false"}
     >
-      <div className="container mx-auto flex flex-col items-center justify-between gap-3 px-4 py-3 md:flex-row md:gap-0 md:py-4">
-        <BraindanceBrandLink />
+      <div className="container mx-auto grid h-[4.25rem] grid-cols-[9.5rem_minmax(0,1fr)_9.5rem] items-center gap-4 px-4 md:h-[4.75rem]">
+        <div className="flex justify-start">
+          <BraindanceBrandLink className="shrink-0" />
+        </div>
 
-        <AppSettingsMenu menuPlacement="header" />
+        <div className="flex min-w-0 justify-center">
+          <div
+            className={cn("w-full max-w-md", !isHome && "invisible")}
+            aria-hidden={!isHome}
+          >
+            <SetsSearchField
+              value={query}
+              onChange={setQuery}
+              onClear={() => setQuery("")}
+              onSubmit={scrollToCurrentDjSets}
+              className="max-w-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <ProfileNavLink placement="header" className="shrink-0" />
+        </div>
       </div>
     </header>
   );

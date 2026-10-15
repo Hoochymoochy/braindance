@@ -541,6 +541,41 @@ body {
   .shadow-glow-brand-via {
     box-shadow: 0 0 24px rgb(var(--brand-via-rgb) / 0.35);
   }
+
+  /** Rotating brand shine around the home search field */
+  .search-shine {
+    isolation: isolate;
+  }
+  .search-shine-ring {
+    pointer-events: none;
+    position: absolute;
+    inset: -1.5px;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 9999px;
+  }
+  .search-shine-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    /* Angle sweep (not element rotate) — avoids a seam flash at 0°/360°. */
+    background: conic-gradient(
+      from var(--search-shine-angle, 0deg),
+      transparent 0deg,
+      transparent 210deg,
+      rgb(var(--brand-from-rgb) / 0) 235deg,
+      rgb(var(--brand-from-rgb) / 0.9) 275deg,
+      rgb(var(--brand-via-rgb) / 0.95) 300deg,
+      rgb(var(--brand-to-rgb) / 0.8) 325deg,
+      rgb(var(--brand-to-rgb) / 0) 348deg,
+      transparent 360deg
+    );
+    animation: search-shine-spin 6.4s linear infinite;
+  }
+  .search-shine:focus-within .search-shine-ring::before {
+    animation-duration: 4.4s;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -554,6 +589,27 @@ body {
   }
   .motion-enter-float.is-inview:hover {
     transform: none;
+  }
+  .search-shine-ring::before {
+    animation: none !important;
+    background: linear-gradient(
+      120deg,
+      rgb(var(--brand-from-rgb) / 0.55),
+      rgb(var(--brand-via-rgb) / 0.45),
+      rgb(var(--brand-to-rgb) / 0.4)
+    );
+  }
+}
+
+@property --search-shine-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes search-shine-spin {
+  to {
+    --search-shine-angle: 360deg;
   }
 }
 

@@ -4,10 +4,20 @@ import { ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
-import AppSettingsMenu from "@/app/components/AppSettingsMenu";
+import AuthSessionSync from "@/app/components/AuthSessionSync";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
-import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
+import ProfileNavLink from "@/app/components/ProfileNavLink";
+import {
+  HomeSearchProvider,
+  scrollToCurrentDjSets,
+  useHomeSearch,
+} from "@/app/components/dj-sets/HomeSearchContext";
+import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
+import {
+  homeHeaderChromeClass,
+  useHomeHeaderSolid,
+} from "@/app/lib/hooks/useHomeHeaderSolid";
 import { cn } from "@/lib/utils";
 
 function isProfilePath(pathname: string): boolean {
@@ -19,13 +29,44 @@ function isStreamWatchPath(pathname: string): boolean {
   return /^\/stream\/[^/]+\/?$/.test(pathname);
 }
 
+function MobileHeader({ isHome }: { isHome: boolean }) {
+  const { query, setQuery } = useHomeSearch();
+  const solid = useHomeHeaderSolid();
+
+  return (
+    <header
+      className={cn(homeHeaderChromeClass(solid), "md:hidden")}
+      role="banner"
+      data-header-solid={solid ? "true" : "false"}
+    >
+      <div className="flex items-center gap-2 px-4 py-3">
+        <BraindanceBrandLink variant="icon" className="size-10" />
+        {isHome ? (
+          <SetsSearchField
+            value={query}
+            onChange={setQuery}
+            onClear={() => setQuery("")}
+            onSubmit={scrollToCurrentDjSets}
+            className="max-w-none flex-1"
+          />
+        ) : (
+          <div className="min-w-0 flex-1" aria-hidden />
+        )}
+        <ProfileNavLink
+          placement="mobile"
+          variant="icon"
+          className="size-10"
+        />
+      </div>
+    </header>
+  );
+}
+
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const showMobileFooter = isProfilePath(pathname);
   const isHome = pathname === "/";
   const isStreamWatch = isStreamWatchPath(pathname);
-  const pastHero = usePastHomeHero();
-  const hideMobileSettings = isHome && !pastHero;
 
   // Match header chrome breakpoint (`md` = 768px), not `lg`.
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -40,24 +81,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
   useLockBodyScroll(isStreamWatch && isMobileViewport);
 
   return (
-    <>
+    <HomeSearchProvider>
+      <AuthSessionSync />
       <Header />
-      <header
-        className={cn(
-          "glass-nav-header fixed left-0 right-0 top-0 z-50 border-b pt-[env(safe-area-inset-top)] transition-[transform,opacity] duration-bends ease-bends md:hidden",
-          hideMobileSettings
-            ? "pointer-events-none -translate-y-full opacity-0"
-            : "translate-y-0 opacity-100"
-        )}
-        aria-hidden={hideMobileSettings}
-        inert={hideMobileSettings ? true : undefined}
-        role="banner"
-      >
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <BraindanceBrandLink className="min-w-0" />
-          <AppSettingsMenu menuPlacement="mobile" />
-        </div>
-      </header>
+      <MobileHeader isHome={isHome} />
       <main
         className={cn(
           "min-h-svh",
@@ -75,6 +102,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <Footer showOnMobile={showMobileFooter} />
-    </>
+    </HomeSearchProvider>
   );
 }

@@ -59,6 +59,8 @@ export async function getOrGenerateListenerProfile({
 
   const cached = await getCachedArchetype(userId);
   if (!forceRefresh && cached && !shouldRegenerate({ cached, currentStats: stats })) {
+    // Always return live stats so listening time / crates stay accurate while
+    // the archetype title/traits remain cached until regeneration.
     return {
       status: "ready",
       archetype: cached.archetype,
@@ -67,7 +69,7 @@ export async function getOrGenerateListenerProfile({
       description: cached.description,
       evidence: cached.evidence,
       traits: cached.traitScores,
-      stats: cached.statsSnapshot,
+      stats,
       source: "cache",
       cached: true,
       calculatedAt: cached.calculatedAt,

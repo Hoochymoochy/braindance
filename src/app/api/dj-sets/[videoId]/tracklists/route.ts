@@ -31,16 +31,25 @@ export async function GET(
   routeLog(LOG, "GET tracklists", { videoId });
   try {
     const path = `/dj-sets/${encodeURIComponent(videoId)}/tracklists`;
+    // Dev: always hit the backend so re-ingests show up immediately.
+    // Prod: keep a short CDN/data cache.
+    const revalidateSeconds =
+      process.env.NODE_ENV === "development"
+        ? false
+        : TRACKLIST_REVALIDATE_SECONDS;
     const { data, source } = await fetchJsonFromBackendWithFallback(
       path,
       25_000,
       LOG,
-      { revalidateSeconds: TRACKLIST_REVALIDATE_SECONDS }
+      { revalidateSeconds }
     );
     routeLog(LOG, "GET OK", { videoId, backendSource: source });
     return NextResponse.json(data, {
       headers: {
-        "Cache-Control": cacheControlHeader(TRACKLIST_REVALIDATE_SECONDS),
+        "Cache-Control":
+          revalidateSeconds === false
+            ? "no-store"
+            : cacheControlHeader(revalidateSeconds),
       },
     });
   } catch (error) {

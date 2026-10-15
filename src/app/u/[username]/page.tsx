@@ -18,6 +18,7 @@ import { ProfileHeader } from "@/app/components/profile/ProfileHeader";
 import { ProfileIntro } from "@/app/components/profile/ProfileIntro";
 import { CratesCollection } from "@/app/components/profile/CratesCollection";
 import { MomentsSetFolders } from "@/app/components/profile/MomentsSetFolders";
+import { VaultSectionPublic } from "@/app/components/vault/VaultSection";
 
 export default function PublicProfilePage() {
   const { username } = useParams<{ username: string }>();
@@ -84,6 +85,18 @@ export default function PublicProfilePage() {
           <ProfileIntro userId={profile.id}>
             <ProfileHeader profile={profile} />
           </ProfileIntro>
+
+          <section className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-brand-from/70">
+                Vault
+              </h2>
+              <p className="text-sm text-zinc-500">
+                Exclusive sets @{profile.username} unlocked.
+              </p>
+            </div>
+            <VaultSectionPublic userId={profile.id} />
+          </section>
 
           <section className="space-y-6">
             <div className="space-y-1">
