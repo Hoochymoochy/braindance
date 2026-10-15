@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { BrainLogo } from "@/app/components/Brain-logo";
+import { useHomeBrandMerge } from "@/app/components/home/HomeBrandMerge";
 import { cn } from "@/lib/utils";
 
 type BraindanceBrandLinkProps = {
@@ -7,16 +9,23 @@ type BraindanceBrandLinkProps = {
 };
 
 export default function BraindanceBrandLink({ className }: BraindanceBrandLinkProps) {
+  const { docked } = useHomeBrandMerge();
+
   return (
     <Link
       href="/"
       className={cn(
-        "flex items-center space-x-2 transition-opacity duration-bends-fast ease-bends hover:opacity-90",
+        "transition-opacity duration-bends-fast ease-bends hover:opacity-90",
         className
       )}
     >
-      <BrainLogo withText={false} className="h-6 w-6 text-brand-from" />
-      <span className="text-gradient-bends text-sm font-semibold uppercase tracking-wide">
+      <span
+        data-header-brand-text
+        className={cn(
+          "text-gradient-bends text-sm font-semibold uppercase tracking-wide transition-opacity duration-bends-fast ease-bends",
+          docked ? "opacity-100" : "opacity-0"
+        )}
+      >
         Braindance
       </span>
     </Link>

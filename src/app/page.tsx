@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { Shuffle } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import { useHomeSearch } from "@/app/components/dj-sets/HomeSearchContext";
+import { HomeBrandPlaceholder } from "@/app/components/home/HomeBrandMerge";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
 import { trackEvent } from "@/app/lib/analytics";
@@ -210,24 +211,21 @@ export default function Home() {
       <div className="relative z-10 flex-1">
         <section
           id="home-hero"
-          className="relative flex min-h-svh items-center overflow-hidden"
+          className="relative flex min-h-svh items-center overflow-x-hidden"
         >
-          <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-20">
-            <p
-              className="motion-enter mb-8 text-[0.7rem] font-medium uppercase tracking-[0.42em] text-zinc-500"
-              style={{ animationDelay: "40ms" }}
-            >
-              Braindance
-            </p>
-            <h1 className="max-w-5xl text-[clamp(3.5rem,14vw,7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
+          <div className="relative z-10 w-full py-20 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4">
+            <div className="motion-enter" style={{ animationDelay: "40ms" }}>
+              <HomeBrandPlaceholder />
+            </div>
+            <h1 className="text-[7rem] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
               <span
-                className="motion-enter block"
+                className="motion-enter block whitespace-nowrap"
                 style={{ animationDelay: "90ms" }}
               >
                 Stream DJ sets
               </span>
               <span
-                className="motion-enter mt-[0.12em] block text-gradient-bends"
+                className="motion-enter mt-[0.12em] block whitespace-nowrap text-gradient-bends"
                 style={{ animationDelay: "160ms" }}
               >
                 Discover new mixes

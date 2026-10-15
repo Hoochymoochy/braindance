@@ -11,8 +11,8 @@ import {
   HomeSearchProvider,
   useHomeSearch,
 } from "@/app/components/dj-sets/HomeSearchContext";
+import { HomeBrandMergeProvider } from "@/app/components/home/HomeBrandMerge";
 import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
-import { usePastHomeHero } from "@/app/lib/hooks/usePastHomeHero";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
 import { cn } from "@/lib/utils";
 
@@ -25,25 +25,12 @@ function isStreamWatchPath(pathname: string): boolean {
   return /^\/stream\/[^/]+\/?$/.test(pathname);
 }
 
-function MobileHeader({
-  hidden,
-  isHome,
-}: {
-  hidden: boolean;
-  isHome: boolean;
-}) {
+function MobileHeader({ isHome }: { isHome: boolean }) {
   const { query, setQuery } = useHomeSearch();
 
   return (
     <header
-      className={cn(
-        "glass-nav-header fixed left-0 right-0 top-0 z-50 border-b pt-[env(safe-area-inset-top)] transition-[transform,opacity] duration-bends ease-bends md:hidden",
-        hidden
-          ? "pointer-events-none -translate-y-full opacity-0"
-          : "translate-y-0 opacity-100"
-      )}
-      aria-hidden={hidden}
-      inert={hidden ? true : undefined}
+      className="glass-nav-header fixed left-0 right-0 top-0 z-50 border-b pt-[env(safe-area-inset-top)] md:hidden"
       role="banner"
     >
       <div className="flex flex-col gap-2.5 px-4 py-3">
@@ -68,8 +55,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const showMobileFooter = isProfilePath(pathname);
   const isHome = pathname === "/";
   const isStreamWatch = isStreamWatchPath(pathname);
-  const pastHero = usePastHomeHero();
-  const hideMobileSettings = isHome && !pastHero;
 
   // Match header chrome breakpoint (`md` = 768px), not `lg`.
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -85,26 +70,28 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <HomeSearchProvider>
-      <AuthSessionSync />
-      <Header />
-      <MobileHeader hidden={hideMobileSettings} isHome={isHome} />
-      <main
-        className={cn(
-          "min-h-svh",
-          isHome
-            ? "pt-0"
-            : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
-          showMobileFooter
-            ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
-            : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
-          // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
-          isStreamWatch &&
-            "max-md:overflow-x-hidden max-md:overscroll-none"
-        )}
-      >
-        {children}
-      </main>
-      <Footer showOnMobile={showMobileFooter} />
+      <HomeBrandMergeProvider>
+        <AuthSessionSync />
+        <Header />
+        <MobileHeader isHome={isHome} />
+        <main
+          className={cn(
+            "min-h-svh",
+            isHome
+              ? "pt-0"
+              : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
+            showMobileFooter
+              ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
+              : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
+            // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
+            isStreamWatch &&
+              "max-md:overflow-x-hidden max-md:overscroll-none"
+          )}
+        >
+          {children}
+        </main>
+        <Footer showOnMobile={showMobileFooter} />
+      </HomeBrandMergeProvider>
     </HomeSearchProvider>
   );
 }
