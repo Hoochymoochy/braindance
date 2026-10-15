@@ -28,9 +28,9 @@ export default function ProfileNavLink({
   const userId = useAuthUserId();
   const href = userId ? "/profile" : "/login";
   const label = userId ? "Profile" : "Log in";
-  const isActive =
-    variant === "icon" &&
-    (userId ? isProfilePath(pathname) : pathname === "/login");
+  const isActive = userId
+    ? isProfilePath(pathname)
+    : pathname === "/login";
 
   return (
     <Link
@@ -42,9 +42,9 @@ export default function ProfileNavLink({
         if (userId) trackEvent("profile_clicked", { placement });
       }}
       className={cn(
-        "shrink-0 transition-opacity duration-bends-fast ease-bends hover:opacity-90",
+        "shrink-0 transition-colors duration-bends-fast ease-bends",
         variant === "icon" &&
-          "inline-flex h-9 w-9 items-center justify-center hover:opacity-100",
+          "inline-flex h-9 w-9 items-center justify-center",
         variant === "icon" &&
           (isActive
             ? "text-zinc-900 dark:text-brand-from"
@@ -59,8 +59,20 @@ export default function ProfileNavLink({
           aria-hidden
         />
       ) : (
-        <span className="text-gradient-bends text-sm font-semibold uppercase tracking-wide">
-          {label}
+        <span className="relative inline-block text-right text-sm font-semibold uppercase tracking-wide">
+          <span className="invisible" aria-hidden>
+            Profile
+          </span>
+          <span
+            className={cn(
+              "absolute inset-0 text-right transition-opacity duration-bends-fast ease-bends",
+              isActive
+                ? "text-gradient-bends"
+                : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+            )}
+          >
+            {label}
+          </span>
         </span>
       )}
     </Link>

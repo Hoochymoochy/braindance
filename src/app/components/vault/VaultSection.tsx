@@ -28,7 +28,22 @@ export function VaultSectionOwner() {
   }, []);
 
   if (loading) {
-    return <p className="text-sm text-zinc-500">Loading vault…</p>;
+    return (
+      <div
+        className="animate-pulse space-y-6"
+        aria-busy="true"
+        aria-label="Loading vault"
+      >
+        <div className="space-y-2">
+          <div className="flex justify-between gap-3">
+            <div className="h-4 w-28 rounded bg-zinc-300/50 dark:bg-white/[0.06]" />
+            <div className="h-4 w-16 rounded bg-zinc-300/50 dark:bg-white/[0.06]" />
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-zinc-300/40 dark:bg-white/[0.06]" />
+        </div>
+        <div className="aspect-video w-full rounded bg-zinc-300/40 dark:bg-white/[0.06]" />
+      </div>
+    );
   }
 
   if (!data) {

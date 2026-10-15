@@ -26,23 +26,29 @@ export default function Header() {
       role="banner"
       data-header-solid={solid ? "true" : "false"}
     >
-      <div className="container mx-auto flex items-center gap-4 px-4 py-3 md:py-4">
-        <BraindanceBrandLink className="shrink-0" />
+      <div className="container mx-auto grid h-[4.25rem] grid-cols-[9.5rem_minmax(0,1fr)_9.5rem] items-center gap-4 px-4 md:h-[4.75rem]">
+        <div className="flex justify-start">
+          <BraindanceBrandLink className="shrink-0" />
+        </div>
 
-        {isHome ? (
-          <div className="mx-auto min-w-0 max-w-md flex-1">
+        <div className="flex min-w-0 justify-center">
+          <div
+            className={cn("w-full max-w-md", !isHome && "invisible")}
+            aria-hidden={!isHome}
+          >
             <SetsSearchField
               value={query}
               onChange={setQuery}
               onClear={() => setQuery("")}
               onSubmit={scrollToCurrentDjSets}
+              className="max-w-none"
             />
           </div>
-        ) : (
-          <div className="flex-1" />
-        )}
+        </div>
 
-        <ProfileNavLink placement="header" className="shrink-0" />
+        <div className="flex justify-end">
+          <ProfileNavLink placement="header" className="shrink-0" />
+        </div>
       </div>
     </header>
   );

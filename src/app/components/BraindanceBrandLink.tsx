@@ -41,13 +41,23 @@ export default function BraindanceBrandLink({
   return (
     <Link
       href="/"
-      className={cn(
-        "transition-opacity duration-bends-fast ease-bends hover:opacity-90",
-        className
-      )}
+      aria-current={isActive ? "page" : undefined}
+      className={cn("inline-block", className)}
     >
-      <span className="text-gradient-bends text-sm font-semibold uppercase tracking-wide">
-        Braindance
+      <span className="relative inline-block text-sm font-semibold uppercase tracking-wide">
+        <span className="invisible" aria-hidden>
+          Braindance
+        </span>
+        <span
+          className={cn(
+            "absolute inset-0 transition-opacity duration-bends-fast ease-bends",
+            isActive
+              ? "text-gradient-bends"
+              : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+          )}
+        >
+          Braindance
+        </span>
       </span>
     </Link>
   );
