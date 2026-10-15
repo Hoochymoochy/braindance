@@ -322,10 +322,12 @@ export function StreamTracklistSidebar({
                         text={t.title}
                         className="text-sm font-medium text-zinc-900"
                       />
-                      <ScrollableLine
-                        text={t.artist}
-                        className="text-xs text-zinc-500"
-                      />
+                      {t.artist.trim() && t.artist.trim() !== "—" ? (
+                        <ScrollableLine
+                          text={t.artist}
+                          className="text-xs text-zinc-500"
+                        />
+                      ) : null}
                       {(t.spotify_url || t.soundcloud_url) && (
                         <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-zinc-500">
                           {t.spotify_url && (

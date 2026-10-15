@@ -1,8 +1,11 @@
 import {
   cleanTracklistDisplayLabels,
   isNumberedTracklist,
+  splitArtistTitle,
+  stripLeadingEqualsMarker,
   stripLeadingTimestampResidue,
   stripLeadingTrackIndex,
+  stripTrailingSocialHandles,
 } from "@/app/lib/utils/tracklistText";
 
 describe("stripLeadingTrackIndex", () => {
@@ -15,6 +18,39 @@ describe("stripLeadingTrackIndex", () => {
   it("leaves normal artist names alone", () => {
     expect(stripLeadingTrackIndex("James Hype")).toBe("James Hype");
     expect(stripLeadingTrackIndex("99 Problems")).toBe("99 Problems");
+  });
+});
+
+describe("stripLeadingEqualsMarker", () => {
+  it("removes decorative leading equals", () => {
+    expect(stripLeadingEqualsMarker("= Bart Skils & Weska")).toBe(
+      "Bart Skils & Weska"
+    );
+    expect(stripLeadingEqualsMarker("= ID")).toBe("ID");
+  });
+
+  it("leaves normal artists alone", () => {
+    expect(stripLeadingEqualsMarker("Bart Skils")).toBe("Bart Skils");
+  });
+});
+
+describe("stripTrailingSocialHandles", () => {
+  it("removes one or more trailing @handles", () => {
+    expect(
+      stripTrailingSocialHandles("Nao Andianta (Mx Cartier Remix) @MxCartier_ofc")
+    ).toBe("Nao Andianta (Mx Cartier Remix)");
+    expect(
+      stripTrailingSocialHandles(
+        "You Can Do Iy Baby @toolroomrecords @DJMARKKNIGHT"
+      )
+    ).toBe("You Can Do Iy Baby");
+    expect(
+      stripTrailingSocialHandles("Beautiful (Unreleased) @Menu.production")
+    ).toBe("Beautiful (Unreleased)");
+  });
+
+  it("leaves titles without handles alone", () => {
+    expect(stripTrailingSocialHandles("Get Down")).toBe("Get Down");
   });
 });
 
@@ -58,6 +94,23 @@ describe("isNumberedTracklist", () => {
       { artist: "Fatboy Slim", title: "Rockafeller Skank" },
     ];
     expect(isNumberedTracklist(tracks)).toBe(false);
+  });
+});
+
+describe("splitArtistTitle", () => {
+  it("splits en-dash artist/title pairs", () => {
+    expect(
+      splitArtistTitle('Dish Dash – ID (Intro Edit / "Look at the Robot")')
+    ).toEqual({
+      artist: "Dish Dash",
+      title: 'ID (Intro Edit / "Look at the Robot")',
+    });
+    expect(
+      splitArtistTitle("Green Velvet – La La Land (Dish Dash Remix / Edit)")
+    ).toEqual({
+      artist: "Green Velvet",
+      title: "La La Land (Dish Dash Remix / Edit)",
+    });
   });
 });
 
@@ -111,5 +164,58 @@ describe("cleanTracklistDisplayLabels", () => {
       { artist: "CID", title: "Loaded Gun" },
     ]);
     expect(normal[0].artist).toBe("Kaskade");
+  });
+
+  it("strips leading equals markers from artists", () => {
+    const cleaned = cleanTracklistDisplayLabels([
+      { artist: "= Bart Skils & Weska", title: "Silent Pressure" },
+      { artist: "= Blawan", title: "Why They Hide Their Bodies Under My Garage?" },
+      { artist: "= ID", title: "ID" },
+    ]);
+    expect(cleaned.map((t) => t.artist)).toEqual([
+      "Bart Skils & Weska",
+      "Blawan",
+      "ID",
+    ]);
+  });
+
+  it("strips trailing social handles from titles", () => {
+    const cleaned = cleanTracklistDisplayLabels([
+      {
+        artist: "Trio Mocota",
+        title: "Nao Andianta (Mx Cartier Remix) @MxCartier_ofc",
+      },
+      {
+        artist: "Mark Knight, Danny Howard",
+        title: "You Can Do Iy Baby @toolroomrecords @DJMARKKNIGHT",
+      },
+      { artist: "TwoSlice", title: "Get Down" },
+    ]);
+    expect(cleaned.map((t) => t.title)).toEqual([
+      "Nao Andianta (Mx Cartier Remix)",
+      "You Can Do Iy Baby",
+      "Get Down",
+    ]);
+  });
+
+  it("recovers artist when the source used an en-dash", () => {
+    const cleaned = cleanTracklistDisplayLabels([
+      {
+        artist: "",
+        title: 'Dish Dash – ID (Intro Edit / "Look at the Robot")',
+      },
+      {
+        artist: "",
+        title: "Dish Dash & Glowal – All I Wanna Do",
+      },
+    ]);
+    expect(cleaned[0]).toMatchObject({
+      artist: "Dish Dash",
+      title: 'ID (Intro Edit / "Look at the Robot")',
+    });
+    expect(cleaned[1]).toMatchObject({
+      artist: "Dish Dash & Glowal",
+      title: "All I Wanna Do",
+    });
   });
 });

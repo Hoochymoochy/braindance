@@ -2,6 +2,9 @@
  * Display cleanup for scraped tracklists:
  * - setlist indexes (`01. James Hype` → `James Hype`)
  * - range end-times left in labels (`- 2:08 Lukas & Frank` → `Lukas & Frank`)
+ * - artist/title joined with en/em dashes (`Dish Dash – ID` → split fields)
+ * - trailing social handles (`Get Down @toolroomrecords` → `Get Down`)
+ * - leading equals markers (`= Bart Skils` → `Bart Skils`)
  */
 
 /** Leading `1.`, `01.`, `1)`, `1]` style indexes. */
@@ -11,13 +14,26 @@ const LEADING_TRACK_INDEX = /^\s*\d{1,3}[.)\]]\s+/;
 const LEADING_TIMESTAMP_RESIDUE =
   /^\s*-?\s*(?:\d{1,2}:\d{2}:\d{2}|\d{1,3}:\d{2})\s+/;
 
-/** Orphan leading dash/pipe after a stripped range marker. */
-const LEADING_SEPARATOR = /^\s*[-–—|]\s+/;
+/** Orphan leading dash/pipe/equals after a stripped range marker. */
+const LEADING_SEPARATOR = /^\s*[-–—|=]\s+/;
+
+/** `Artist - Title` / en-dash / em-dash (backend only splits ASCII hyphen). */
+const ARTIST_TITLE_SEP = /\s[-–—]\s/;
+
+/** Trailing Instagram/TikTok-style handles (one or more). */
+const TRAILING_SOCIAL_HANDLES = /(?:\s+@[A-Za-z0-9._]{2,})+\s*$/;
 
 export function stripLeadingTrackIndex(text: string): string {
   const trimmed = (text || "").trim();
   if (!trimmed) return trimmed;
   return trimmed.replace(LEADING_TRACK_INDEX, "").trim();
+}
+
+/** Remove trailing `@handles` left by comment scrapes. */
+export function stripTrailingSocialHandles(text: string): string {
+  const trimmed = (text || "").trim();
+  if (!trimmed) return trimmed;
+  return trimmed.replace(TRAILING_SOCIAL_HANDLES, "").trim();
 }
 
 /** Remove leaked cue/range timestamps from artist or title text. */
@@ -34,6 +50,13 @@ export function stripLeadingTimestampResidue(text: string): string {
     out = next;
   }
   return out;
+}
+
+/** Remove decorative leading `=` used in some setlist formats. */
+export function stripLeadingEqualsMarker(text: string): string {
+  const trimmed = (text || "").trim();
+  if (!trimmed) return trimmed;
+  return trimmed.replace(/^\s*=\s+/, "").trim();
 }
 
 type Labelish = { artist?: string | null; title?: string | null };
@@ -67,9 +90,29 @@ function cleanLabel(
   stripIndex: boolean
 ): string | null | undefined {
   if (value == null) return value;
-  let out = stripLeadingTimestampResidue(String(value));
+  let out = stripLeadingEqualsMarker(
+    stripTrailingSocialHandles(stripLeadingTimestampResidue(String(value)))
+  );
   if (stripIndex) out = stripLeadingTrackIndex(out);
   return out;
+}
+
+/**
+ * Split combined `Artist – Title` strings when artist was never parsed
+ * (common when the source used an en-dash the backend did not split on).
+ */
+export function splitArtistTitle(combined: string): {
+  artist: string;
+  title: string;
+} {
+  const text = (combined || "").trim();
+  if (!text) return { artist: "", title: "" };
+  const m = ARTIST_TITLE_SEP.exec(text);
+  if (!m || m.index == null) return { artist: "", title: text };
+  const artist = text.slice(0, m.index).trim();
+  const title = text.slice(m.index + m[0].length).trim();
+  if (!artist || !title) return { artist: "", title: text };
+  return { artist, title };
 }
 
 /**
@@ -80,11 +123,20 @@ export function cleanTracklistDisplayLabels<T extends Labelish>(
   tracks: T[]
 ): T[] {
   const stripIndex = isNumberedTracklist(tracks);
-  return tracks.map((t) => ({
-    ...t,
-    artist: cleanLabel(t.artist, stripIndex),
-    title: cleanLabel(t.title, stripIndex),
-  }));
+  return tracks.map((t) => {
+    let artist = cleanLabel(t.artist, stripIndex) ?? t.artist;
+    let title = cleanLabel(t.title, stripIndex) ?? t.title;
+
+    if (!(artist || "").trim() && (title || "").trim()) {
+      const split = splitArtistTitle(String(title));
+      if (split.artist) {
+        artist = split.artist;
+        title = split.title;
+      }
+    }
+
+    return { ...t, artist, title };
+  });
 }
 
 /** @deprecated Prefer {@link cleanTracklistDisplayLabels}. */
