@@ -11,7 +11,6 @@ import {
   HomeSearchProvider,
   useHomeSearch,
 } from "@/app/components/dj-sets/HomeSearchContext";
-import { HomeBrandMergeProvider } from "@/app/components/home/HomeBrandMerge";
 import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
 import { cn } from "@/lib/utils";
@@ -70,28 +69,26 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <HomeSearchProvider>
-      <HomeBrandMergeProvider>
-        <AuthSessionSync />
-        <Header />
-        <MobileHeader isHome={isHome} />
-        <main
-          className={cn(
-            "min-h-svh",
-            isHome
-              ? "pt-0"
-              : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
-            showMobileFooter
-              ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
-              : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
-            // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
-            isStreamWatch &&
-              "max-md:overflow-x-hidden max-md:overscroll-none"
-          )}
-        >
-          {children}
-        </main>
-        <Footer showOnMobile={showMobileFooter} />
-      </HomeBrandMergeProvider>
+      <AuthSessionSync />
+      <Header />
+      <MobileHeader isHome={isHome} />
+      <main
+        className={cn(
+          "min-h-svh",
+          isHome
+            ? "pt-0"
+            : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
+          showMobileFooter
+            ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
+            : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
+          // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
+          isStreamWatch &&
+            "max-md:overflow-x-hidden max-md:overscroll-none"
+        )}
+      >
+        {children}
+      </main>
+      <Footer showOnMobile={showMobileFooter} />
     </HomeSearchProvider>
   );
 }

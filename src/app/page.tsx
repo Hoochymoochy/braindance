@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 import { Shuffle } from "lucide-react";
 import { StreamCard } from "@/app/components/dj-sets/StreamCard";
 import { useHomeSearch } from "@/app/components/dj-sets/HomeSearchContext";
-import { HomeBrandPlaceholder } from "@/app/components/home/HomeBrandMerge";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
 import { trackEvent } from "@/app/lib/analytics";
@@ -214,26 +213,23 @@ export default function Home() {
           className="relative flex min-h-svh items-center overflow-x-hidden"
         >
           <div className="relative z-10 w-full py-20 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4">
-            <div className="motion-enter" style={{ animationDelay: "40ms" }}>
-              <HomeBrandPlaceholder />
-            </div>
             <h1 className="text-[7rem] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
               <span
                 className="motion-enter block whitespace-nowrap"
-                style={{ animationDelay: "90ms" }}
+                style={{ animationDelay: "40ms" }}
               >
                 Stream DJ sets
               </span>
               <span
                 className="motion-enter mt-[0.12em] block whitespace-nowrap text-gradient-bends"
-                style={{ animationDelay: "160ms" }}
+                style={{ animationDelay: "110ms" }}
               >
                 Discover new mixes
               </span>
             </h1>
             <div
               className="motion-enter mt-10"
-              style={{ animationDelay: "230ms" }}
+              style={{ animationDelay: "180ms" }}
             >
               <button
                 type="button"
