@@ -9,10 +9,15 @@ import AuthSessionSync from "@/app/components/AuthSessionSync";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
 import {
   HomeSearchProvider,
+  scrollToCurrentDjSets,
   useHomeSearch,
 } from "@/app/components/dj-sets/HomeSearchContext";
 import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
+import {
+  homeHeaderChromeClass,
+  useHomeHeaderSolid,
+} from "@/app/lib/hooks/useHomeHeaderSolid";
 import { cn } from "@/lib/utils";
 
 function isProfilePath(pathname: string): boolean {
@@ -26,11 +31,13 @@ function isStreamWatchPath(pathname: string): boolean {
 
 function MobileHeader({ isHome }: { isHome: boolean }) {
   const { query, setQuery } = useHomeSearch();
+  const solid = useHomeHeaderSolid();
 
   return (
     <header
-      className="glass-nav-header fixed left-0 right-0 top-0 z-50 border-b pt-[env(safe-area-inset-top)] md:hidden"
+      className={cn(homeHeaderChromeClass(solid), "md:hidden")}
       role="banner"
+      data-header-solid={solid ? "true" : "false"}
     >
       <div className="flex flex-col gap-2.5 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
@@ -42,6 +49,7 @@ function MobileHeader({ isHome }: { isHome: boolean }) {
             value={query}
             onChange={setQuery}
             onClear={() => setQuery("")}
+            onSubmit={scrollToCurrentDjSets}
           />
         ) : null}
       </div>

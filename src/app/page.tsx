@@ -14,6 +14,9 @@ import { useHomeSearch } from "@/app/components/dj-sets/HomeSearchContext";
 import { CATALOG_REVALIDATE_SECONDS } from "@/app/lib/cache/http";
 import { ttlGet, ttlSet } from "@/app/lib/cache/ttl";
 import { trackEvent } from "@/app/lib/analytics";
+import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
+import { matchesDjSetQuery } from "@/app/lib/utils/djSetSearch";
+import { cn } from "@/lib/utils";
 
 type DjSet = {
   video_id: string;
@@ -40,16 +43,6 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-function matchesQuery(set: DjSet, query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return (
-    set.title.toLowerCase().includes(q) ||
-    set.channel.toLowerCase().includes(q) ||
-    set.video_id.toLowerCase().includes(q)
-  );
-}
-
 const PAGE_SIZE = 9;
 const DJ_SETS_CACHE_KEY = "home:dj-sets";
 const CLIENT_CACHE_MS = CATALOG_REVALIDATE_SECONDS * 1000;
@@ -68,6 +61,7 @@ export default function Home() {
   const heroSentinelRef = useRef<HTMLDivElement | null>(null);
   const heroPassedRef = useRef(false);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
+  const wasSearchingRef = useRef(false);
   const isSearching = deferredQuery.trim().length > 0;
 
   useEffect(() => {
@@ -133,9 +127,18 @@ export default function Home() {
     djSetsPromiseRef.current = getDjSets();
   }, []);
 
+  // Search swaps hero for the results frame — pin to the top of that view.
+  useEffect(() => {
+    const searching = searchQuery.trim().length > 0;
+    if (searching && !wasSearchingRef.current) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    wasSearchingRef.current = searching;
+  }, [searchQuery]);
+
   const filteredSets = useMemo(() => {
     if (!isSearching) return allDjSets;
-    return catalogSets.filter((set) => matchesQuery(set, deferredQuery));
+    return catalogSets.filter((set) => matchesDjSetQuery(set, deferredQuery));
   }, [isSearching, allDjSets, catalogSets, deferredQuery]);
 
   const visibleDjSets = useMemo(
@@ -144,6 +147,14 @@ export default function Home() {
   );
 
   const hasMore = visibleCount < filteredSets.length;
+  const emptySearch = isSearching && !loading && filteredSets.length === 0;
+
+  useLockBodyScroll(emptySearch);
+
+  useEffect(() => {
+    if (!emptySearch) return;
+    window.scrollTo(0, 0);
+  }, [emptySearch]);
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
@@ -206,66 +217,97 @@ export default function Home() {
     ));
 
   return (
-    <div className="relative flex min-h-svh flex-col overflow-x-clip text-zinc-900">
-      <div className="relative z-10 flex-1">
-        <section
-          id="home-hero"
-          className="relative flex min-h-svh items-center overflow-x-hidden"
-        >
-          <div className="relative z-10 w-full py-20 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4">
-            <h1 className="text-[7rem] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
-              <span
-                className="motion-enter block whitespace-nowrap"
-                style={{ animationDelay: "40ms" }}
-              >
-                Stream DJ sets
-              </span>
-              <span
-                className="motion-enter mt-[0.12em] block whitespace-nowrap text-gradient-bends"
-                style={{ animationDelay: "110ms" }}
-              >
-                Discover new mixes
-              </span>
-            </h1>
-            <div
-              className="motion-enter mt-10"
-              style={{ animationDelay: "180ms" }}
+    <div
+      className={cn(
+        "relative flex flex-col overflow-x-clip text-zinc-900",
+        emptySearch ? "h-svh overflow-hidden" : "min-h-svh"
+      )}
+    >
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+        {!isSearching ? (
+          <>
+            <section
+              id="home-hero"
+              className="relative flex min-h-svh items-center overflow-x-hidden"
             >
-              <button
-                type="button"
-                className="group inline-flex items-center gap-2 hover:cursor-pointer rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
-                onClick={goRandomSet}
-              >
-                <Shuffle className="h-4 w-4" />
-                Random set
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <div ref={heroSentinelRef} className="h-px w-full" aria-hidden />
-
-        <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
-          <div>
-            {/* One search input stays mounted so focus isn't lost when results kick in */}
-            <div className="mb-5 min-w-0">
-              <SectionHeader
-                title={isSearching ? "Search results" : "Current DJ Sets"}
-              />
-              {!loading && isSearching ? (
-                <p
-                  className="mt-1 tabular-nums text-xs text-brand-from/65"
-                  aria-live="polite"
+              <div className="relative z-10 w-full py-20 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4">
+                <h1 className="text-[7rem] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">
+                  <span
+                    className="motion-enter block whitespace-nowrap"
+                    style={{ animationDelay: "40ms" }}
+                  >
+                    Stream DJ sets
+                  </span>
+                  <span
+                    className="motion-enter mt-[0.12em] block whitespace-nowrap text-gradient-bends"
+                    style={{ animationDelay: "110ms" }}
+                  >
+                    Discover new mixes
+                  </span>
+                </h1>
+                <div
+                  className="motion-enter mt-10"
+                  style={{ animationDelay: "180ms" }}
                 >
-                  {filteredSets.length}{" "}
-                  {filteredSets.length === 1 ? "result" : "results"}
-                </p>
-              ) : !loading && allDjSets.length > 0 ? (
-                <p className="mt-1 tabular-nums text-xs text-brand-from/65">
-                  Showing {visibleDjSets.length} of {allDjSets.length}
-                </p>
-              ) : null}
+                  <button
+                    type="button"
+                    className="group inline-flex items-center gap-2 hover:cursor-pointer rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-[background-color,transform,box-shadow] duration-bends-fast ease-bends hover:bg-zinc-800 hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)] active:scale-[0.98] dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
+                    onClick={goRandomSet}
+                  >
+                    <Shuffle className="h-4 w-4" />
+                    Random set
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <div ref={heroSentinelRef} className="h-px w-full" aria-hidden />
+          </>
+        ) : null}
+
+        <section
+          id="current-dj-sets"
+          className={cn(
+            "mx-auto flex w-full max-w-7xl flex-1 flex-col px-4",
+            isSearching
+              ? "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+5.5rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1rem)]"
+              : "pt-10",
+            emptySearch
+              ? "min-h-0 overflow-hidden pb-[env(safe-area-inset-bottom,0px)]"
+              : "pb-16"
+          )}
+        >
+          <div className="mb-5 min-w-0 shrink-0">
+            <SectionHeader
+              title={isSearching ? "Search results" : "Current DJ Sets"}
+            />
+            {!loading && isSearching ? (
+              <p
+                className="mt-1 tabular-nums text-xs text-brand-from/65"
+                aria-live="polite"
+              >
+                {filteredSets.length}{" "}
+                {filteredSets.length === 1 ? "result" : "results"}
+              </p>
+            ) : !loading && allDjSets.length > 0 ? (
+              <p className="mt-1 tabular-nums text-xs text-brand-from/65">
+                Showing {visibleDjSets.length} of {allDjSets.length}
+              </p>
+            ) : null}
+          </div>
+          {emptySearch ? (
+            <div
+              className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 text-center"
+              role="status"
+            >
+              <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                No sets match &ldquo;{deferredQuery.trim()}&rdquo;
+              </p>
+              <p className="mt-2 max-w-sm text-xs text-zinc-500">
+                Try another artist, title, or video id.
+              </p>
             </div>
+          ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading && skeletons(6)}
               {!loading &&
@@ -277,20 +319,15 @@ export default function Home() {
                     showAddToCrate={false}
                   />
                 ))}
-              {!loading && isSearching && filteredSets.length === 0 && (
-                <p className="col-span-full py-8 text-sm text-[#7a7a7a]">
-                  No sets match &ldquo;{deferredQuery.trim()}&rdquo;.
-                </p>
-              )}
             </div>
-            {!loading && hasMore && (
-              <div
-                ref={loadMoreSentinelRef}
-                className="mb-8 mt-12 h-px w-full"
-                aria-hidden
-              />
-            )}
-          </div>
+          )}
+          {!loading && hasMore && (
+            <div
+              ref={loadMoreSentinelRef}
+              className="mb-8 mt-12 h-px w-full"
+              aria-hidden
+            />
+          )}
         </section>
       </div>
     </div>

@@ -17,6 +17,12 @@ type HomeSearchContextValue = {
 
 const HomeSearchContext = createContext<HomeSearchContextValue | null>(null);
 
+export function scrollToCurrentDjSets() {
+  document
+    .getElementById("current-dj-sets")
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export function HomeSearchProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
