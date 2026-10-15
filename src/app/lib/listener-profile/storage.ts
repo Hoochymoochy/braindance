@@ -104,5 +104,16 @@ export function shouldRegenerate({
     return true;
   }
 
+  // 4. Meaningful listening growth (archetype may shift; header stats are live anyway)
+  const prevMinutes = cached.statsSnapshot?.totalListeningMinutes ?? 0;
+  if (currentStats.totalListeningMinutes - prevMinutes >= 15) {
+    return true;
+  }
+
+  const prevSets = cached.statsSnapshot?.setsStarted ?? 0;
+  if (currentStats.setsStarted - prevSets >= 1) {
+    return true;
+  }
+
   return false;
 }

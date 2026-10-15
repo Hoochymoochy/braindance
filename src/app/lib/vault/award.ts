@@ -122,56 +122,6 @@ async function hasEverHeardDj(userId: string, djKey: string): Promise<boolean> {
   return Boolean(events?.length);
 }
 
-async function upsertListeningSession(input: {
-  userId: string;
-  videoId: string;
-  djName: string;
-  setTitle: string;
-  durationSeconds: number;
-  listenedSeconds: number;
-  completed: boolean;
-}): Promise<void> {
-  const db = getDbClient();
-  const { data: existing } = await db
-    .from("listening_sessions")
-    .select("id, listened_seconds, completed")
-    .eq("user_id", input.userId)
-    .eq("video_id", input.videoId)
-    .order("started_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (existing?.id) {
-    const nextListened = Math.max(
-      Number(existing.listened_seconds) || 0,
-      input.listenedSeconds
-    );
-    await db
-      .from("listening_sessions")
-      .update({
-        dj_name: input.djName || undefined,
-        set_title: input.setTitle || undefined,
-        duration_seconds: input.durationSeconds || undefined,
-        listened_seconds: nextListened,
-        completed: Boolean(existing.completed) || input.completed,
-        ended_at: new Date().toISOString(),
-      })
-      .eq("id", existing.id);
-    return;
-  }
-
-  await db.from("listening_sessions").insert({
-    user_id: input.userId,
-    video_id: input.videoId,
-    dj_name: input.djName,
-    set_title: input.setTitle,
-    duration_seconds: input.durationSeconds,
-    listened_seconds: input.listenedSeconds,
-    completed: input.completed,
-    ended_at: new Date().toISOString(),
-  });
-}
-
 async function applyCredits(
   userId: string,
   weekStart: string,
@@ -336,10 +286,6 @@ export async function awardVaultFromClientEvent(
   const videoId = event.videoId.trim();
   const djName = (event.djName ?? "").trim();
   const djKey = normalizeDjName(djName);
-  const setTitle = (event.setTitle ?? "").trim();
-  const durationSeconds = Math.max(0, Math.floor(event.durationSeconds ?? 0));
-  const listenedSeconds = Math.max(0, Math.floor(event.listenedSeconds ?? 0));
-
   if (event.type === "unsave_track") {
     const trackKey = resolveTrackKey(event);
     const eventKey = `track:${videoId}:${trackKey}`;
@@ -372,16 +318,7 @@ export async function awardVaultFromClientEvent(
         points: VAULT_POINTS.new_dj,
       });
     }
-
-    await upsertListeningSession({
-      userId,
-      videoId,
-      djName,
-      setTitle,
-      durationSeconds,
-      listenedSeconds: Math.max(listenedSeconds, chunkIndex * 600),
-      completed: false,
-    });
+    // Listening minutes are persisted by /api/listening/progress — not Vault.
   } else if (event.type === "finish_set") {
     credits.push({
       event_type: "finish_set",
@@ -396,16 +333,7 @@ export async function awardVaultFromClientEvent(
         points: VAULT_POINTS.new_dj,
       });
     }
-
-    await upsertListeningSession({
-      userId,
-      videoId,
-      djName,
-      setTitle,
-      durationSeconds,
-      listenedSeconds: Math.max(listenedSeconds, durationSeconds),
-      completed: true,
-    });
+    // Listening minutes / completed flag: /api/listening/progress only.
   } else if (event.type === "save_track") {
     const trackKey = resolveTrackKey(event);
     credits.push({

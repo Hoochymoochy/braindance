@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, type MutableRefObject } from "react";
 import { trackEvent, type SetAnalyticsMeta } from "@/app/lib/analytics";
+import { reportListeningProgress } from "@/app/lib/listening/client";
+import {
+  LISTENING_HEARTBEAT_SECONDS,
+  shouldPersistListeningProgress,
+} from "@/app/lib/listening/rules";
 import { reportVaultEvent } from "@/app/lib/vault/client";
 
 const MILESTONES: { seconds: number; event: string }[] = [
@@ -12,7 +17,8 @@ const MILESTONES: { seconds: number; event: string }[] = [
   { seconds: 60 * 60, event: "listen_60_minutes" },
 ];
 
-const LISTEN_CHUNK_SECONDS = 600;
+/** Vault reward chunk size (independent of analytics heartbeat). */
+const VAULT_LISTEN_CHUNK_SECONDS = 600;
 const FINISH_RATIO = 0.95;
 
 const YT_ENDED = 0;
@@ -93,10 +99,18 @@ function loadYoutubeApi(): Promise<YtNamespace> {
   return ytApiPromise;
 }
 
+function newClientSessionId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `ls_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 /**
  * Tracks play_started + listening milestones from real YouTube player state.
- * Accumulates wall time only while YT state is PLAYING (pauses/seeks do not inflate).
- * Also reports vault listen chunks (+5 / 10 min) and finish_set.
+ * Accumulates monotonic time only while YT state is PLAYING (pause/buffer do not count).
+ * Persists listening analytics via a 5-minute heartbeat + flush (independent of Vault).
+ * Also reports vault listen chunks (+5 / 10 min) and finish_set for rewards only.
  */
 export function useYoutubePlaybackAnalytics({
   enabled,
@@ -130,12 +144,19 @@ export function useYoutubePlaybackAnalytics({
     let player: YtPlayer | null = null;
     let queuedSeek: number | null = null;
     let pollId: ReturnType<typeof setInterval> | null = null;
+    /** Monotonic clock start while PLAYING; null when paused/buffering/ended. */
     let playingSince: number | null = null;
     let listenedMs = 0;
     let playStartedFired = false;
     let finishReported = false;
     const firedMilestones = new Set<string>();
     const reportedChunks = new Set<number>();
+
+    const sessionId = newClientSessionId();
+    let lastPersistedSeconds = 0;
+    let completedPersisted = false;
+    let persistChain: Promise<void> = Promise.resolve();
+    let pageHideFlushDone = false;
 
     const applySeek = (seconds: number) => {
       const s = Math.max(0, Math.floor(seconds));
@@ -155,17 +176,18 @@ export function useYoutubePlaybackAnalytics({
       playerApiRef.current = { seekTo: applySeek };
     }
 
-    const flushListen = () => {
+    const flushListenClock = () => {
       if (playingSince == null) return;
-      listenedMs += Date.now() - playingSince;
+      listenedMs += performance.now() - playingSince;
       playingSince = null;
     };
 
     const listenedSeconds = () =>
-      (listenedMs + (playingSince != null ? Date.now() - playingSince : 0)) /
+      (listenedMs +
+        (playingSince != null ? performance.now() - playingSince : 0)) /
       1000;
 
-    const vaultPayload = () => {
+    const sessionMeta = () => {
       const videoId = String(metaRef.current.set_id ?? "").trim();
       return {
         videoId,
@@ -174,19 +196,106 @@ export function useYoutubePlaybackAnalytics({
       };
     };
 
-    const reportChunks = () => {
-      const seconds = listenedSeconds();
-      const chunks = Math.floor(seconds / LISTEN_CHUNK_SECONDS);
-      if (chunks < 1) return;
-      const { videoId, djName, setTitle } = vaultPayload();
+    const readDurationSeconds = () => {
+      try {
+        return Math.floor(player?.getDuration?.() ?? 0);
+      } catch {
+        return 0;
+      }
+    };
+
+    const persistProgress = (opts: {
+      force?: boolean;
+      completed?: boolean;
+      keepalive?: boolean;
+    }) => {
+      const { videoId, djName, setTitle } = sessionMeta();
       if (!videoId) return;
 
-      let durationSeconds = 0;
-      try {
-        durationSeconds = Math.floor(player?.getDuration?.() ?? 0);
-      } catch {
-        /* ignore */
+      const force = Boolean(opts.force) || Boolean(opts.completed);
+      const keepalive = Boolean(opts.keepalive);
+      const completed = Boolean(opts.completed);
+      // Always allow a completed write even when seconds already flushed (pause then end).
+      const needsCompletedWrite = completed && !completedPersisted;
+
+      // Unload path: fire immediately (beacon/keepalive) without waiting on the chain.
+      if (keepalive) {
+        const cumulative = Math.floor(listenedSeconds());
+        if (
+          !needsCompletedWrite &&
+          !shouldPersistListeningProgress({
+            cumulativeSeconds: cumulative,
+            lastPersistedSeconds,
+            force: true,
+          })
+        ) {
+          return;
+        }
+        void reportListeningProgress(
+          {
+            sessionId,
+            videoId,
+            djName,
+            setTitle,
+            durationSeconds: readDurationSeconds(),
+            listenedSeconds: cumulative,
+            completed,
+          },
+          { keepalive: true }
+        );
+        lastPersistedSeconds = Math.max(lastPersistedSeconds, cumulative);
+        if (completed) completedPersisted = true;
+        return;
       }
+
+      persistChain = persistChain
+        .then(async () => {
+          if (cancelled) return;
+          const cumulative = Math.floor(listenedSeconds());
+          const stillNeedsCompleted = completed && !completedPersisted;
+          if (
+            !stillNeedsCompleted &&
+            !shouldPersistListeningProgress({
+              cumulativeSeconds: cumulative,
+              lastPersistedSeconds,
+              force,
+            })
+          ) {
+            return;
+          }
+
+          const result = await reportListeningProgress({
+            sessionId,
+            videoId,
+            djName,
+            setTitle,
+            durationSeconds: readDurationSeconds(),
+            listenedSeconds: cumulative,
+            completed: stillNeedsCompleted || completed,
+          });
+
+          if (result && Number.isFinite(result.listenedSeconds)) {
+            lastPersistedSeconds = Math.max(
+              lastPersistedSeconds,
+              Math.floor(result.listenedSeconds)
+            );
+            if (result.completed) completedPersisted = true;
+          }
+          // On failure, leave lastPersisted unchanged so the next heartbeat/flush retries.
+        })
+        .catch(() => {
+          /* analytics must never break playback */
+        });
+    };
+
+    const reportVaultChunks = () => {
+      const seconds = listenedSeconds();
+      const chunks = Math.floor(seconds / VAULT_LISTEN_CHUNK_SECONDS);
+      if (chunks < 1) return;
+      const { videoId, djName, setTitle } = sessionMeta();
+      if (!videoId) return;
+
+      const durationSeconds = readDurationSeconds();
 
       for (let i = 1; i <= chunks; i++) {
         if (reportedChunks.has(i)) continue;
@@ -203,25 +312,18 @@ export function useYoutubePlaybackAnalytics({
       }
     };
 
-    const reportFinish = () => {
+    const reportVaultFinish = () => {
       if (finishReported) return;
-      const { videoId, djName, setTitle } = vaultPayload();
+      const { videoId, djName, setTitle } = sessionMeta();
       if (!videoId) return;
       finishReported = true;
-
-      let durationSeconds = 0;
-      try {
-        durationSeconds = Math.floor(player?.getDuration?.() ?? 0);
-      } catch {
-        /* ignore */
-      }
 
       void reportVaultEvent({
         type: "finish_set",
         videoId,
         djName,
         setTitle,
-        durationSeconds,
+        durationSeconds: readDurationSeconds(),
         listenedSeconds: Math.floor(listenedSeconds()),
       });
     };
@@ -232,7 +334,8 @@ export function useYoutubePlaybackAnalytics({
         const duration = player.getDuration?.() ?? 0;
         const current = player.getCurrentTime?.() ?? 0;
         if (duration > 60 && current / duration >= FINISH_RATIO) {
-          reportFinish();
+          persistProgress({ force: true, completed: true });
+          reportVaultFinish();
         }
       } catch {
         /* ignore */
@@ -252,7 +355,16 @@ export function useYoutubePlaybackAnalytics({
           trackEvent(m.event, payload);
         }
       }
-      reportChunks();
+      // Analytics heartbeat (5 min) — independent of Vault 10-min chunks.
+      if (
+        shouldPersistListeningProgress({
+          cumulativeSeconds: seconds,
+          lastPersistedSeconds,
+        })
+      ) {
+        persistProgress({ force: false });
+      }
+      reportVaultChunks();
       checkFinishByProgress();
     };
 
@@ -267,11 +379,20 @@ export function useYoutubePlaybackAnalytics({
             source: sourceRef.current,
           });
         }
-        if (playingSince == null) playingSince = Date.now();
+        if (playingSince == null) playingSince = performance.now();
       } else {
-        flushListen();
+        flushListenClock();
+        // Pause / non-playing: flush leftover so short sessions count.
+        persistProgress({ force: true });
       }
       checkMilestones();
+    };
+
+    const onPageHide = () => {
+      if (pageHideFlushDone) return;
+      pageHideFlushDone = true;
+      flushListenClock();
+      persistProgress({ force: true, keepalive: true });
     };
 
     const start = async () => {
@@ -305,9 +426,11 @@ export function useYoutubePlaybackAnalytics({
               if (cancelled) return;
               if (event.data === YT_ENDED) {
                 setPlaying(false);
-                reportFinish();
+                persistProgress({ force: true, completed: true });
+                reportVaultFinish();
                 return;
               }
+              // Only PLAYING advances the clock; BUFFERING/PAUSED/CUED do not.
               setPlaying(event.data === YT_PLAYING);
             },
           },
@@ -317,6 +440,9 @@ export function useYoutubePlaybackAnalytics({
           if (cancelled) return;
           if (playingSince != null) checkMilestones();
         }, 1000);
+
+        window.addEventListener("pagehide", onPageHide);
+        window.addEventListener("beforeunload", onPageHide);
       } catch {
         /* analytics must never break playback */
       }
@@ -326,7 +452,10 @@ export function useYoutubePlaybackAnalytics({
 
     return () => {
       cancelled = true;
-      flushListen();
+      flushListenClock();
+      persistProgress({ force: true, keepalive: true });
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("beforeunload", onPageHide);
       if (pollId) clearInterval(pollId);
       if (playerApiRef) playerApiRef.current = null;
       try {
@@ -337,3 +466,5 @@ export function useYoutubePlaybackAnalytics({
     };
   }, [enabled, iframeId, playerApiRef, playerMountKey]);
 }
+
+export { LISTENING_HEARTBEAT_SECONDS };

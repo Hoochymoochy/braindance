@@ -247,17 +247,37 @@ export async function getListenerStats(userId: string): Promise<ListenerStats> {
   let completionSum = 0;
 
   if (sessions.length > 0) {
-    setsStarted = sessions.length;
+    // Confirmed playback: unique video ids with any listened time.
+    const playedVideos = new Set<string>();
+    const completedVideos = new Set<string>();
+    // Per-video best completion ratio (revisits should not inflate avg).
+    const bestCompletionByVideo = new Map<string, number>();
+
     for (const s of sessions) {
-      const listenedMin = (s.listened_seconds ?? 0) / 60;
-      totalListeningMinutes += listenedMin;
-      if (s.completed) {
-        setsCompleted += 1;
+      const listened = Math.max(0, s.listened_seconds ?? 0);
+      totalListeningMinutes += listened / 60;
+
+      if (listened > 0 && s.video_id) {
+        playedVideos.add(s.video_id);
       }
-      const dur = s.duration_seconds ?? 3600;
-      if (dur > 0) {
-        completionSum += clamp((s.listened_seconds ?? 0) / dur, 0, 1);
+      if (s.completed && s.video_id) {
+        completedVideos.add(s.video_id);
       }
+
+      if (s.video_id) {
+        const dur = s.duration_seconds ?? 3600;
+        if (dur > 0) {
+          const ratio = clamp(listened / dur, 0, 1);
+          const prev = bestCompletionByVideo.get(s.video_id) ?? 0;
+          if (ratio > prev) bestCompletionByVideo.set(s.video_id, ratio);
+        }
+      }
+    }
+
+    setsStarted = playedVideos.size;
+    setsCompleted = completedVideos.size;
+    for (const ratio of bestCompletionByVideo.values()) {
+      completionSum += ratio;
     }
   } else {
     // Telemetry proxy when only crates/moments are present
