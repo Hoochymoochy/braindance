@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Play } from "lucide-react";
-import GlobeHeatmap from "@/app/components/GlobeHeatmap";
+
+const GlobeHeatmap = dynamic(() => import("@/app/components/GlobeHeatmap"), {
+  ssr: false,
+});
 import {
   StreamTracklistSidebar,
   type TrackRow,

@@ -228,7 +228,7 @@ export default function Home() {
           <>
             <section
               id="home-hero"
-              className="relative flex min-h-svh items-center overflow-x-hidden"
+              className="relative flex min-h-lvh items-center overflow-x-hidden"
             >
               <div className="relative z-10 w-full py-16 pl-[max(1rem,calc((100vw-80rem)/2+1rem))] pr-4 md:py-20">
                 <h1 className="max-w-full text-[clamp(2.85rem,calc((100vw-2rem)/7.6),7rem)] font-bold leading-[0.9] tracking-[-0.045em] text-zinc-900">

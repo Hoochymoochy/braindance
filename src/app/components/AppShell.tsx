@@ -94,6 +94,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
+  // Stream + login: lock page scroll on mobile; tracklist scrolls inside itself.
   useLockBodyScroll((isStreamWatch || isLogin) && isMobileViewport);
 
   return (
@@ -113,7 +114,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
             isProfile || isStreamWatch
               ? "pb-[env(safe-area-inset-bottom,0px)]"
               : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
-            // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
             isStreamWatch &&
               "max-md:overflow-x-hidden max-md:overscroll-none"
           )}

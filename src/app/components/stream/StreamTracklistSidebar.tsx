@@ -355,7 +355,7 @@ export function StreamTracklistSidebar({
         "relative flex min-h-0 w-full flex-col overflow-hidden rounded-none border border-black/6 bg-black/[0.02] dark:border-white/[0.06] dark:bg-white/[0.02]",
         minimized
           ? "min-h-0 max-h-none"
-          : "min-h-[10rem] max-h-[min(65vh,520px)] lg:max-h-none lg:min-h-0",
+          : "min-h-[12rem] max-h-[min(72vh,580px)] lg:max-h-none lg:min-h-0",
         className
       )}
     >
@@ -408,7 +408,10 @@ export function StreamTracklistSidebar({
                 "No tracks yet. The pipeline may still be linking this set."}
             </p>
           ) : (
-            <ul ref={listRef} className="space-y-0.5 pb-16">
+            <ul
+              ref={listRef}
+              className="space-y-0.5 pb-[min(55vh,22rem)] lg:pb-16"
+            >
               {tracks.map((t, index) => {
                 const saved = savedByTrackId.has(t.id);
                 const actionVisible = revealedId === t.id;
