@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { useUserId } from "@/app/components/profile/UserProvider";
 import {
   getCrate,
@@ -115,14 +115,6 @@ export default function CrateDetailPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 pb-16 text-zinc-900 dark:text-zinc-100">
-      <Link
-        href="/profile"
-        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm backdrop-blur-sm transition-colors hover:border-brand-from/40 hover:text-brand-from dark:border-brand-from/20 dark:bg-black/30 dark:text-zinc-100"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Back to profile
-      </Link>
-
       {error ? (
         <p className="rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-400">
           {error}
@@ -133,98 +125,88 @@ export default function CrateDetailPage() {
         <p className="text-sm text-zinc-500">Loading crate…</p>
       ) : (
         <>
-          <div className="relative overflow-hidden rounded-2xl">
-            <div
-              className="absolute inset-0 bg-gradient-to-br from-brand-from/40 via-brand-via/25 to-brand-to/35"
-              aria-hidden
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-8">
+            <CrateCover
+              thumbnails={thumbnails.urls}
+              videoIds={thumbnails.videoIds}
+              name={crate.name}
+              size="lg"
+              className="shadow-xl"
             />
-            <div
-              className="absolute inset-0 bg-gradient-to-t from-[var(--page-bg)] via-transparent to-transparent"
-              aria-hidden
-            />
-            <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-end sm:gap-8 sm:p-8">
-              <CrateCover
-                thumbnails={thumbnails.urls}
-                videoIds={thumbnails.videoIds}
-                name={crate.name}
-                size="lg"
-                className="shadow-xl"
-              />
-              <div className="min-w-0 flex-1 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-from/90">
-                  Crate
-                </p>
-                {editing ? (
-                  <form onSubmit={handleSaveMeta} className="space-y-3">
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="input-bends w-full text-2xl font-bold"
-                      aria-label="Crate name"
-                    />
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={2}
-                      placeholder="Optional description"
-                      className="input-bends w-full resize-y"
-                      aria-label="Crate description"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        type="submit"
-                        className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-white"
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditing(false);
-                          setName(crate.name);
-                          setDescription(crate.description ?? "");
-                        }}
-                        className="rounded-xl border border-black/10 px-3 py-2 text-sm dark:border-brand-from/20"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <>
-                    <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-                      {crate.name}
-                    </h1>
-                    {crate.description ? (
-                      <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-300">
-                        {crate.description}
-                      </p>
-                    ) : null}
-                    <p className="text-sm text-zinc-500">
-                      {sets.length} {sets.length === 1 ? "set" : "sets"}
+            <div className="min-w-0 flex-1 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-from/90">
+                Crate
+              </p>
+              {editing ? (
+                <form onSubmit={handleSaveMeta} className="space-y-3">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="input-bends w-full text-2xl font-bold"
+                    aria-label="Crate name"
+                  />
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={2}
+                    placeholder="Optional description"
+                    className="input-bends w-full resize-y"
+                    aria-label="Crate description"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-white"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing(false);
+                        setName(crate.name);
+                        setDescription(crate.description ?? "");
+                      }}
+                      className="rounded-xl border border-black/10 px-3 py-2 text-sm dark:border-brand-from/20"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+                    {crate.name}
+                  </h1>
+                  {crate.description ? (
+                    <p className="max-w-xl text-sm text-zinc-600 dark:text-zinc-300">
+                      {crate.description}
                     </p>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {firstSetHref ? (
-                        <Link
-                          href={firstSetHref}
-                          className="inline-flex items-center gap-2 rounded-full bg-brand-to px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
-                        >
-                          <Play className="h-4 w-4 fill-current" aria-hidden />
-                          Play
-                        </Link>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => setEditing(true)}
-                        className="rounded-full border border-black/10 px-4 py-2 text-sm dark:border-brand-from/20"
+                  ) : null}
+                  <p className="text-sm text-zinc-500">
+                    {sets.length} {sets.length === 1 ? "set" : "sets"}
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {firstSetHref ? (
+                      <Link
+                        href={firstSetHref}
+                        className="inline-flex items-center gap-2 rounded-full bg-brand-to px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
                       >
-                        Edit details
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                        <Play className="h-4 w-4 fill-current" aria-hidden />
+                        Play
+                      </Link>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className="rounded-full border border-black/10 px-4 py-2 text-sm dark:border-brand-from/20"
+                    >
+                      Edit details
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
