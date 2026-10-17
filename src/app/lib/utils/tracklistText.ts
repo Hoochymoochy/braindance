@@ -1,5 +1,8 @@
+import { decodeHtmlEntities } from "@/app/lib/utils/setTitle";
+
 /**
  * Display cleanup for scraped tracklists:
+ * - HTML entities (`&amp;` → `&`)
  * - setlist indexes (`01. James Hype` → `James Hype`)
  * - range end-times left in labels (`- 2:08 Lukas & Frank` → `Lukas & Frank`)
  * - artist/title joined with en/em dashes (`Dish Dash – ID` → split fields)
@@ -98,7 +101,9 @@ function cleanLabel(
 ): string | null | undefined {
   if (value == null) return value;
   let out = stripLeadingEqualsMarker(
-    stripTrailingSocialHandles(stripLeadingTimestampResidue(String(value)))
+    stripTrailingSocialHandles(
+      stripLeadingTimestampResidue(decodeHtmlEntities(String(value)))
+    )
   );
   if (stripIndex) out = stripLeadingTrackIndex(out);
   return out;

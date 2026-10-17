@@ -107,8 +107,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
             isLogin ? "flex h-svh flex-col overflow-hidden" : "min-h-svh",
             isHome
               ? "pt-0"
-              : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
-            isProfile
+              : isStreamWatch
+                ? "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]"
+                : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
+            isProfile || isStreamWatch
               ? "pb-[env(safe-area-inset-bottom,0px)]"
               : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
             // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
@@ -118,7 +120,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         >
           {children}
         </main>
-        {isProfile ? null : <Footer />}
+        {isProfile || isStreamWatch ? null : <Footer />}
       </StreamPageChromeProvider>
     </HomeSearchProvider>
   );

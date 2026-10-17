@@ -31,6 +31,7 @@ import { AddSetToCrateButton } from "@/app/components/profile/AddSetToCrateButto
 import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
 import type { VaultWeek } from "@/app/lib/vault/types";
 import { isLikelySpamTracklist } from "@/app/lib/utils/tracklistQuality";
+import { cleanSetTitle } from "@/app/lib/utils/setTitle";
 import { cleanTracklistDisplayLabels } from "@/app/lib/utils/tracklistText";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
@@ -526,9 +527,10 @@ export default function BraindanceUserStream() {
   const vaultLocked = vaultGate.gated && !vaultGate.unlocked;
 
   const headerTitle = useMemo(() => {
-    if (pipelineStream) return pipelineStream.title;
-    return event?.title || djSet?.title || "Live DJ Set";
-  }, [pipelineStream, event?.title, djSet?.title]);
+    const raw =
+      pipelineStream?.title || event?.title || djSet?.title || "Live DJ Set";
+    return cleanSetTitle(raw) || raw;
+  }, [pipelineStream?.title, event?.title, djSet?.title]);
 
   useRegisterStreamPageTitle(
     streamLoading || vaultGate.checking ? null : headerTitle
@@ -770,29 +772,34 @@ export default function BraindanceUserStream() {
       </div>
     ) : null;
 
+  const playerShellClass =
+    "relative w-full overflow-hidden bg-black aspect-video max-h-[min(56.25vw,calc(100dvh-var(--nav-header-h)-env(safe-area-inset-top,0px)-4.5rem))] lg:max-h-[calc(100dvh-var(--nav-header-h)-env(safe-area-inset-top,0px)-3.5rem)]";
+
   return (
     <div className="relative text-zinc-900 overscroll-none dark:text-zinc-100">
-      <div className="relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-0 sm:px-5 md:p-8">
-        <main className="mt-0 md:mt-4">
+      <div className="relative z-10 mx-auto w-full max-w-[100rem] pb-6 pt-0 md:px-3 lg:px-4">
+        <main className="mt-0">
           {showTracklist ? (
             <>
-              <div className="relative mb-3 md:mb-5">
-                <div className="lg:pr-[calc(340px+1.25rem)]">
-                  <div className="relative overflow-hidden rounded-none border border-black/6 dark:border-white/[0.06]">
-                    <div className="aspect-video relative bg-black">
-                      {renderPlayer()}
-                    </div>
-                    {sourceMeta}
+              <div className="relative mb-3 lg:mb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_18.5rem] lg:items-stretch lg:gap-3 xl:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="min-w-0">
+                  <div className="overflow-hidden border-black/6 dark:border-white/[0.06] md:border">
+                    <div className={playerShellClass}>{renderPlayer()}</div>
+                    {sourceMeta ? (
+                      <div className="border-t border-black/6 dark:border-white/[0.06]">
+                        {sourceMeta}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
                 <aside
-                  className="mt-3 flex min-h-0 w-full flex-col md:mt-4 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
+                  className="mt-3 flex min-h-0 w-full flex-col px-3 sm:px-4 lg:mt-0 lg:h-full lg:max-h-[calc(100dvh-var(--nav-header-h)-env(safe-area-inset-top,0px)-3.5rem)] lg:px-0"
                   aria-label="Tracklist"
                 >
                   <StreamTracklistSidebar
                     tracks={sidebarTracks}
                     emptyHint={tracklistEmptyHint}
-                    className="flex-1 lg:h-full"
+                    className="flex-1 lg:h-full lg:min-h-0"
                     analytics={analyticsMeta}
                     videoId={analyticsMeta.set_id}
                     setTitle={headerTitle}
@@ -808,18 +815,20 @@ export default function BraindanceUserStream() {
                 <StreamCrateQueue
                   crateId={crateId}
                   currentVideoId={eventId}
-                  className="mb-3 md:mb-5"
+                  className="mb-3 px-3 md:mb-4 sm:px-4 lg:px-0"
                 />
               ) : null}
             </>
           ) : (
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 px-3 sm:px-4 lg:grid-cols-3 lg:gap-5 lg:px-0">
               <div className="lg:col-span-2">
-                <div className="relative overflow-hidden rounded-none border border-black/6 dark:border-white/[0.06]">
-                  <div className="aspect-video relative bg-black">
-                    {renderPlayer()}
-                  </div>
-                  {sourceMeta}
+                <div className="overflow-hidden border-black/6 dark:border-white/[0.06] md:border">
+                  <div className={playerShellClass}>{renderPlayer()}</div>
+                  {sourceMeta ? (
+                    <div className="border-t border-black/6 dark:border-white/[0.06]">
+                      {sourceMeta}
+                    </div>
+                  ) : null}
                 </div>
                 {crateId ? (
                   <StreamCrateQueue
