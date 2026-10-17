@@ -174,7 +174,7 @@ export default function CrateDetailPage() {
                     <div className="flex gap-2">
                       <button
                         type="submit"
-                        className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950"
+                        className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-white"
                       >
                         Save
                       </button>
@@ -208,7 +208,7 @@ export default function CrateDetailPage() {
                       {firstSetHref ? (
                         <Link
                           href={firstSetHref}
-                          className="inline-flex items-center gap-2 rounded-full bg-brand-to px-5 py-2.5 text-sm font-semibold text-zinc-950 transition-transform hover:scale-[1.02]"
+                          className="inline-flex items-center gap-2 rounded-full bg-brand-to px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
                         >
                           <Play className="h-4 w-4 fill-current" aria-hidden />
                           Play

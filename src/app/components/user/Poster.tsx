@@ -111,7 +111,7 @@ export const EventPoster: React.FC<EventPosterProps> = ({
               tabIndex={0}
               onClick={handleClick}
               onTouchStart={handleClick}
-              className="cursor-pointer select-none rounded-full bg-brand-to px-4 py-1 text-sm font-semibold text-zinc-950 shadow-md transition-[background-color,box-shadow] duration-300 ease-in-out hover:bg-brand-via/90 sm:px-5 sm:py-2 sm:text-base"
+              className="cursor-pointer select-none rounded-full bg-brand-to px-4 py-1 text-sm font-semibold text-white shadow-md transition-[background-color,box-shadow] duration-300 ease-in-out hover:bg-brand-via/90 sm:px-5 sm:py-2 sm:text-base"
             >
               Join
             </div>

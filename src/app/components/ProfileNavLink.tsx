@@ -44,7 +44,7 @@ export default function ProfileNavLink({
       className={cn(
         "shrink-0 transition-colors duration-bends-fast ease-bends",
         variant === "icon" &&
-          "inline-flex h-9 w-9 items-center justify-center",
+          "inline-flex h-11 w-11 items-center justify-center",
         variant === "icon" &&
           (isActive
             ? "text-zinc-900 dark:text-brand-from"
@@ -54,7 +54,7 @@ export default function ProfileNavLink({
     >
       {variant === "icon" ? (
         <User
-          className="h-4 w-4"
+          className="h-6 w-6"
           fill={isActive ? "currentColor" : "none"}
           aria-hidden
         />

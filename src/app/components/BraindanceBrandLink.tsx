@@ -26,14 +26,14 @@ export default function BraindanceBrandLink({
         aria-current={isActive ? "page" : undefined}
         title="Braindance"
         className={cn(
-          "inline-flex h-9 w-9 shrink-0 items-center justify-center transition-colors duration-bends-fast ease-bends",
+          "inline-flex h-11 w-11 shrink-0 items-center justify-center transition-colors duration-bends-fast ease-bends",
           isActive
             ? "text-zinc-900 dark:text-brand-from"
             : "text-zinc-400 hover:text-zinc-700 dark:hover:text-brand-from",
           className
         )}
       >
-        <Brain className="h-4 w-4" aria-hidden />
+        <Brain className="h-6 w-6" aria-hidden />
       </Link>
     );
   }

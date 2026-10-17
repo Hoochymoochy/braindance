@@ -133,7 +133,7 @@ export function AddToCrateDialog({
             <button
               type="button"
               onClick={() => router.push("/login")}
-              className="flex-1 rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950"
+              className="flex-1 rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-white"
             >
               Log in
             </button>
@@ -227,7 +227,7 @@ export function AddToCrateDialog({
                 setCreating(true);
                 setError("");
               }}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-brand-to/50 bg-brand-to/80 px-3.5 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-brand-to/50 bg-brand-to/80 px-3.5 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               <Plus className="h-4 w-4" aria-hidden />
               Create crate
@@ -256,7 +256,7 @@ export function AddToCrateDialog({
             <button
               type="submit"
               disabled={saving !== null || !newName.trim()}
-              className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-60"
+              className="rounded-xl border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {saving === "new" ? "…" : "Create"}
             </button>

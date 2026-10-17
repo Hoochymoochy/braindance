@@ -413,6 +413,13 @@ export function useYoutubePlaybackAnalytics({
                 const s = queuedSeek;
                 queuedSeek = null;
                 applySeek(s);
+              } else {
+                // Moment deep-links / autoplay embeds: nudge play once API is bound.
+                try {
+                  event.target.playVideo?.();
+                } catch {
+                  /* ignore */
+                }
               }
               try {
                 if (event.target.getPlayerState() === YT_PLAYING) {

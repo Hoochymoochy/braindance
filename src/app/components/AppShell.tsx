@@ -40,7 +40,7 @@ function MobileHeader({ isHome }: { isHome: boolean }) {
       data-header-solid={solid ? "true" : "false"}
     >
       <div className="flex items-center gap-2 px-4 py-3">
-        <BraindanceBrandLink variant="icon" className="size-10" />
+        <BraindanceBrandLink variant="icon" className="size-11" />
         {isHome ? (
           <SetsSearchField
             value={query}
@@ -55,7 +55,7 @@ function MobileHeader({ isHome }: { isHome: boolean }) {
         <ProfileNavLink
           placement="mobile"
           variant="icon"
-          className="size-10"
+          className="size-11"
         />
       </div>
     </header>
@@ -64,7 +64,7 @@ function MobileHeader({ isHome }: { isHome: boolean }) {
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const showMobileFooter = isProfilePath(pathname);
+  const isProfile = isProfilePath(pathname);
   const isHome = pathname === "/";
   const isLogin = pathname === "/login";
   const isStreamWatch = isStreamWatchPath(pathname);
@@ -92,8 +92,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
           isHome
             ? "pt-0"
             : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
-          showMobileFooter
-            ? "pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]"
+          isProfile
+            ? "pb-[env(safe-area-inset-bottom,0px)]"
             : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
           // Stream mobile: contain overscroll without a fixed fullscreen shell (that broke layout).
           isStreamWatch &&
@@ -102,7 +102,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       >
         {children}
       </main>
-      <Footer showOnMobile={showMobileFooter} />
+      {isProfile ? null : <Footer />}
     </HomeSearchProvider>
   );
 }

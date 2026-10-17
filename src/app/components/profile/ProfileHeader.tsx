@@ -58,20 +58,52 @@ export function ProfileHeader({
   };
 
   const handleShare = async () => {
-    try {
-      if (navigator.share) {
+    const markCopied = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    };
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
         await navigator.share({
           title: `${title} on Braindance`,
           url: shareUrl,
         });
         return;
+      } catch (err) {
+        // User dismissed the sheet — don't fall through to clipboard.
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    }
+
+    try {
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === "function"
+      ) {
+        await navigator.clipboard.writeText(shareUrl);
+        markCopied();
+        return;
       }
     } catch {
-      /* fall through to clipboard */
+      /* try execCommand fallback */
     }
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1600);
+
+    try {
+      const input = document.createElement("input");
+      input.value = shareUrl;
+      input.setAttribute("readonly", "");
+      input.style.position = "fixed";
+      input.style.opacity = "0";
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      markCopied();
+    } catch {
+      /* share unavailable */
+    }
   };
 
   const handleSave = async () => {
@@ -113,7 +145,7 @@ export function ProfileHeader({
               type="button"
               disabled={saving}
               onClick={handleSave}
-              className="rounded-md border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-60"
+              className="rounded-md border border-brand-to/50 bg-brand-to/80 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
             >
               {saving ? "Saving…" : "Save"}
             </button>
@@ -133,11 +165,11 @@ export function ProfileHeader({
         </div>
       ) : (
         <>
-          <div className="flex items-baseline gap-1.5">
-            <h1 className="min-w-0 text-[2.75rem] font-medium leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-[3rem]">
-              {title}
-            </h1>
-            <div className="flex items-center gap-0.5 self-center">
+          <div className="flex items-center gap-2">
+            <p className="min-w-0 flex-1 truncate text-[13px] tracking-wide text-zinc-500">
+              @{profile.username}
+            </p>
+            <div className="flex shrink-0 items-center gap-0.5">
               {isOwner ? <ProfileSettingsMenu /> : null}
               <button
                 type="button"
@@ -154,9 +186,9 @@ export function ProfileHeader({
               </button>
             </div>
           </div>
-          <p className="text-[13px] tracking-wide text-zinc-500">
-            @{profile.username}
-          </p>
+          <h1 className="text-[2.75rem] font-medium leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-[3rem]">
+            {title}
+          </h1>
           {profile.bio ? (
             <p className="max-w-md text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-300 sm:text-base">
               {profile.bio}

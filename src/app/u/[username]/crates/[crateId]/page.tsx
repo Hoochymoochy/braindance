@@ -165,7 +165,7 @@ export default function PublicCratePage() {
                 {firstSetHref ? (
                   <Link
                     href={firstSetHref}
-                    className="inline-flex items-center gap-2 rounded-full bg-brand-to px-5 py-2.5 text-sm font-semibold text-zinc-950 transition-transform hover:scale-[1.02]"
+                    className="inline-flex items-center gap-2 rounded-full bg-brand-to px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
                   >
                     <Play className="h-4 w-4 fill-current" aria-hidden />
                     Play

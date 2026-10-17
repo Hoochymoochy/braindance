@@ -53,7 +53,7 @@ export function CreateCrateTile({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Crate name"
-            className="input-bends w-full text-sm"
+            className="input-bends w-full text-base"
             aria-label="Crate name"
             autoFocus
             disabled={saving}
@@ -62,7 +62,7 @@ export function CreateCrateTile({
             <button
               type="submit"
               disabled={saving || !name.trim()}
-              className="rounded-md border border-brand-to/50 bg-brand-to/80 px-2.5 py-1.5 text-xs font-medium text-zinc-950 disabled:opacity-50"
+              className="rounded-md border border-brand-to/50 bg-brand-to/80 px-2.5 py-1.5 text-xs font-medium text-white disabled:opacity-50"
             >
               {saving ? "Creating…" : "Create"}
             </button>

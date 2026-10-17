@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { Play } from "lucide-react";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import {
   StreamTracklistSidebar,
@@ -32,6 +33,20 @@ import { isLikelySpamTracklist } from "@/app/lib/utils/tracklistQuality";
 import { cleanTracklistDisplayLabels } from "@/app/lib/utils/tracklistText";
 
 const PLAYER_IFRAME_ID = "braindance-stream-player";
+
+/** Read `?t=` deep-link offset (moments / shared timestamps). */
+function readStartSecondsFromLocation(): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const t = new URLSearchParams(window.location.search).get("t");
+    if (t == null || t === "") return undefined;
+    const seconds = Number(t);
+    if (Number.isFinite(seconds) && seconds >= 0) return Math.floor(seconds);
+  } catch {
+    /* ignore */
+  }
+  return undefined;
+}
 
 interface Event {
   title: string;
@@ -65,22 +80,25 @@ type PipelineStream = {
 
 function StreamLoadingScreen() {
   return (
-    <div className="fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center gap-8 px-6 bg-black/80 backdrop-blur-sm">
+    <div
+      className="page-bends-bg fixed inset-0 z-[100] flex h-dvh flex-col items-center justify-center gap-5 px-6"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading"
+    >
       <div
         className="h-14 w-14 animate-spin rounded-full border-2 border-brand-to/30 border-t-brand-from border-r-brand-via/70"
         aria-hidden
       />
-      <div className="space-y-2 text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.35em] text-brand-from/90">
-          Braindance
-        </p>
-        <p className="bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-lg font-semibold text-transparent">
-          Loading stream…
-        </p>
-        <p className="mx-auto max-w-xs text-sm text-[#7a7a7a]">
-          Hang tight while we prepare your player.
-        </p>
-      </div>
+      <p className="text-lg font-medium tracking-wide text-zinc-900 dark:text-zinc-100">
+        Loading
+        <span
+          className="inline-block animate-[loading-dots_1.2s_steps(4,end)_infinite] overflow-hidden whitespace-nowrap align-bottom"
+          aria-hidden
+        >
+          ...
+        </span>
+      </p>
     </div>
   );
 }
@@ -130,14 +148,6 @@ function mapDjSetTracklistResponse(data: unknown): TrackRow[] {
   }));
 }
 
-function formatDuration(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return "—";
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m} min`;
-}
-
 export default function BraindanceUserStream() {
   const params = useParams();
   const eventId = params?.eventId as string;
@@ -163,9 +173,20 @@ export default function BraindanceUserStream() {
   const [djSetTracklistError, setDjSetTracklistError] = useState<string | null>(
     null
   );
-  const [isPlayerActivated, setIsPlayerActivated] = useState(false);
+  const [isPlayerActivated, setIsPlayerActivated] = useState(
+    () => readStartSecondsFromLocation() !== undefined
+  );
   /** Initial YouTube embed offset (from `?t=` or first tracklist seek before play). */
-  const [startSeconds, setStartSeconds] = useState<number | undefined>();
+  const [startSeconds, setStartSeconds] = useState<number | undefined>(
+    readStartSecondsFromLocation
+  );
+  /**
+   * Moment / `?t=` deep links autoplay muted so mobile browsers actually start
+   * playback (unmuted autoplay is blocked after navigation).
+   */
+  const [autoplayMuted, setAutoplayMuted] = useState(
+    () => readStartSecondsFromLocation() !== undefined
+  );
   const playerApiRef = useRef<YoutubePlayerApi | null>(null);
   const [analyticsSource, setAnalyticsSource] = useState<string | undefined>();
   const [crateId, setCrateId] = useState<string | null>(null);
@@ -186,10 +207,19 @@ export default function BraindanceUserStream() {
   });
 
   useEffect(() => {
-    setIsPlayerActivated(false);
-    setStartSeconds(undefined);
     setAnalyticsSource(undefined);
     setCrateId(null);
+
+    const deepLinkStart = readStartSecondsFromLocation();
+    if (deepLinkStart !== undefined) {
+      setStartSeconds(deepLinkStart);
+      setIsPlayerActivated(true);
+      setAutoplayMuted(true);
+    } else {
+      setIsPlayerActivated(false);
+      setStartSeconds(undefined);
+      setAutoplayMuted(false);
+    }
 
     try {
       const params = new URLSearchParams(window.location.search);
@@ -197,14 +227,6 @@ export default function BraindanceUserStream() {
       if (src) setAnalyticsSource(src);
       const crate = params.get("crate");
       setCrateId(crate && crate.length > 0 ? crate : null);
-      const t = params.get("t");
-      if (t != null && t !== "") {
-        const seconds = Number(t);
-        if (Number.isFinite(seconds) && seconds >= 0) {
-          setStartSeconds(Math.floor(seconds));
-          setIsPlayerActivated(true);
-        }
-      }
     } catch {
       /* ignore */
     }
@@ -217,6 +239,7 @@ export default function BraindanceUserStream() {
 
       if (!isPlayerActivated) {
         setStartSeconds(s);
+        setAutoplayMuted(true);
         setIsPlayerActivated(true);
         return;
       }
@@ -280,7 +303,6 @@ export default function BraindanceUserStream() {
     }
 
     setStreamLoading(true);
-    setIsPlayerActivated(false);
     setPipelineStream(null);
     setPipelineTracks([]);
     setDjSetTracks([]);
@@ -486,7 +508,8 @@ export default function BraindanceUserStream() {
     }
     return buildYoutubeEmbedSrc(url, {
       autoplay: isPlayerActivated,
-      mute: !isPlayerActivated,
+      // Deep-link / pre-play seeks: mute so autoplay is allowed; click-to-play stays unmuted.
+      mute: autoplayMuted || !isPlayerActivated,
       start: startSeconds,
     });
   };
@@ -501,15 +524,6 @@ export default function BraindanceUserStream() {
     if (pipelineStream) return pipelineStream.title;
     return event?.title || djSet?.title || "Live DJ Set";
   }, [pipelineStream, event?.title, djSet?.title]);
-
-  const headerSubtitle = useMemo(() => {
-    if (pipelineStream) {
-      return `${pipelineStream.artist} · ${formatDuration(pipelineStream.duration)}`;
-    }
-    return `${event?.location || djSet?.channel || "Global"} — ${new Date(
-      event?.date || djSet?.published_at || Date.now()
-    ).toLocaleDateString()}`;
-  }, [pipelineStream, event, djSet]);
 
   const analyticsMeta = useMemo(() => {
     if (pipelineStream) {
@@ -610,7 +624,10 @@ export default function BraindanceUserStream() {
       return (
         <button
           type="button"
-          onClick={() => setIsPlayerActivated(true)}
+          onClick={() => {
+            setAutoplayMuted(false);
+            setIsPlayerActivated(true);
+          }}
           className="group absolute inset-0 h-full w-full overflow-hidden text-left"
           aria-label={`Play ${headerTitle}`}
         >
@@ -627,15 +644,15 @@ export default function BraindanceUserStream() {
             <div className="absolute inset-0 bg-gradient-to-br from-brand-to/40 to-brand-from/20" />
           )}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <div className="absolute inset-0 flex items-center justify-center">
             <div className="rounded-full bg-gradient-to-r from-brand-from via-brand-via to-brand-to p-[2px] shadow-glow-brand-via">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/65 backdrop-blur-md">
-                <span className="ml-0.5 text-xl text-zinc-900" aria-hidden>
-                  ▶
-                </span>
+                <Play
+                  className="ml-0.5 h-6 w-6 fill-current text-zinc-100"
+                  aria-hidden
+                />
               </div>
             </div>
-            <p className="text-sm font-semibold text-gradient-bends">Click play to start</p>
           </div>
         </button>
       );
@@ -698,43 +715,12 @@ export default function BraindanceUserStream() {
                       {renderPlayer()}
                     </div>
 
-                    {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
-                      <div className="mt-4 flex items-center gap-3 px-4 py-2">
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
-                          {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
-                            <Image
-                              src={
-                                event?.image_url ||
-                                djSet?.thumbnail ||
-                                pipelineStream?.thumbnail ||
-                                ""
-                              }
-                              alt={headerTitle}
-                              width={56}
-                              height={56}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1 text-sm">
-                          <h2 className="truncate font-semibold leading-tight text-gradient-bends">
-                            {headerTitle}
-                          </h2>
-                          <p className="text-xs leading-tight text-zinc-500">{headerSubtitle}</p>
-                          <p className="line-clamp-2 text-xs italic leading-tight text-zinc-500">
-                            {pipelineStream
-                              ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
-                              : event?.description ||
-                                "Curated DJ set inside Braindance stream player."}
-                          </p>
-                        </div>
-                        {crateSet ? (
-                          <AddSetToCrateButton set={crateSet} />
-                        ) : null}
-                      </div>
-                    )}
+                    <div className="mt-4 flex items-center gap-3 px-4 py-3">
+                      <h2 className="min-w-0 flex-1 truncate text-2xl font-bold leading-tight tracking-tight text-gradient-bends sm:text-3xl">
+                        {headerTitle}
+                      </h2>
+                      {crateSet ? <AddSetToCrateButton set={crateSet} /> : null}
+                    </div>
                   </div>
                 </div>
                 <aside
@@ -768,43 +754,12 @@ export default function BraindanceUserStream() {
                     {renderPlayer()}
                   </div>
 
-                  {(pipelineStream || event?.image_url || djSet?.thumbnail) && (
-                    <div className="mt-4 flex items-center gap-3 px-4 py-2">
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-black/40">
-                        {event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail ? (
-                          <Image
-                            src={
-                              event?.image_url ||
-                              djSet?.thumbnail ||
-                              pipelineStream?.thumbnail ||
-                              ""
-                            }
-                            alt={headerTitle}
-                            width={56}
-                            height={56}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-brand-to/50 to-brand-from/20" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1 text-sm">
-                        <h2 className="truncate font-semibold leading-tight text-gradient-bends">
-                          {headerTitle}
-                        </h2>
-                        <p className="text-xs leading-tight text-zinc-500">{headerSubtitle}</p>
-                        <p className="line-clamp-2 text-xs italic leading-tight text-zinc-500">
-                          {pipelineStream
-                            ? `Ingested set · ${formatDuration(pipelineStream.duration)}`
-                            : event?.description ||
-                              "Curated DJ set inside Braindance stream player."}
-                        </p>
-                      </div>
-                      {crateSet ? (
-                        <AddSetToCrateButton set={crateSet} />
-                      ) : null}
-                    </div>
-                  )}
+                  <div className="mt-4 flex items-center gap-3 px-4 py-3">
+                    <h2 className="min-w-0 flex-1 truncate text-2xl font-bold leading-tight tracking-tight text-gradient-bends sm:text-3xl">
+                      {headerTitle}
+                    </h2>
+                    {crateSet ? <AddSetToCrateButton set={crateSet} /> : null}
+                  </div>
                 </div>
                 {crateId ? (
                   <StreamCrateQueue
