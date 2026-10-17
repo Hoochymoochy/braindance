@@ -763,7 +763,7 @@ export default function BraindanceUserStream() {
         </div>
         {crateSet ? (
           <div className="shrink-0">
-            <AddSetToCrateButton set={crateSet} />
+            <AddSetToCrateButton set={crateSet} variant="stream" />
           </div>
         ) : null}
       </div>
