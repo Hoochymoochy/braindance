@@ -45,7 +45,7 @@ export function SetsSearchField({
           placeholder="Search all sets…"
           enterKeyHint="search"
           autoComplete="off"
-          className="relative z-[1] h-10 w-full rounded-full border border-white/10 bg-black py-0 pl-4 pr-10 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-500 focus:border-transparent md:pl-11 md:pr-11"
+          className="relative z-[1] h-10 w-full rounded-full border border-white/10 bg-black py-0 pl-4 pr-10 text-base text-zinc-100 outline-none transition-[border-color,box-shadow] ease-bends placeholder:text-zinc-500 focus:border-transparent md:pl-11 md:pr-11 md:text-sm"
         />
         {value ? (
           <button

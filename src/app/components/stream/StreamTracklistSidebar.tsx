@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronDown, Music2, Plus } from "lucide-react";
+import {
+  AudioLines,
+  Check,
+  ChevronDown,
+  Music2,
+  Plus,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent, type SetAnalyticsMeta } from "@/app/lib/analytics";
 import {
@@ -24,10 +30,13 @@ export type TrackRow = {
   soundcloud_url: string | null;
 };
 
+const scrollbarSubtle =
+  "[scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 dark:[&::-webkit-scrollbar-thumb]:bg-brand-from/25";
+
 const scrollbarHidden =
   "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
 
-/** Horizontal scroll, scrollbar visually hidden (still swipe / drag / shift+wheel). */
+/** Horizontal swipe/drag to read the full title — scrollbar visually hidden. */
 function ScrollableLine({
   text,
   className,
@@ -39,7 +48,7 @@ function ScrollableLine({
     <div
       title={text}
       className={cn(
-        "touch-pan-x cursor-default overflow-x-auto whitespace-nowrap",
+        "min-w-0 touch-pan-x overflow-x-auto whitespace-nowrap",
         scrollbarHidden,
         className
       )}
@@ -47,6 +56,28 @@ function ScrollableLine({
       {text}
     </div>
   );
+}
+
+/** Track whose start is the latest at or before `seconds` (playback-driven active row). */
+function activeTrackIdAt(
+  tracks: TrackRow[],
+  seconds: number | null
+): string | null {
+  if (seconds == null || !Number.isFinite(seconds) || tracks.length === 0) {
+    return null;
+  }
+  let bestId: string | null = null;
+  let bestStart = -Infinity;
+  for (const t of tracks) {
+    if (t.timestamp === "—") continue;
+    const start = timestampToSeconds(t.timestamp);
+    if (!Number.isFinite(start) || start > seconds) continue;
+    if (start >= bestStart) {
+      bestStart = start;
+      bestId = t.id;
+    }
+  }
+  return bestId;
 }
 
 const lgQuery = "(min-width: 1024px)";
@@ -60,6 +91,8 @@ export function StreamTracklistSidebar({
   videoId,
   setTitle,
   onSeek,
+  getPlaybackSeconds,
+  initialPlaybackSeconds,
 }: {
   tracks: TrackRow[];
   emptyHint?: string;
@@ -72,6 +105,10 @@ export function StreamTracklistSidebar({
   setTitle?: string;
   /** Jump the stream player to a track timestamp (seconds). */
   onSeek?: (seconds: number) => void;
+  /** Live playback clock from the YouTube player API. */
+  getPlaybackSeconds?: () => number | null;
+  /** Fallback offset before the player API reports time (e.g. `?t=` deep link). */
+  initialPlaybackSeconds?: number;
 }) {
   const router = useRouter();
   const userId = useAuthUserId();
@@ -87,9 +124,65 @@ export function StreamTracklistSidebar({
   /** After 3s idle, fade out; cleared at 5s. */
   const [revealedFading, setRevealedFading] = useState(false);
   const listRef = useRef<HTMLUListElement | null>(null);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
   const openedTrackedRef = useRef(false);
   const analyticsRef = useRef(analytics);
   analyticsRef.current = analytics;
+  const getPlaybackSecondsRef = useRef(getPlaybackSeconds);
+  getPlaybackSecondsRef.current = getPlaybackSeconds;
+
+  const [playbackSeconds, setPlaybackSeconds] = useState<number | null>(
+    () =>
+      typeof initialPlaybackSeconds === "number" &&
+      Number.isFinite(initialPlaybackSeconds)
+        ? initialPlaybackSeconds
+        : null
+  );
+  const activeId = activeTrackIdAt(tracks, playbackSeconds);
+  const activeIndex = activeId
+    ? tracks.findIndex((t) => t.id === activeId)
+    : -1;
+
+  useEffect(() => {
+    if (
+      typeof initialPlaybackSeconds === "number" &&
+      Number.isFinite(initialPlaybackSeconds)
+    ) {
+      setPlaybackSeconds(initialPlaybackSeconds);
+    }
+  }, [initialPlaybackSeconds]);
+
+  useEffect(() => {
+    if (!getPlaybackSeconds) return;
+    const tick = () => {
+      const next = getPlaybackSecondsRef.current?.() ?? null;
+      if (next == null) return;
+      setPlaybackSeconds((prev) =>
+        prev != null && Math.abs(prev - next) < 0.2 ? prev : next
+      );
+    };
+    tick();
+    const id = window.setInterval(tick, 500);
+    return () => window.clearInterval(id);
+  }, [getPlaybackSeconds]);
+
+  // Apple Music-style: keep now-playing near the top so upcoming tracks stay in view.
+  useEffect(() => {
+    if (!activeId || minimized) return;
+    const scroller = scrollerRef.current;
+    const row = listRef.current?.querySelector<HTMLElement>(
+      `[data-track-id="${activeId.replace(/"/g, "")}"]`
+    );
+    if (!scroller || !row) return;
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    const targetTop = scroller.scrollTop + (rowRect.top - scrollerRect.top) - 8;
+    scroller.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: "smooth",
+    });
+  }, [activeId, minimized]);
 
   useEffect(() => {
     if (!revealedId) {
@@ -259,30 +352,29 @@ export function StreamTracklistSidebar({
   return (
     <div
       className={cn(
-        "glass-bends-card relative flex min-h-0 w-full flex-col overflow-hidden rounded-none",
+        "relative flex min-h-0 w-full flex-col overflow-hidden rounded-none border border-black/6 bg-black/[0.02] dark:border-white/[0.06] dark:bg-white/[0.02]",
         minimized
           ? "min-h-0 max-h-none"
-          : "min-h-[10rem] max-h-[min(65vh,520px)] lg:max-h-none lg:min-h-0",
+          : "min-h-[12rem] max-h-[min(72vh,580px)] lg:max-h-none lg:min-h-0",
         className
       )}
     >
-      <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-from/[0.14] via-brand-via/[0.06] to-brand-to/[0.14]"
-        aria-hidden
-      />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         <button
           type="button"
-          className="flex shrink-0 items-center gap-2 border-b border-black/8 px-4 py-3 text-left lg:pointer-events-none lg:cursor-default"
+          className="flex shrink-0 items-center gap-2 border-b border-black/6 px-4 py-2.5 text-left dark:border-white/[0.06] lg:pointer-events-none lg:cursor-default"
           onClick={toggleMinimized}
           aria-expanded={!minimized}
           aria-controls="stream-tracklist"
         >
-          <Music2 className="h-3.5 w-3.5 shrink-0 text-brand-from" aria-hidden />
-          <span className="bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
+          <Music2
+            className="h-3.5 w-3.5 shrink-0 text-zinc-500 dark:text-brand-from/70"
+            aria-hidden
+          />
+          <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500 dark:text-brand-from/70">
             Tracklist
           </span>
-          <span className="ml-auto bg-gradient-to-r from-brand-from/80 to-brand-via/80 bg-clip-text text-xs tabular-nums text-transparent">
+          <span className="ml-auto text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
             {tracks.length}
           </span>
           <ChevronDown
@@ -301,11 +393,12 @@ export function StreamTracklistSidebar({
         ) : null}
 
         <div
+          ref={scrollerRef}
           id="stream-tracklist"
           data-scroll-lock-ignore
           className={cn(
-            "min-h-0 flex-1 overflow-y-auto overscroll-y-none touch-pan-y px-2 py-2",
-            scrollbarHidden,
+            "min-h-0 flex-1 overflow-y-auto overscroll-y-none touch-pan-y px-1.5 py-1.5",
+            scrollbarSubtle,
             minimized && "max-lg:hidden"
           )}
         >
@@ -315,53 +408,112 @@ export function StreamTracklistSidebar({
                 "No tracks yet. The pipeline may still be linking this set."}
             </p>
           ) : (
-            <ul ref={listRef} className="space-y-1">
-              {tracks.map((t) => {
+            <ul
+              ref={listRef}
+              className="space-y-0.5 pb-[min(55vh,22rem)] lg:pb-16"
+            >
+              {tracks.map((t, index) => {
                 const saved = savedByTrackId.has(t.id);
                 const actionVisible = revealedId === t.id;
+                const isActive = activeId === t.id;
+                const isPast = activeIndex >= 0 && index < activeIndex;
+                const isUpcoming = activeIndex >= 0 && index > activeIndex;
                 return (
                   <li
                     key={t.id}
-                    className="group rounded-md border border-transparent px-2 py-2 transition-[border-color,background-color] duration-bends-fast ease-bends hover:border-black/8 hover:bg-black/[0.03]"
+                    data-track-id={t.id}
+                    aria-current={isActive ? "true" : undefined}
+                    className={cn(
+                      "group rounded-sm px-2 transition-[background-color,opacity,transform,padding] duration-bends ease-bends",
+                      isActive
+                        ? "bg-brand-from/10 py-3 dark:bg-[rgb(32_30_20)]"
+                        : isPast
+                          ? "py-1.5 opacity-40 hover:opacity-70"
+                          : "py-2 opacity-80 hover:bg-black/[0.03] hover:opacity-100 dark:hover:bg-white/[0.03]"
+                    )}
                     onClick={() => {
                       trackEvent("track_clicked", trackPayload(t));
                       setRevealedId(t.id);
                     }}
                   >
-                    <div className="flex gap-2">
+                    <div
+                      className={cn(
+                        "flex min-w-0 items-start gap-2.5",
+                        isActive && "items-center"
+                      )}
+                    >
                       {onSeek && t.timestamp !== "—" ? (
                         <button
                           type="button"
                           title={`Jump to ${t.timestamp}`}
                           aria-label={`Jump to ${t.timestamp}: ${t.title}`}
-                          className="shrink-0 rounded-sm bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
+                          className={cn(
+                            "shrink-0 font-mono tabular-nums underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40",
+                            isActive
+                              ? "text-sm text-brand-from"
+                              : isPast
+                                ? "mt-0.5 text-[10px] text-brand-from/40"
+                                : "mt-0.5 text-[11px] text-brand-from/55 dark:text-brand-from/50"
+                          )}
                           onClick={(e) => {
                             e.stopPropagation();
                             const seconds = timestampToSeconds(t.timestamp);
                             trackEvent("track_clicked", trackPayload(t));
                             onSeek(seconds);
+                            setPlaybackSeconds(seconds);
                           }}
                         >
                           {t.timestamp}
                         </button>
                       ) : (
-                        <span className="shrink-0 bg-gradient-to-b from-brand-from to-brand-to bg-clip-text font-mono text-xs tabular-nums text-transparent">
+                        <span
+                          className={cn(
+                            "shrink-0 font-mono tabular-nums",
+                            isActive
+                              ? "text-sm text-brand-from"
+                              : isPast
+                                ? "mt-0.5 text-[10px] text-brand-from/40"
+                                : "mt-0.5 text-[11px] text-brand-from/55 dark:text-brand-from/50"
+                          )}
+                        >
                           {t.timestamp}
                         </span>
                       )}
-                      <div className="min-w-0 flex-1">
-                        <ScrollableLine
-                          text={t.title}
-                          className="text-sm font-medium text-zinc-900"
-                        />
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          {isActive ? (
+                            <AudioLines
+                              className="h-3.5 w-3.5 shrink-0 text-brand-from"
+                              aria-hidden
+                            />
+                          ) : null}
+                          <ScrollableLine
+                            text={t.title}
+                            className={cn(
+                              "min-w-0 flex-1 leading-snug",
+                              isActive
+                                ? "text-base font-semibold text-zinc-900 dark:text-zinc-50 sm:text-lg"
+                                : isPast
+                                  ? "text-xs text-zinc-500"
+                                  : isUpcoming
+                                    ? "text-sm text-zinc-600 dark:text-zinc-400"
+                                    : "text-sm text-zinc-700 dark:text-zinc-300"
+                            )}
+                          />
+                        </div>
                         {t.artist.trim() && t.artist.trim() !== "—" ? (
                           <ScrollableLine
                             text={t.artist}
-                            className="text-xs text-zinc-500"
+                            className={cn(
+                              "mt-0.5 w-full",
+                              isActive
+                                ? "text-sm text-zinc-500 dark:text-zinc-400"
+                                : "text-xs text-zinc-500"
+                            )}
                           />
                         ) : null}
                         {(t.spotify_url || t.soundcloud_url) && (
-                          <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-zinc-500">
+                          <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-none text-zinc-500">
                             {t.spotify_url && (
                               <a
                                 href={t.spotify_url}
@@ -422,7 +574,7 @@ export function StreamTracklistSidebar({
                             handleToggleMoment(t);
                           }}
                           className={cn(
-                            "shrink-0 self-center rounded-md p-1 text-zinc-600 transition-[opacity,color,background-color] ease-bends hover:bg-brand-from/10 hover:text-brand-from disabled:opacity-60 dark:text-zinc-400",
+                            "shrink-0 self-center rounded-md p-1 text-zinc-500 transition-[opacity,color,background-color] ease-bends hover:bg-brand-from/10 hover:text-brand-from disabled:opacity-60 dark:text-zinc-500",
                             saved
                               ? cn(
                                   "pointer-events-auto text-brand-from",

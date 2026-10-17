@@ -11,6 +11,7 @@ import {
   cacheControlHeader,
 } from "@/app/lib/cache/http";
 import { routeError, routeLog } from "@/app/lib/routeLog";
+import { cleanSetTitle } from "@/app/lib/utils/setTitle";
 import { upgradeYoutubeThumbnail } from "@/app/lib/utils/youtube";
 import { getVaultUserId } from "@/app/lib/vault/auth";
 import {
@@ -36,9 +37,14 @@ type DjSet = {
   duration_seconds?: number;
 };
 
-function withHiResThumbnail(item: DjSet): DjSet {
+function withDisplayCleanup(item: DjSet): DjSet {
   const thumbnail = upgradeYoutubeThumbnail(item.thumbnail, item.video_id);
-  return thumbnail ? { ...item, thumbnail } : item;
+  const title = cleanSetTitle(item.title);
+  return {
+    ...item,
+    title: title || item.title,
+    ...(thumbnail ? { thumbnail } : {}),
+  };
 }
 
 /** Shape returned by GET ${BACKEND_URL}/dj-sets */
@@ -243,7 +249,7 @@ export async function GET(request: NextRequest) {
     const filtered = items
       .filter((item) => Boolean(item.video_id) && passesDurationFilter(item))
       .filter((item) => !vaultIds.has(item.video_id))
-      .map(withHiResThumbnail);
+      .map(withDisplayCleanup);
 
     const listSets = filtered.filter((item) =>
       withinDays(item.published_at, MAX_LIST_AGE_DAYS)
@@ -256,7 +262,7 @@ export async function GET(request: NextRequest) {
     const backendWeekly = backendFeatured?.weekly
       ?.filter((item) => withinDays(item.published_at, MAX_LIST_AGE_DAYS))
       .filter((item) => !vaultIds.has(item.video_id))
-      .map(withHiResThumbnail);
+      .map(withDisplayCleanup);
 
     const payload = {
       updatedAt,
@@ -342,7 +348,7 @@ export async function POST(request: NextRequest) {
     const { raw, source } = await fetchDjSetByIdWithFallback(videoId, 30_000);
     const item = parseDjSetPayload(raw);
     const safeItem =
-      item && passesDurationFilter(item) ? withHiResThumbnail(item) : null;
+      item && passesDurationFilter(item) ? withDisplayCleanup(item) : null;
 
     routeLog("api/dj-sets", "POST OK", {
       videoId,

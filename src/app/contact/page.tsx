@@ -57,7 +57,7 @@ export default function ContactPage() {
               />
               <button
                 type="submit"
-                className="flex items-center gap-2 self-end rounded-md bg-brand-to px-5 py-2 text-zinc-950 shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-brand-via/90"
+                className="flex items-center gap-2 self-end rounded-md bg-brand-to px-5 py-2 text-white shadow transition-[background-color,box-shadow] duration-bends-fast ease-bends hover:bg-brand-via/90"
               >
                 Send <Mail className="h-4 w-4" />
               </button>

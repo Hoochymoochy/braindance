@@ -2,6 +2,7 @@ import {
   cleanTracklistDisplayLabels,
   isNumberedTracklist,
   splitArtistTitle,
+  splitTitleByArtist,
   stripLeadingEqualsMarker,
   stripLeadingTimestampResidue,
   stripLeadingTrackIndex,
@@ -216,6 +217,55 @@ describe("cleanTracklistDisplayLabels", () => {
     expect(cleaned[1]).toMatchObject({
       artist: "Dish Dash & Glowal",
       title: "All I Wanna Do",
+    });
+  });
+
+  it("recovers artist from Title by Artist titles", () => {
+    const cleaned = cleanTracklistDisplayLabels([
+      { artist: "", title: "Stay For Love by Kaskade" },
+      { artist: "—", title: "Vision Blurred By Kaskade & CID" },
+      {
+        artist: "",
+        title: "Stand by Me by Ben E. King",
+      },
+    ]);
+    expect(cleaned[0]).toMatchObject({
+      artist: "Kaskade",
+      title: "Stay For Love",
+    });
+    expect(cleaned[1]).toMatchObject({
+      artist: "Kaskade & CID",
+      title: "Vision Blurred",
+    });
+    expect(cleaned[2]).toMatchObject({
+      artist: "Ben E. King",
+      title: "Stand by Me",
+    });
+  });
+
+  it("does not overwrite an existing artist with a by-split", () => {
+    const cleaned = cleanTracklistDisplayLabels([
+      { artist: "Kaskade", title: "Stay For Love by Someone Else" },
+    ]);
+    expect(cleaned[0]).toMatchObject({
+      artist: "Kaskade",
+      title: "Stay For Love by Someone Else",
+    });
+  });
+});
+
+describe("splitTitleByArtist", () => {
+  it("splits on the last by separator", () => {
+    expect(splitTitleByArtist("Stand by Me by Ben E. King")).toEqual({
+      artist: "Ben E. King",
+      title: "Stand by Me",
+    });
+  });
+
+  it("skips short false-positive artist tails", () => {
+    expect(splitTitleByArtist("Stand by Me")).toEqual({
+      artist: "",
+      title: "Stand by Me",
     });
   });
 });

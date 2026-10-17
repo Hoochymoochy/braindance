@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import {
@@ -11,13 +11,6 @@ import { MomentsTrackRow } from "@/app/components/profile/MomentsTrackRow";
 import { YoutubeThumbImage } from "@/app/components/ui/YoutubeThumbImage";
 import { cn } from "@/lib/utils";
 
-function defaultOpenIds(moments: Moment[]): Set<string> {
-  const groups = groupMomentsBySet(moments);
-  const initial = new Set<string>();
-  if (groups[0]) initial.add(groups[0].video_id);
-  return initial;
-}
-
 export function MomentsSetFolders({
   moments,
   onDelete,
@@ -26,16 +19,7 @@ export function MomentsSetFolders({
   onDelete?: (moment: Moment) => void | Promise<void>;
 }) {
   const groups = groupMomentsBySet(moments);
-  const [openIds, setOpenIds] = useState<Set<string>>(() =>
-    defaultOpenIds(moments)
-  );
-  const [didInitOpen, setDidInitOpen] = useState(moments.length > 0);
-
-  useEffect(() => {
-    if (didInitOpen || moments.length === 0) return;
-    setOpenIds(defaultOpenIds(moments));
-    setDidInitOpen(true);
-  }, [moments, didInitOpen]);
+  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
 
   const toggle = (videoId: string) => {
     setOpenIds((prev) => {

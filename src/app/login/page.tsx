@@ -74,15 +74,15 @@ function LoginForm() {
   };
 
   return (
-    <div className="glass-bends w-full max-w-md rounded-2xl p-8 shadow-lg transition duration-300">
-      <div className="mb-6 flex rounded-xl border border-black/10 p-1 dark:border-brand-from/20">
+    <div className="glass-bends w-full max-w-md rounded-2xl p-6 shadow-lg transition duration-300 sm:p-8">
+      <div className="mb-5 flex rounded-xl border border-black/10 p-1 dark:border-brand-from/20 sm:mb-6">
         <button
           type="button"
           onClick={() => switchMode("login")}
           className={cn(
             "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-bends-fast ease-bends",
             mode === "login"
-              ? "bg-brand-to/80 text-zinc-950"
+              ? "bg-brand-to/80 text-white"
               : "text-zinc-600 hover:text-brand-from dark:text-zinc-300"
           )}
         >
@@ -94,7 +94,7 @@ function LoginForm() {
           className={cn(
             "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-bends-fast ease-bends",
             mode === "signup"
-              ? "bg-brand-to/80 text-zinc-950"
+              ? "bg-brand-to/80 text-white"
               : "text-zinc-600 hover:text-brand-from dark:text-zinc-300"
           )}
         >
@@ -102,7 +102,7 @@ function LoginForm() {
         </button>
       </div>
 
-      <h1 className="mb-6 text-center text-3xl font-bold text-gradient-bends">
+      <h1 className="mb-5 text-center text-2xl font-bold text-gradient-bends sm:mb-6 sm:text-3xl">
         {mode === "login" ? "Welcome back" : "Create account"}
       </h1>
 
@@ -112,11 +112,11 @@ function LoginForm() {
         </p>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         <div>
           <label
             htmlFor="auth-email"
-            className="block text-lg font-medium text-brand-from/95"
+            className="block text-base font-medium text-brand-from/95 sm:text-lg"
           >
             Email
           </label>
@@ -134,7 +134,7 @@ function LoginForm() {
         <div>
           <label
             htmlFor="auth-password"
-            className="block text-lg font-medium text-brand-from/95"
+            className="block text-base font-medium text-brand-from/95 sm:text-lg"
           >
             Password
           </label>
@@ -153,7 +153,7 @@ function LoginForm() {
           <div>
             <label
               htmlFor="auth-confirm-password"
-              className="block text-lg font-medium text-brand-from/95"
+              className="block text-base font-medium text-brand-from/95 sm:text-lg"
             >
               Confirm password
             </label>
@@ -172,7 +172,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-xl border border-brand-to/50 bg-brand-to/80 px-4 py-2 font-semibold text-zinc-950 transition duration-300 hover:bg-brand-via/75 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl border border-brand-to/50 bg-brand-to/80 px-4 py-2 font-semibold text-white transition duration-300 hover:bg-brand-via/75 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting
             ? mode === "login"
@@ -189,10 +189,10 @@ function LoginForm() {
 
 function LoginFormFallback() {
   return (
-    <div className="glass-bends w-full max-w-md rounded-2xl p-8 shadow-lg">
-      <div className="mb-6 h-10 animate-pulse rounded-xl bg-black/5 dark:bg-white/10" />
-      <div className="mx-auto mb-6 h-9 w-48 animate-pulse rounded bg-black/5 dark:bg-white/10" />
-      <div className="space-y-6">
+    <div className="glass-bends w-full max-w-md rounded-2xl p-6 shadow-lg sm:p-8">
+      <div className="mb-5 h-10 animate-pulse rounded-xl bg-black/5 dark:bg-white/10 sm:mb-6" />
+      <div className="mx-auto mb-5 h-8 w-48 animate-pulse rounded bg-black/5 dark:bg-white/10 sm:mb-6 sm:h-9" />
+      <div className="space-y-4 sm:space-y-6">
         <div className="h-16 animate-pulse rounded-xl bg-black/5 dark:bg-white/10" />
         <div className="h-16 animate-pulse rounded-xl bg-black/5 dark:bg-white/10" />
         <div className="h-10 animate-pulse rounded-xl bg-black/5 dark:bg-white/10" />
@@ -203,7 +203,7 @@ function LoginFormFallback() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 text-zinc-900 dark:text-zinc-100">
+    <div className="flex min-h-0 flex-1 items-center justify-center px-4 text-zinc-900 dark:text-zinc-100">
       <Suspense fallback={<LoginFormFallback />}>
         <LoginForm />
       </Suspense>

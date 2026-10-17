@@ -197,7 +197,7 @@ export default function PhotoUpload() {
           <div className="mb-4 space-y-3">
             <button
               onClick={() => window.location.reload()}
-              className="shadow-glow-brand flex w-full transform items-center justify-center rounded-md bg-brand-to px-4 py-3 font-semibold text-zinc-950 transition-all duration-300 hover:scale-105 hover:bg-brand-via/85 active:scale-95"
+              className="shadow-glow-brand flex w-full transform items-center justify-center rounded-md bg-brand-to px-4 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-brand-via/85 active:scale-95"
             >
               <span className="mr-2">🔄</span>
               Refresh Gallery
@@ -266,13 +266,13 @@ export default function PhotoUpload() {
             className={`w-full py-3 font-semibold rounded-md transition-all duration-300 transform ${
               !file || status === "uploading"
                 ? "cursor-not-allowed bg-gray-600 text-gray-400 opacity-50"
-                : "bg-brand-to text-zinc-950 hover:scale-105 hover:bg-brand-via/85 shadow-glow-brand active:scale-95"
+                : "bg-brand-to text-white hover:scale-105 hover:bg-brand-via/85 shadow-glow-brand active:scale-95"
             }`}
           >
             {status === "uploading" ? (
               <span className="flex items-center justify-center">
                 <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-zinc-950"
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"

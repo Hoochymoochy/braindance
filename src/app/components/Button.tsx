@@ -28,7 +28,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-from/40 disabled:opacity-50";
 
     const variants = {
-      default: "bg-brand-from text-black shadow-sm hover:bg-brand-via/90",
+      default: "bg-brand-from text-white shadow-sm hover:bg-brand-via/90",
       outline:
         "border border-zinc-300 bg-transparent text-zinc-700 hover:border-brand-from hover:text-brand-from",
       ghost:

@@ -67,7 +67,7 @@ export function ProfileSettingsMenu({ className }: { className?: string }) {
       {open ? (
         <div
           role="menu"
-          className="absolute left-0 top-full z-50 mt-1.5 min-w-[9.5rem] rounded-lg border border-black/8 bg-[var(--page-bg)]/95 p-1 shadow-md backdrop-blur-md dark:border-white/10"
+          className="absolute right-0 top-full z-50 mt-1.5 min-w-[10.5rem] rounded-lg border border-black/8 bg-[var(--page-bg)]/95 p-1 shadow-md backdrop-blur-md dark:border-white/10"
         >
           <button
             type="button"
