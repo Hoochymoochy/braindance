@@ -3,6 +3,7 @@
  * - setlist indexes (`01. James Hype` → `James Hype`)
  * - range end-times left in labels (`- 2:08 Lukas & Frank` → `Lukas & Frank`)
  * - artist/title joined with en/em dashes (`Dish Dash – ID` → split fields)
+ * - `Title by Artist` comment formats (`Stay For Love by Kaskade` → split fields)
  * - trailing social handles (`Get Down @toolroomrecords` → `Get Down`)
  * - leading equals markers (`= Bart Skils` → `Bart Skils`)
  */
@@ -19,6 +20,12 @@ const LEADING_SEPARATOR = /^\s*[-–—|=]\s+/;
 
 /** `Artist - Title` / en-dash / em-dash (backend only splits ASCII hyphen). */
 const ARTIST_TITLE_SEP = /\s[-–—]\s/;
+
+/**
+ * `Title by Artist` (last ` by ` wins so `Stand by Me by Ben E. King` keeps the song title).
+ * Requires whitespace around `by` so we don't match inside words.
+ */
+const TITLE_BY_ARTIST = /^(.*)\s+[Bb]y\s+(.+)$/;
 
 /** Trailing Instagram/TikTok-style handles (one or more). */
 const TRAILING_SOCIAL_HANDLES = /(?:\s+@[A-Za-z0-9._]{2,})+\s*$/;
@@ -115,6 +122,32 @@ export function splitArtistTitle(combined: string): {
   return { artist, title };
 }
 
+function isMissingArtist(artist: string | null | undefined): boolean {
+  const a = (artist || "").trim();
+  if (!a) return true;
+  const lower = a.toLowerCase();
+  return lower === "—" || lower === "-" || lower === "unknown" || lower === "id";
+}
+
+/**
+ * Split `Title by Artist` when the artist field was never parsed
+ * (common in YouTube comment scrapes).
+ */
+export function splitTitleByArtist(combined: string): {
+  artist: string;
+  title: string;
+} {
+  const text = (combined || "").trim();
+  if (!text) return { artist: "", title: "" };
+  const m = TITLE_BY_ARTIST.exec(text);
+  if (!m) return { artist: "", title: text };
+  const title = (m[1] || "").trim();
+  const artist = (m[2] || "").trim();
+  // Avoid false positives like "Stand by Me" → artist "Me".
+  if (!title || artist.length < 3) return { artist: "", title: text };
+  return { artist, title };
+}
+
 /**
  * Normalize artist/title for sidebar display.
  * Always strips leaked timestamps; strips setlist indexes when the list looks numbered.
@@ -127,11 +160,17 @@ export function cleanTracklistDisplayLabels<T extends Labelish>(
     let artist = cleanLabel(t.artist, stripIndex) ?? t.artist;
     let title = cleanLabel(t.title, stripIndex) ?? t.title;
 
-    if (!(artist || "").trim() && (title || "").trim()) {
-      const split = splitArtistTitle(String(title));
-      if (split.artist) {
-        artist = split.artist;
-        title = split.title;
+    if (isMissingArtist(artist) && (title || "").trim()) {
+      const dashSplit = splitArtistTitle(String(title));
+      if (dashSplit.artist) {
+        artist = dashSplit.artist;
+        title = dashSplit.title;
+      } else {
+        const bySplit = splitTitleByArtist(String(title));
+        if (bySplit.artist) {
+          artist = bySplit.artist;
+          title = bySplit.title;
+        }
       }
     }
 
