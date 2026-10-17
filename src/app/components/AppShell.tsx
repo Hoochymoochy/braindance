@@ -66,6 +66,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const showMobileFooter = isProfilePath(pathname);
   const isHome = pathname === "/";
+  const isLogin = pathname === "/login";
   const isStreamWatch = isStreamWatchPath(pathname);
 
   // Match header chrome breakpoint (`md` = 768px), not `lg`.
@@ -78,7 +79,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  useLockBodyScroll(isStreamWatch && isMobileViewport);
+  useLockBodyScroll((isStreamWatch || isLogin) && isMobileViewport);
 
   return (
     <HomeSearchProvider>
@@ -87,7 +88,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <MobileHeader isHome={isHome} />
       <main
         className={cn(
-          "min-h-svh",
+          isLogin ? "flex h-svh flex-col overflow-hidden" : "min-h-svh",
           isHome
             ? "pt-0"
             : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
