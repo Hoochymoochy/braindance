@@ -27,6 +27,8 @@ const YT_API_SRC = "https://www.youtube.com/iframe_api";
 
 export type YoutubePlayerApi = {
   seekTo: (seconds: number) => void;
+  /** Current playback position in seconds, or null if the player is not ready. */
+  getCurrentTime: () => number | null;
 };
 
 type YtPlayer = {
@@ -173,7 +175,17 @@ export function useYoutubePlaybackAnalytics({
     };
 
     if (playerApiRef) {
-      playerApiRef.current = { seekTo: applySeek };
+      playerApiRef.current = {
+        seekTo: applySeek,
+        getCurrentTime: () => {
+          try {
+            const t = player?.getCurrentTime?.();
+            return typeof t === "number" && Number.isFinite(t) ? t : null;
+          } catch {
+            return null;
+          }
+        },
+      };
     }
 
     const flushListenClock = () => {

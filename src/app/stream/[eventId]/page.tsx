@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { Play } from "lucide-react";
+import { ArrowUpRight, Play } from "lucide-react";
 import GlobeHeatmap from "@/app/components/GlobeHeatmap";
 import {
   StreamTracklistSidebar,
@@ -26,6 +26,7 @@ import {
   type YoutubePlayerApi,
 } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
 import { StreamCrateQueue } from "@/app/components/stream/StreamCrateQueue";
+import { useRegisterStreamPageTitle } from "@/app/components/stream/StreamPageChrome";
 import { AddSetToCrateButton } from "@/app/components/profile/AddSetToCrateButton";
 import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
 import type { VaultWeek } from "@/app/lib/vault/types";
@@ -254,6 +255,10 @@ export default function BraindanceUserStream() {
     },
     [isPlayerActivated]
   );
+
+  const getPlaybackSeconds = useCallback(() => {
+    return playerApiRef.current?.getCurrentTime() ?? null;
+  }, []);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -525,6 +530,10 @@ export default function BraindanceUserStream() {
     return event?.title || djSet?.title || "Live DJ Set";
   }, [pipelineStream, event?.title, djSet?.title]);
 
+  useRegisterStreamPageTitle(
+    streamLoading || vaultGate.checking ? null : headerTitle
+  );
+
   const analyticsMeta = useMemo(() => {
     if (pipelineStream) {
       return {
@@ -702,29 +711,82 @@ export default function BraindanceUserStream() {
     );
   }
 
+  const sourceMeta =
+    merchItems.length > 0 || crateSet ? (
+      <div className="flex items-center gap-3 px-3 py-2.5 sm:px-4">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
+          {merchItems.length > 0 ? (
+            <>
+              <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-600">
+                Source
+              </span>
+              {merchItems.map((item, idx) => (
+                <span
+                  key={`${item.url}-${idx}`}
+                  className="inline-flex min-w-0 items-center gap-x-2"
+                >
+                  {idx > 0 ? (
+                    <span
+                      className="text-zinc-400 dark:text-zinc-600"
+                      aria-hidden
+                    >
+                      ·
+                    </span>
+                  ) : null}
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex max-w-full items-center gap-1 text-zinc-500 transition-colors duration-bends-fast ease-bends hover:text-brand-from focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
+                    onClick={() => {
+                      const payload = {
+                        set_id: analyticsMeta.set_id,
+                        set_title: analyticsMeta.set_title,
+                        artist: analyticsMeta.artist,
+                      };
+                      if (item.kind === "youtube_set") {
+                        trackEvent("youtube_set_clicked", payload);
+                      } else if (item.kind === "youtube_channel") {
+                        trackEvent("youtube_channel_clicked", payload);
+                      }
+                    }}
+                  >
+                    <ArrowUpRight
+                      className="h-3 w-3 shrink-0 opacity-70"
+                      aria-hidden
+                    />
+                    <span className="truncate">{item.title}</span>
+                  </a>
+                </span>
+              ))}
+            </>
+          ) : null}
+        </div>
+        {crateSet ? (
+          <div className="shrink-0">
+            <AddSetToCrateButton set={crateSet} />
+          </div>
+        ) : null}
+      </div>
+    ) : null;
+
   return (
-    <div className="relative text-zinc-900 overscroll-none">
-      <div className="relative z-10 mx-auto max-w-6xl px-5 pb-5 pt-0 md:p-8">
-        <main className="mt-0 md:mt-5">
+    <div className="relative text-zinc-900 overscroll-none dark:text-zinc-100">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-0 sm:px-5 md:p-8">
+        <main className="mt-0 md:mt-4">
           {showTracklist ? (
             <>
-              <div className="relative mb-4 md:mb-6">
-                <div className="lg:pr-[calc(340px+1.5rem)]">
-                  <div className="glass-bends-card relative overflow-hidden rounded-none">
-                    <div className="aspect-video relative">
+              <div className="relative mb-3 md:mb-5">
+                <div className="lg:pr-[calc(340px+1.25rem)]">
+                  <div className="relative overflow-hidden rounded-none border border-black/6 dark:border-white/[0.06]">
+                    <div className="aspect-video relative bg-black">
                       {renderPlayer()}
                     </div>
-
-                    <div className="mt-4 flex items-center gap-3 px-4 py-3">
-                      <h2 className="min-w-0 flex-1 truncate text-2xl font-bold leading-tight tracking-tight text-gradient-bends sm:text-3xl">
-                        {headerTitle}
-                      </h2>
-                      {crateSet ? <AddSetToCrateButton set={crateSet} /> : null}
-                    </div>
+                    {sourceMeta}
                   </div>
                 </div>
                 <aside
-                  className="mt-4 flex min-h-0 w-full flex-col md:mt-6 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
+                  className="mt-3 flex min-h-0 w-full flex-col md:mt-4 lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:h-full lg:w-[340px]"
                   aria-label="Tracklist"
                 >
                   <StreamTracklistSidebar
@@ -735,6 +797,10 @@ export default function BraindanceUserStream() {
                     videoId={analyticsMeta.set_id}
                     setTitle={headerTitle}
                     onSeek={platform === "youtube" ? handleSeek : undefined}
+                    getPlaybackSeconds={
+                      platform === "youtube" ? getPlaybackSeconds : undefined
+                    }
+                    initialPlaybackSeconds={startSeconds}
                   />
                 </aside>
               </div>
@@ -742,49 +808,45 @@ export default function BraindanceUserStream() {
                 <StreamCrateQueue
                   crateId={crateId}
                   currentVideoId={eventId}
-                  className="mb-4 md:mb-6"
+                  className="mb-3 md:mb-5"
                 />
               ) : null}
             </>
           ) : (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <div className="glass-bends-card relative overflow-hidden rounded-none">
-                  <div className="aspect-video relative">
+                <div className="relative overflow-hidden rounded-none border border-black/6 dark:border-white/[0.06]">
+                  <div className="aspect-video relative bg-black">
                     {renderPlayer()}
                   </div>
-
-                  <div className="mt-4 flex items-center gap-3 px-4 py-3">
-                    <h2 className="min-w-0 flex-1 truncate text-2xl font-bold leading-tight tracking-tight text-gradient-bends sm:text-3xl">
-                      {headerTitle}
-                    </h2>
-                    {crateSet ? <AddSetToCrateButton set={crateSet} /> : null}
-                  </div>
+                  {sourceMeta}
                 </div>
                 {crateId ? (
                   <StreamCrateQueue
                     crateId={crateId}
                     currentVideoId={eventId}
-                    className="mt-6"
+                    className="mt-4"
                   />
                 ) : null}
               </div>
 
               <div>
-                <div className="glass-bends-card rounded-none p-4">
+                <div className="rounded-none border border-black/6 p-4 dark:border-white/[0.06]">
                   <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
                     Stats
                   </h3>
                   <div className="mb-4 flex items-center justify-between gap-6">
                     <div>
                       <p className="text-xs text-zinc-500">Views</p>
-                      <p className="text-2xl font-semibold tabular-nums text-zinc-900">
+                      <p className="text-2xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
                         {views}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-zinc-500">Top city</p>
-                      <p className="text-2xl font-semibold text-zinc-900">{topCity}</p>
+                      <p className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                        {topCity}
+                      </p>
                     </div>
                   </div>
                   {isDbEvent && <GlobeHeatmap id={eventId} />}
@@ -793,54 +855,6 @@ export default function BraindanceUserStream() {
             </div>
           )}
         </main>
-
-        {merchItems.length > 0 && (
-          <section className="glass-bends-card relative mt-8 overflow-hidden rounded-none p-5">
-            <div
-              className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-from/[0.14] via-brand-via/[0.06] to-brand-to/[0.14]"
-              aria-hidden
-            />
-            <div className="relative z-10">
-              <h3 className="mb-4 bg-gradient-to-r from-brand-from via-brand-via to-brand-to bg-clip-text text-[11px] font-semibold uppercase tracking-[0.2em] text-transparent">
-                Links
-              </h3>
-              <ul className="space-y-3">
-                {merchItems.map((item, idx) => (
-                  <li
-                    key={idx}
-                    className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-4"
-                  >
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-brand-to underline-offset-2 transition-[background-image,color] duration-bends-fast ease-bends hover:bg-gradient-to-r hover:from-brand-from hover:via-brand-via hover:to-brand-to hover:bg-clip-text hover:text-transparent hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
-                      onClick={() => {
-                        const payload = {
-                          set_id: analyticsMeta.set_id,
-                          set_title: analyticsMeta.set_title,
-                          artist: analyticsMeta.artist,
-                        };
-                        if (item.kind === "youtube_set") {
-                          trackEvent("youtube_set_clicked", payload);
-                        } else if (item.kind === "youtube_channel") {
-                          trackEvent("youtube_channel_clicked", payload);
-                        }
-                      }}
-                    >
-                      {item.title}
-                    </a>
-                    {item.subtitle ? (
-                      <span className="text-xs text-zinc-500 sm:min-w-0 sm:flex-1 sm:truncate">
-                        {item.subtitle}
-                      </span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );

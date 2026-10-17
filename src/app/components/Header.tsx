@@ -8,17 +8,24 @@ import {
   scrollToCurrentDjSets,
   useHomeSearch,
 } from "@/app/components/dj-sets/HomeSearchContext";
+import { useStreamPageTitle } from "@/app/components/stream/StreamPageChrome";
 import {
   homeHeaderChromeClass,
   useHomeHeaderSolid,
 } from "@/app/lib/hooks/useHomeHeaderSolid";
 import { cn } from "@/lib/utils";
 
+function isStreamWatchPath(pathname: string): boolean {
+  return /^\/stream\/[^/]+\/?$/.test(pathname);
+}
+
 export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isStreamWatch = isStreamWatchPath(pathname);
   const { query, setQuery } = useHomeSearch();
   const solid = useHomeHeaderSolid();
+  const streamTitle = useStreamPageTitle();
 
   return (
     <header
@@ -32,18 +39,23 @@ export default function Header() {
         </div>
 
         <div className="flex min-w-0 justify-center">
-          <div
-            className={cn("w-full max-w-md", !isHome && "invisible")}
-            aria-hidden={!isHome}
-          >
-            <SetsSearchField
-              value={query}
-              onChange={setQuery}
-              onClear={() => setQuery("")}
-              onSubmit={scrollToCurrentDjSets}
-              className="max-w-none"
-            />
-          </div>
+          {isHome ? (
+            <div className="w-full max-w-md">
+              <SetsSearchField
+                value={query}
+                onChange={setQuery}
+                onClear={() => setQuery("")}
+                onSubmit={scrollToCurrentDjSets}
+                className="max-w-none"
+              />
+            </div>
+          ) : isStreamWatch && streamTitle ? (
+            <h1 className="max-w-2xl truncate text-center text-base font-bold leading-tight tracking-tight text-gradient-bends md:text-lg">
+              {streamTitle}
+            </h1>
+          ) : (
+            <div className="w-full max-w-md" aria-hidden />
+          )}
         </div>
 
         <div className="flex justify-end">
