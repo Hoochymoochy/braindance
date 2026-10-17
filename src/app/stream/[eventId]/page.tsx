@@ -717,52 +717,45 @@ export default function BraindanceUserStream() {
     merchItems.length > 0 || crateSet ? (
       <div className="flex items-center gap-3 px-3 py-2.5 sm:px-4">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
-          {merchItems.length > 0 ? (
-            <>
-              <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-600">
-                Source
-              </span>
-              {merchItems.map((item, idx) => (
+          {merchItems.map((item, idx) => (
+            <span
+              key={`${item.url}-${idx}`}
+              className="inline-flex min-w-0 items-center gap-x-2"
+            >
+              {idx > 0 ? (
                 <span
-                  key={`${item.url}-${idx}`}
-                  className="inline-flex min-w-0 items-center gap-x-2"
+                  className="text-zinc-400 dark:text-zinc-600"
+                  aria-hidden
                 >
-                  {idx > 0 ? (
-                    <span
-                      className="text-zinc-400 dark:text-zinc-600"
-                      aria-hidden
-                    >
-                      ·
-                    </span>
-                  ) : null}
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex max-w-full items-center gap-1 text-zinc-500 transition-colors duration-bends-fast ease-bends hover:text-brand-from focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
-                    onClick={() => {
-                      const payload = {
-                        set_id: analyticsMeta.set_id,
-                        set_title: analyticsMeta.set_title,
-                        artist: analyticsMeta.artist,
-                      };
-                      if (item.kind === "youtube_set") {
-                        trackEvent("youtube_set_clicked", payload);
-                      } else if (item.kind === "youtube_channel") {
-                        trackEvent("youtube_channel_clicked", payload);
-                      }
-                    }}
-                  >
-                    <ArrowUpRight
-                      className="h-3 w-3 shrink-0 opacity-70"
-                      aria-hidden
-                    />
-                    <span className="truncate">{item.title}</span>
-                  </a>
+                  ·
                 </span>
-              ))}
-            </>
-          ) : null}
+              ) : null}
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex max-w-full items-center gap-1 text-zinc-500 transition-colors duration-bends-fast ease-bends hover:text-brand-from focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
+                onClick={() => {
+                  const payload = {
+                    set_id: analyticsMeta.set_id,
+                    set_title: analyticsMeta.set_title,
+                    artist: analyticsMeta.artist,
+                  };
+                  if (item.kind === "youtube_set") {
+                    trackEvent("youtube_set_clicked", payload);
+                  } else if (item.kind === "youtube_channel") {
+                    trackEvent("youtube_channel_clicked", payload);
+                  }
+                }}
+              >
+                <ArrowUpRight
+                  className="h-3 w-3 shrink-0 opacity-70"
+                  aria-hidden
+                />
+                <span className="truncate">{item.title}</span>
+              </a>
+            </span>
+          ))}
         </div>
         {crateSet ? (
           <div className="shrink-0">
@@ -781,7 +774,7 @@ export default function BraindanceUserStream() {
         <main className="mt-0">
           {showTracklist ? (
             <>
-              <div className="relative mb-3 lg:mb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_18.5rem] lg:items-stretch lg:gap-3 xl:grid-cols-[minmax(0,1fr)_20rem]">
+              <div className="relative mb-3 lg:mb-4 lg:grid lg:grid-cols-[minmax(0,1fr)_18.5rem] lg:gap-3 xl:grid-cols-[minmax(0,1fr)_20rem]">
                 <div className="min-w-0">
                   <div className="overflow-hidden border-black/6 dark:border-white/[0.06] md:border">
                     <div className={playerShellClass}>{renderPlayer()}</div>
@@ -792,14 +785,18 @@ export default function BraindanceUserStream() {
                     ) : null}
                   </div>
                 </div>
+                {/*
+                  h-0 + min-h-full: sidebar height follows the player column
+                  (not the viewport), so nothing stretches empty space under the video.
+                */}
                 <aside
-                  className="mt-3 flex min-h-0 w-full flex-col px-3 sm:px-4 lg:mt-0 lg:h-full lg:max-h-[calc(100dvh-var(--nav-header-h)-env(safe-area-inset-top,0px)-3.5rem)] lg:px-0"
+                  className="mt-3 flex min-h-0 w-full flex-col px-3 sm:px-4 lg:mt-0 lg:h-0 lg:min-h-full lg:overflow-hidden lg:px-0"
                   aria-label="Tracklist"
                 >
                   <StreamTracklistSidebar
                     tracks={sidebarTracks}
                     emptyHint={tracklistEmptyHint}
-                    className="flex-1 lg:h-full lg:min-h-0"
+                    className="min-h-0 flex-1 lg:h-full"
                     analytics={analyticsMeta}
                     videoId={analyticsMeta.set_id}
                     setTitle={headerTitle}
