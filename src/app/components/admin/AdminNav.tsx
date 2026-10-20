@@ -34,14 +34,6 @@ export function AdminNav() {
           </Link>
         );
       })}
-      <div className="ml-auto flex items-center gap-4 pb-1 pr-1">
-        <Link
-          href="/shop"
-          className="text-xs font-medium uppercase tracking-[0.16em] text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
-        >
-          View shop
-        </Link>
-      </div>
     </nav>
   );
 }

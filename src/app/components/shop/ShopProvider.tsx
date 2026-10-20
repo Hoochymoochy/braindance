@@ -103,6 +103,8 @@ export function ShopProvider({
           sizes: product.sizes,
           accentFrom: product.accentFrom,
           accentTo: product.accentTo,
+          coverImageUrl: product.coverImageUrl,
+          galleryImageUrls: product.galleryImageUrls,
           status: product.status,
           inventoryBySize: product.inventoryBySize,
         }),

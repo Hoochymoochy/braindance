@@ -1,17 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ProductForm } from "@/app/components/admin/ProductForm";
-import { MerchPlaceholder } from "@/app/components/shop/MerchPlaceholder";
+import { ProductMedia } from "@/app/components/shop/ProductMedia";
 import { useShop } from "@/app/components/shop/ShopProvider";
 import { formatPrice } from "@/app/lib/shop/mock-data";
 import type { ShopProduct } from "@/app/lib/shop/types";
 import { cn } from "@/lib/utils";
 
 export default function AdminProductsPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
+      <AdminProductsContent />
+    </Suspense>
+  );
+}
+
+function AdminProductsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { ready, products, upsertProduct, deleteProduct } = useShop();
   const [editing, setEditing] = useState<ShopProduct | null | "new">(null);
+
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setEditing("new");
+    }
+  }, [searchParams]);
+
+  function closeEditor() {
+    setEditing(null);
+    if (searchParams.get("new") === "1") {
+      router.replace("/admin/products");
+    }
+  }
 
   if (!ready) {
     return <p className="text-sm text-zinc-500">Loading…</p>;
@@ -25,10 +49,10 @@ export default function AdminProductsPage() {
         </h2>
         <ProductForm
           initial={editing === "new" ? null : editing}
-          onCancel={() => setEditing(null)}
+          onCancel={closeEditor}
           onSave={async (product) => {
             await upsertProduct(product);
-            setEditing(null);
+            closeEditor();
           }}
         />
       </div>
@@ -37,26 +61,23 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {products.length} product{products.length === 1 ? "" : "s"}. Only{" "}
-          <span className="font-medium text-zinc-800 dark:text-zinc-200">
-            active
-          </span>{" "}
-          items show on{" "}
-          <Link href="/shop" className="text-brand-via hover:underline">
-            /shop
-          </Link>
-          .
-        </p>
-        <button
-          type="button"
-          onClick={() => setEditing("new")}
-          className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-brand-from dark:text-zinc-950"
-        >
-          Add product
-        </button>
-      </div>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        {products.length === 0 ? (
+          "The store is empty."
+        ) : (
+          <>
+            {products.length} product{products.length === 1 ? "" : "s"}. Only{" "}
+            <span className="font-medium text-zinc-800 dark:text-zinc-200">
+              active
+            </span>{" "}
+            items show on{" "}
+            <Link href="/shop" className="text-brand-via hover:underline">
+              /shop
+            </Link>
+            .
+          </>
+        )}
+      </p>
 
       <ul className="divide-y divide-zinc-200 border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
         {products.map((product) => (
@@ -65,12 +86,7 @@ export default function AdminProductsPage() {
             className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
           >
             <div className="w-full shrink-0 sm:w-24">
-              <MerchPlaceholder
-                name={product.name}
-                accentFrom={product.accentFrom}
-                accentTo={product.accentTo}
-                className="aspect-square"
-              />
+              <ProductMedia product={product} aspectClassName="aspect-square" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">

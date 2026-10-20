@@ -15,6 +15,10 @@ export type ShopProduct = {
   /** Hex accents for placeholder merch art until real photos land */
   accentFrom: string;
   accentTo: string;
+  /** Primary product photo shown on cards / PDP */
+  coverImageUrl: string | null;
+  /** Extra photos for the product detail gallery */
+  galleryImageUrls: string[];
   status: ProductStatus;
   inventoryBySize: Partial<Record<ProductSize, number>>;
   createdAt: string;

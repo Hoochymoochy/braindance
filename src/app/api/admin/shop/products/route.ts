@@ -22,6 +22,8 @@ const productSchema = z.object({
   sizes: z.array(z.string()).min(1),
   accentFrom: z.string().min(1),
   accentTo: z.string().min(1),
+  coverImageUrl: z.union([z.string().url(), z.null()]).optional(),
+  galleryImageUrls: z.array(z.string().url()).max(8).optional().default([]),
   status: z.enum(["draft", "active", "archived"]),
   inventoryBySize: z.record(z.number().int().min(0)),
 });

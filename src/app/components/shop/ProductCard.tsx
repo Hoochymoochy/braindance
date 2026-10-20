@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatPrice } from "@/app/lib/shop/mock-data";
 import type { ShopProduct } from "@/app/lib/shop/types";
-import { MerchPlaceholder } from "./MerchPlaceholder";
+import { ProductMedia } from "./ProductMedia";
 
 export function ProductCard({ product }: { product: ShopProduct }) {
   return (
@@ -10,11 +10,7 @@ export function ProductCard({ product }: { product: ShopProduct }) {
       className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-from/50"
     >
       <div className="overflow-hidden transition-transform duration-bends-fast ease-bends group-hover:scale-[1.01] group-active:scale-[0.99]">
-        <MerchPlaceholder
-          name={product.name}
-          accentFrom={product.accentFrom}
-          accentTo={product.accentTo}
-        />
+        <ProductMedia product={product} />
       </div>
       <div className="mt-4 flex items-start justify-between gap-3">
         <div className="min-w-0">

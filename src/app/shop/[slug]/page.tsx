@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { MerchPlaceholder } from "@/app/components/shop/MerchPlaceholder";
+import { ProductMedia } from "@/app/components/shop/ProductMedia";
 import { SizePicker } from "@/app/components/shop/SizePicker";
 import { formatPrice } from "@/app/lib/shop/mock-data";
 import type { ProductSize, ShopProduct } from "@/app/lib/shop/types";
@@ -112,11 +112,10 @@ function ProductDetailInner() {
         ) : null}
 
         <div className="mt-6 grid gap-10 lg:grid-cols-2 lg:gap-14">
-          <MerchPlaceholder
-            name={product.name}
-            accentFrom={product.accentFrom}
-            accentTo={product.accentTo}
+          <ProductMedia
+            product={product}
             featured
+            showGallery
             className="w-full"
           />
 

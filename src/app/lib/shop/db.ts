@@ -19,6 +19,8 @@ type ProductRow = {
   sizes: string[];
   accent_from: string;
   accent_to: string;
+  cover_image_url: string | null;
+  gallery_image_urls: string[] | null;
   status: ProductStatus;
   inventory_by_size: Record<string, number>;
   stripe_product_id: string | null;
@@ -63,6 +65,8 @@ export function mapProduct(row: ProductRow): ShopProduct {
     sizes: (row.sizes || []) as ProductSize[],
     accentFrom: row.accent_from,
     accentTo: row.accent_to,
+    coverImageUrl: row.cover_image_url ?? null,
+    galleryImageUrls: row.gallery_image_urls ?? [],
     status: row.status,
     inventoryBySize: (row.inventory_by_size || {}) as Partial<
       Record<ProductSize, number>
@@ -126,6 +130,8 @@ export async function upsertProductRecord(input: {
   sizes: ProductSize[];
   accentFrom: string;
   accentTo: string;
+  coverImageUrl?: string | null;
+  galleryImageUrls?: string[];
   status: ProductStatus;
   inventoryBySize: Partial<Record<ProductSize, number>>;
   stripeProductId?: string | null;
@@ -144,6 +150,8 @@ export async function upsertProductRecord(input: {
     sizes: input.sizes,
     accent_from: input.accentFrom,
     accent_to: input.accentTo,
+    cover_image_url: input.coverImageUrl ?? null,
+    gallery_image_urls: input.galleryImageUrls ?? [],
     status: input.status,
     inventory_by_size: input.inventoryBySize,
     stripe_product_id: input.stripeProductId ?? null,

@@ -13,7 +13,10 @@ export async function adminFetch(
 
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${session.access_token}`);
-  if (init.body && !headers.has("Content-Type")) {
+  // Let the browser set multipart boundary for FormData.
+  if (init.body instanceof FormData) {
+    headers.delete("Content-Type");
+  } else if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
