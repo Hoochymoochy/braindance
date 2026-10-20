@@ -41,7 +41,22 @@ npm test        # Jest
 | `NEXT_PUBLIC_TWITCH_PARENT` | Hostname Twitch allows for embeds (e.g. `localhost` locally, your domain in prod). Defaults to `localhost` if unset. |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website UUID (public). When set, loads the analytics script site-wide. |
 | `NEXT_PUBLIC_UMAMI_SCRIPT_URL` | Optional. Defaults to `https://analytics.hoochymoochy.xyz/script.js`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role secret key (server-side only) used for listener analytics aggregation, archetype caching, and vault progress writes. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role secret key (server-side only) used for listener analytics aggregation, archetype caching, vault progress writes, and shop admin/webhook DB writes. |
+| `STRIPE_SECRET_KEY` | Stripe **test** secret key (`sk_test_…` or restricted `rk_test_…`) from the Braindance sandbox. |
+| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_…`). Locally: from `stripe listen --forward-to localhost:3000/api/shop/webhook`. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (`pk_test_…`) — reserved for future client Stripe.js use. |
+| `NEXT_PUBLIC_SITE_URL` | Also used as Checkout success/cancel origin (e.g. `http://localhost:3000`). |
+
+### Shop / Stripe local test
+
+1. Put sandbox keys in `.env` (Dashboard → Braindance sandbox → Developers → API keys).
+2. Forward Checkout webhooks (newer CLI requires `--events` or `--all-snapshot`):
+   ```bash
+   npx @stripe/cli listen --events checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed --forward-to localhost:3000/api/shop/webhook
+   ```
+   Copy the `whsec_…` into `STRIPE_WEBHOOK_SECRET`.
+3. Restart `npm run dev`, open `/shop`, checkout with test card `4242 4242 4242 4242`.
+4. Confirm the order under `/admin/orders` (login as `Khaydenroberts22@gmail.com`).
 
 Copy from your hoster / Supabase dashboard; there is no committed `.env` in-repo.
 
@@ -57,6 +72,8 @@ All live under `src/app/`. Global **Header** + **Footer** + padded `<main>` come
 | `/stream/[eventId]` | Public stream viewer. **`eventId`** interpretation below. Tracklist can save **moments**; cards can add sets to **crates**. |
 | `/stream/[eventId]/photo-upload` | Photo upload for a legacy hosted event |
 | `/policy`, `/feedback`, `/contact` | Static-ish content + forms writing to Supabase utilities |
+| `/shop`, `/shop/[slug]`, `/shop/success` | Merch catalog + Stripe Checkout + post-pay page |
+| `/admin`, `/admin/products`, `/admin/orders` | Merch admin (allowlisted email) |
 | `/login` | Login / sign-up (Supabase + JWT cookie) → `/profile` |
 | `/profile` | Your profile: edit, share, crates + moments (JWT-protected) |
 | `/profile/crates/[crateId]` | Own crate (Spotify-style playlist view) |

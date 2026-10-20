@@ -1,0 +1,156 @@
+import type { ShopOrder, ShopProduct } from "./types";
+
+export const MOCK_PRODUCTS: ShopProduct[] = [
+  {
+    id: "prod_tee_wordmark",
+    slug: "wordmark-tee",
+    name: "Wordmark Tee",
+    tagline: "Heavyweight blank. Soft fade print.",
+    description:
+      "Boxy fit cotton tee with the Braindance wordmark across the chest. Built for long sets and longer nights. Pre-shrunk, garment-washed.",
+    priceCents: 3800,
+    currency: "usd",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    accentFrom: "#00ccff",
+    accentTo: "#3700ff",
+    status: "active",
+    inventoryBySize: { S: 12, M: 24, L: 24, XL: 16, XXL: 8 },
+    createdAt: "2026-10-01T12:00:00.000Z",
+    updatedAt: "2026-10-01T12:00:00.000Z",
+  },
+  {
+    id: "prod_hoodie_signal",
+    slug: "signal-hoodie",
+    name: "Signal Hoodie",
+    tagline: "Midweight fleece. Back print.",
+    description:
+      "Pullover hoodie with a low-key chest mark and a full back graphic. Soft fleece interior, ribbed cuffs, drawcord hood.",
+    priceCents: 7200,
+    currency: "usd",
+    sizes: ["S", "M", "L", "XL"],
+    accentFrom: "#ff00f7",
+    accentTo: "#3700ff",
+    status: "active",
+    inventoryBySize: { S: 6, M: 14, L: 14, XL: 10 },
+    createdAt: "2026-10-01T12:00:00.000Z",
+    updatedAt: "2026-10-01T12:00:00.000Z",
+  },
+  {
+    id: "prod_cap_night",
+    slug: "night-cap",
+    name: "Night Cap",
+    tagline: "Structured six-panel. Embroidered.",
+    description:
+      "Classic structured cap with tonal Braindance embroidery. Adjustable strap. One size fits most.",
+    priceCents: 2800,
+    currency: "usd",
+    sizes: ["M"],
+    accentFrom: "#7a7a7a",
+    accentTo: "#18181b",
+    status: "active",
+    inventoryBySize: { M: 40 },
+    createdAt: "2026-10-05T12:00:00.000Z",
+    updatedAt: "2026-10-05T12:00:00.000Z",
+  },
+  {
+    id: "prod_tote_crate",
+    slug: "crate-tote",
+    name: "Crate Tote",
+    tagline: "Canvas. Reinforced handles.",
+    description:
+      "Heavy canvas tote for records, cables, or whatever else leaves the booth with you. Screen-printed mark on one face.",
+    priceCents: 3200,
+    currency: "usd",
+    sizes: ["M"],
+    accentFrom: "#00ccff",
+    accentTo: "#ff00f7",
+    status: "draft",
+    inventoryBySize: { M: 20 },
+    createdAt: "2026-10-10T12:00:00.000Z",
+    updatedAt: "2026-10-10T12:00:00.000Z",
+  },
+];
+
+export const MOCK_ORDERS: ShopOrder[] = [
+  {
+    id: "ord_demo_001",
+    status: "paid",
+    email: "listener@example.com",
+    items: [
+      {
+        productId: "prod_tee_wordmark",
+        productName: "Wordmark Tee",
+        size: "L",
+        quantity: 1,
+        unitPriceCents: 3800,
+      },
+    ],
+    shippingName: "Alex Rivers",
+    shippingLine1: "1847 Market St",
+    shippingCity: "San Francisco",
+    shippingRegion: "CA",
+    shippingPostal: "94103",
+    shippingCountry: "US",
+    totalCents: 3800,
+    createdAt: "2026-10-12T18:22:00.000Z",
+  },
+  {
+    id: "ord_demo_002",
+    status: "shipped",
+    email: "cratekeeper@example.com",
+    items: [
+      {
+        productId: "prod_hoodie_signal",
+        productName: "Signal Hoodie",
+        size: "M",
+        quantity: 1,
+        unitPriceCents: 7200,
+      },
+      {
+        productId: "prod_cap_night",
+        productName: "Night Cap",
+        size: "M",
+        quantity: 1,
+        unitPriceCents: 2800,
+      },
+    ],
+    shippingName: "Jordan Lee",
+    shippingLine1: "90 Bedford Ave",
+    shippingCity: "Brooklyn",
+    shippingRegion: "NY",
+    shippingPostal: "11211",
+    shippingCountry: "US",
+    totalCents: 10000,
+    createdAt: "2026-10-08T09:10:00.000Z",
+    trackingNumber: "BD9400111890220000000",
+  },
+  {
+    id: "ord_demo_003",
+    status: "pending",
+    email: "guest@example.com",
+    items: [
+      {
+        productId: "prod_cap_night",
+        productName: "Night Cap",
+        size: "M",
+        quantity: 2,
+        unitPriceCents: 2800,
+      },
+    ],
+    shippingName: "Sam Ortiz",
+    shippingLine1: "501 Congress Ave",
+    shippingCity: "Austin",
+    shippingRegion: "TX",
+    shippingPostal: "78701",
+    shippingCountry: "US",
+    totalCents: 5600,
+    createdAt: "2026-10-18T21:05:00.000Z",
+  },
+];
+
+export function formatPrice(cents: number, currency: string = "usd"): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(cents / 100);
+}

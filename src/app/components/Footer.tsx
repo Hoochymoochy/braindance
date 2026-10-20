@@ -16,6 +16,12 @@ export default function Footer({ showOnMobile = false }: { showOnMobile?: boolea
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 sm:justify-start">
             <Link
+              href="/shop"
+              className="text-sm text-zinc-600 transition-colors duration-bends-fast ease-bends hover:text-brand-via"
+            >
+              Shop
+            </Link>
+            <Link
               href="/feedback"
               className="text-sm text-zinc-600 transition-colors duration-bends-fast ease-bends hover:text-brand-via"
             >
