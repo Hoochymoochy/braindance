@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { getSiteUrl as getCanonicalSiteUrl } from "@/app/lib/site";
 
 let stripeClient: Stripe | null = null;
 
@@ -15,14 +16,9 @@ export function getStripe(): Stripe {
   return stripeClient;
 }
 
+/** Checkout success/cancel origin. Production is https://braindance.live. */
 export function getSiteUrl(): string {
-  const fromEnv =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    process.env.VERCEL_URL;
-  if (fromEnv) {
-    return fromEnv.startsWith("http") ? fromEnv : `https://${fromEnv}`;
-  }
-  return "http://localhost:3000";
+  return getCanonicalSiteUrl().origin;
 }
 
 /** Ensure a Stripe Product + Price exist for this catalog row; return price id. */

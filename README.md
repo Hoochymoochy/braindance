@@ -1,6 +1,59 @@
 # Braindance (frontend)
 
-Next.js app for **Braindance**: home and discovery for DJ sets, hosted event streams, and (when wired up) the **Braindance pipeline API** (streams + tracklists from your separate Node backend).
+Next.js app for **Braindance** at [https://braindance.live](https://braindance.live): DJ set discovery, stream pages, listener profiles, and the merch shop.
+
+## What we're building right now
+
+The current build is **merch checkout on the real domain, still in the Stripe sandbox**. A buyer can go through Checkout at `https://braindance.live/shop`. The test card `4242 4242 4242 4242` completes a payment. A real card is declined, so this phase does not take live money.
+
+The charge path lives in this Next.js app. `braindance_shop` is a small FastAPI service that sends order email through Resend. It is still local, so a paid order is saved even when the receipt email is skipped.
+
+```mermaid
+flowchart LR
+  buyer["Buyer on braindance.live/shop"]
+  next["Next.js · braindance.live"]
+  stripe["Stripe sandbox"]
+  db[("Supabase shop tables")]
+  mail["braindance_shop · local"]
+  resend["Resend"]
+
+  buyer -->|"Buy"| next
+  next -->|"Create Checkout Session"| stripe
+  stripe -->|"Hosted payment page"| buyer
+  stripe -->|"Signed webhook"| next
+  next -->|"Paid order + stock"| db
+  next -.->|"Receipt, when configured"| mail
+  mail -.-> resend
+```
+
+The success page does not create the order. Stripe calls `POST https://braindance.live/api/shop/webhook`, the signature is checked, and the order is written only when `payment_status` is paid.
+
+```mermaid
+sequenceDiagram
+  actor Buyer
+  participant Site as braindance.live
+  participant Stripe as Stripe sandbox
+  participant DB as Supabase
+
+  Buyer->>Site: POST /api/shop/checkout
+  Site->>Stripe: Checkout Session priced from the catalog
+  Stripe-->>Buyer: Hosted Checkout
+  Buyer->>Stripe: Test card 4242…
+  par Redirect and webhook
+    Stripe-->>Buyer: /shop/success
+  and
+    Stripe->>Site: checkout.session.completed
+    Site->>DB: Paid order, decrement size stock
+  end
+```
+
+| Now, on braindance.live | After this path is proven |
+| --- | --- |
+| Sandbox keys (`sk_test_` / `pk_test_`, or a restricted `rk_test_`) | Live restricted key (`rk_live_`) |
+| Dashboard webhook `https://braindance.live/api/shop/webhook` | Same path, with the live endpoint’s signing secret |
+| Orders stored in Supabase | Receipt and ship emails once `braindance_shop` is on HTTPS |
+
+Local development still uses `http://localhost:3000` plus the Stripe CLI. That CLI signing secret only verifies events forwarded to your machine. The domain webhook needs its own `whsec_…` from the sandbox Dashboard.
 
 ## Stack
 
@@ -36,16 +89,15 @@ npm test        # Jest
 | `BACKEND_URL` | Origin of the **external** API (e.g. `http://localhost:3000` or `https://api.example.com`). Used by `/api/dj-sets` and `/api/streams/*`. Trailing paths like `/dj-sets` are normalized away. |
 | `BACKEND_URL_BACKUP` | Optional second origin; used when primary fails or returns empty for DJ sets |
 | `STREAM_UI_MOCKS` | Set to `1` / `true` / `yes` so **`/api/streams/:id`** and **`/api/streams/:id/tracks`** return **mock JSON** (no backend). Good for UI work. |
-| `NEXT_PUBLIC_SITE_URL` | e.g. `https://braindance.live` — passed as YouTube embed `origin` (see `src/app/lib/utils/youtube.ts`) |
+| `NEXT_PUBLIC_SITE_URL` | Public origin. Hosted app: `https://braindance.live`. Local checkout redirects: `http://localhost:3000`. Set it once. YouTube embed `origin` uses the browser host (see `src/app/lib/utils/youtube.ts`). |
 | `NEXT_PUBLIC_YOUTUBE_EMBED_HOST` | Set to `nocookie` to use `youtube-nocookie.com` embeds |
-| `NEXT_PUBLIC_TWITCH_PARENT` | Hostname Twitch allows for embeds (e.g. `localhost` locally, your domain in prod). Defaults to `localhost` if unset. |
+| `NEXT_PUBLIC_TWITCH_PARENT` | Hostname Twitch allows for embeds. `localhost` locally, `braindance.live` on the hosted site. Defaults to `localhost` if unset. |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website UUID (public). When set, loads the analytics script site-wide. |
 | `NEXT_PUBLIC_UMAMI_SCRIPT_URL` | Optional. Defaults to `https://analytics.hoochymoochy.xyz/script.js`. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role secret key (server-side only) used for listener analytics aggregation, archetype caching, vault progress writes, and shop admin/webhook DB writes. |
 | `STRIPE_SECRET_KEY` | Stripe **test** secret key (`sk_test_…` or restricted `rk_test_…`) from the Braindance sandbox. |
-| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_…`). Locally: from `stripe listen --forward-to localhost:3000/api/shop/webhook`. |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (`pk_test_…`) — reserved for future client Stripe.js use. |
-| `NEXT_PUBLIC_SITE_URL` | Also used as Checkout success/cancel origin (e.g. `http://localhost:3000`). |
+| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_…`). Local CLI secret and the `https://braindance.live/api/shop/webhook` endpoint secret are different. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Sandbox publishable key (`pk_test_…`). |
 | `SHOP_BACKEND_URL` | Origin of **braindance_shop** (e.g. `http://localhost:8001`). Server-only — order emails. |
 | `SHOP_SERVICE_SECRET` | Shared secret matching `braindance_shop` `SHOP_SERVICE_SECRET`. Server-only. Never put `RESEND_API_KEY` in the frontend. |
 
@@ -59,6 +111,15 @@ npm test        # Jest
    Copy the `whsec_…` into `STRIPE_WEBHOOK_SECRET`.
 3. Restart `npm run dev`, open `/shop`, checkout with test card `4242 4242 4242 4242`.
 4. Confirm the order under `/admin/orders` (login as `Khaydenroberts22@gmail.com`).
+
+### Shop / Stripe on braindance.live
+
+Sandbox only. The hosted app uses `https://braindance.live` for Checkout success and cancel URLs.
+
+1. Set the host env: `NEXT_PUBLIC_SITE_URL=https://braindance.live`, sandbox `STRIPE_SECRET_KEY`, sandbox `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Leave `SHOP_BACKEND_URL` unset until the email service has a public HTTPS URL.
+2. In the Braindance sandbox, add a webhook endpoint `https://braindance.live/api/shop/webhook` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `checkout.session.async_payment_failed`.
+3. Put that endpoint’s signing secret in `STRIPE_WEBHOOK_SECRET` and redeploy.
+4. Buy from `https://braindance.live/shop` with `4242 4242 4242 4242`. Confirm the order in `/admin/orders` and in the sandbox Payments list.
 
 Copy from your hoster / Supabase dashboard; there is no committed `.env` in-repo.
 
