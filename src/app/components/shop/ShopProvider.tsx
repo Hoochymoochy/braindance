@@ -10,7 +10,11 @@ import {
   type ReactNode,
 } from "react";
 import { adminFetch } from "@/app/lib/shop/admin-client";
-import type { OrderStatus, ShopOrder, ShopProduct } from "@/app/lib/shop/types";
+import type {
+  FulfillmentStatus,
+  ShopOrder,
+  ShopProduct,
+} from "@/app/lib/shop/types";
 
 type ShopContextValue = {
   ready: boolean;
@@ -22,11 +26,15 @@ type ShopContextValue = {
   refreshAdmin: () => Promise<void>;
   upsertProduct: (product: ShopProduct) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
-  updateOrderStatus: (
+  updateFulfillment: (
     orderId: string,
-    status: OrderStatus,
-    trackingNumber?: string
+    input: {
+      fulfillmentStatus: FulfillmentStatus;
+      trackingNumber?: string;
+      shippingCarrier?: string;
+    }
   ) => Promise<void>;
+  createTestOrder: (productId?: string) => Promise<void>;
   resetDemoData: () => void;
 };
 
@@ -129,17 +137,38 @@ export function ShopProvider({
     [refreshAdmin]
   );
 
-  const updateOrderStatus = useCallback(
+  const updateFulfillment = useCallback(
     async (
       orderId: string,
-      status: OrderStatus,
-      trackingNumber?: string
+      input: {
+        fulfillmentStatus: FulfillmentStatus;
+        trackingNumber?: string;
+        shippingCarrier?: string;
+      }
     ) => {
       const res = await adminFetch("/api/admin/shop/orders", {
         method: "PATCH",
-        body: JSON.stringify({ id: orderId, status, trackingNumber }),
+        body: JSON.stringify({ id: orderId, ...input }),
       });
-      if (!res.ok) throw new Error("Update failed");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Update failed");
+      }
+      await refreshAdmin();
+    },
+    [refreshAdmin]
+  );
+
+  const createTestOrder = useCallback(
+    async (productId?: string) => {
+      const res = await adminFetch("/api/admin/shop/orders", {
+        method: "POST",
+        body: JSON.stringify(productId ? { productId } : {}),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to create test order");
+      }
       await refreshAdmin();
     },
     [refreshAdmin]
@@ -160,7 +189,8 @@ export function ShopProvider({
       refreshAdmin,
       upsertProduct,
       deleteProduct,
-      updateOrderStatus,
+      updateFulfillment,
+      createTestOrder,
       resetDemoData,
     }),
     [
@@ -171,7 +201,8 @@ export function ShopProvider({
       refreshAdmin,
       upsertProduct,
       deleteProduct,
-      updateOrderStatus,
+      updateFulfillment,
+      createTestOrder,
       resetDemoData,
     ]
   );

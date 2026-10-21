@@ -46,6 +46,8 @@ npm test        # Jest
 | `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_…`). Locally: from `stripe listen --forward-to localhost:3000/api/shop/webhook`. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (`pk_test_…`) — reserved for future client Stripe.js use. |
 | `NEXT_PUBLIC_SITE_URL` | Also used as Checkout success/cancel origin (e.g. `http://localhost:3000`). |
+| `SHOP_BACKEND_URL` | Origin of **braindance_shop** (e.g. `http://localhost:8001`). Server-only — order emails. |
+| `SHOP_SERVICE_SECRET` | Shared secret matching `braindance_shop` `SHOP_SERVICE_SECRET`. Server-only. Never put `RESEND_API_KEY` in the frontend. |
 
 ### Shop / Stripe local test
 

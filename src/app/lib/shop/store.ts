@@ -2,7 +2,7 @@
 
 import { SHOP_STORAGE_KEY } from "./config";
 import { MOCK_ORDERS, MOCK_PRODUCTS } from "./mock-data";
-import type { OrderStatus, ShopOrder, ShopProduct } from "./types";
+import type { FulfillmentStatus, ShopOrder, ShopProduct } from "./types";
 
 export type ShopState = {
   products: ShopProduct[];
@@ -65,11 +65,12 @@ export function deleteProduct(state: ShopState, productId: string): ShopState {
   return next;
 }
 
-export function updateOrderStatus(
+export function updateOrderFulfillment(
   state: ShopState,
   orderId: string,
-  status: OrderStatus,
-  trackingNumber?: string
+  fulfillmentStatus: FulfillmentStatus,
+  trackingNumber?: string,
+  shippingCarrier?: string
 ): ShopState {
   const next = {
     ...state,
@@ -77,8 +78,9 @@ export function updateOrderStatus(
       order.id === orderId
         ? {
             ...order,
-            status,
+            fulfillmentStatus,
             ...(trackingNumber !== undefined ? { trackingNumber } : {}),
+            ...(shippingCarrier !== undefined ? { shippingCarrier } : {}),
           }
         : order
     ),

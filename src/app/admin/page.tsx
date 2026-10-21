@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useShop } from "@/app/components/shop/ShopProvider";
 import { formatPrice } from "@/app/lib/shop/mock-data";
 
 export default function AdminOverviewPage() {
-  const { ready, products, orders } = useShop();
+  const router = useRouter();
+  const { ready, products, orders, createTestOrder } = useShop();
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!ready) {
     return <p className="text-sm text-zinc-500">Loading…</p>;
@@ -13,25 +18,46 @@ export default function AdminOverviewPage() {
 
   const active = products.filter((p) => p.status === "active").length;
   const drafts = products.filter((p) => p.status === "draft").length;
-  const paid = orders.filter((o) => o.status === "paid").length;
-  const shipped = orders.filter((o) => o.status === "shipped").length;
-  const pending = orders.filter((o) => o.status === "pending").length;
+  const unfulfilled = orders.filter(
+    (o) => o.paymentStatus === "paid" && o.fulfillmentStatus === "unfulfilled"
+  ).length;
+  const processing = orders.filter(
+    (o) => o.fulfillmentStatus === "processing"
+  ).length;
+  const shipped = orders.filter((o) => o.fulfillmentStatus === "shipped").length;
   const revenueCents = orders
-    .filter((o) => o.status === "paid" || o.status === "shipped")
+    .filter((o) => o.paymentStatus === "paid" || o.paymentStatus === "refunded")
     .reduce((sum, o) => sum + o.totalCents, 0);
 
   const stats = [
     { label: "Active products", value: String(active), href: "/admin/products" },
     { label: "Drafts", value: String(drafts), href: "/admin/products" },
-    { label: "Paid to ship", value: String(paid), href: "/admin/orders" },
+    { label: "Unfulfilled", value: String(unfulfilled), href: "/admin/orders" },
+    { label: "Processing", value: String(processing), href: "/admin/orders" },
     { label: "Shipped", value: String(shipped), href: "/admin/orders" },
-    { label: "Pending", value: String(pending), href: "/admin/orders" },
     {
       label: "Revenue",
       value: formatPrice(revenueCents),
       href: "/admin/orders",
     },
   ];
+
+  async function handleCreateTestOrder() {
+    if (products.length === 0) {
+      setError("Add a product first.");
+      return;
+    }
+    setCreating(true);
+    setError(null);
+    try {
+      await createTestOrder();
+      router.push("/admin/orders");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create order");
+    } finally {
+      setCreating(false);
+    }
+  }
 
   return (
     <div className="space-y-10">
@@ -55,7 +81,28 @@ export default function AdminOverviewPage() {
             </p>
           </Link>
         ))}
+
+        <button
+          type="button"
+          onClick={() => void handleCreateTestOrder()}
+          disabled={creating || products.length === 0}
+          className="border border-dashed border-zinc-300 px-5 py-4 text-left transition-colors hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:hover:border-zinc-400"
+        >
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+            Testing
+          </p>
+          <p className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            {creating ? "Creating…" : "Create test order"}
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Drops a paid sample order so you can try shipping / tracking.
+          </p>
+        </button>
       </div>
+
+      {error ? (
+        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+      ) : null}
     </div>
   );
 }

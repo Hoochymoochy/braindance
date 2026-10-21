@@ -82,7 +82,8 @@ export const MOCK_PRODUCTS: ShopProduct[] = [
 export const MOCK_ORDERS: ShopOrder[] = [
   {
     id: "ord_demo_001",
-    status: "paid",
+    paymentStatus: "paid",
+    fulfillmentStatus: "unfulfilled",
     email: "listener@example.com",
     items: [
       {
@@ -104,7 +105,8 @@ export const MOCK_ORDERS: ShopOrder[] = [
   },
   {
     id: "ord_demo_002",
-    status: "shipped",
+    paymentStatus: "paid",
+    fulfillmentStatus: "shipped",
     email: "cratekeeper@example.com",
     items: [
       {
@@ -131,10 +133,12 @@ export const MOCK_ORDERS: ShopOrder[] = [
     totalCents: 10000,
     createdAt: "2026-10-08T09:10:00.000Z",
     trackingNumber: "BD9400111890220000000",
+    shippingCarrier: "USPS",
   },
   {
     id: "ord_demo_003",
-    status: "pending",
+    paymentStatus: "pending",
+    fulfillmentStatus: "unfulfilled",
     email: "guest@example.com",
     items: [
       {
