@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
@@ -40,9 +41,11 @@ function MobileHeader({
   isHome: boolean;
   isStreamWatch: boolean;
 }) {
+  const pathname = usePathname();
   const { query, setQuery } = useHomeSearch();
   const solid = useHomeHeaderSolid();
   const streamTitle = useStreamPageTitle();
+  const isShop = pathname === "/shop" || pathname.startsWith("/shop/");
 
   return (
     <header
@@ -67,6 +70,19 @@ function MobileHeader({
         ) : (
           <div className="min-w-0 flex-1" aria-hidden />
         )}
+        {!isStreamWatch ? (
+          <Link
+            href="/shop"
+            className={cn(
+              "shrink-0 text-xs font-semibold uppercase tracking-wide transition-colors duration-bends-fast ease-bends",
+              isShop
+                ? "text-gradient-bends"
+                : "text-zinc-400 hover:text-zinc-700 dark:hover:text-brand-from"
+            )}
+          >
+            Shop
+          </Link>
+        ) : null}
         <ProfileNavLink
           placement="mobile"
           variant="icon"

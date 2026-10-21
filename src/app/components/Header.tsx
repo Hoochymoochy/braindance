@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
 import ProfileNavLink from "@/app/components/ProfileNavLink";
@@ -33,7 +34,7 @@ export default function Header() {
       role="banner"
       data-header-solid={solid ? "true" : "false"}
     >
-      <div className="container mx-auto grid h-[4.25rem] grid-cols-[9.5rem_minmax(0,1fr)_9.5rem] items-center gap-4 px-4 md:h-[4.75rem]">
+      <div className="container mx-auto grid h-[4.25rem] grid-cols-[9.5rem_minmax(0,1fr)_auto] items-center gap-4 px-4 md:h-[4.75rem]">
         <div className="flex justify-start">
           <BraindanceBrandLink className="shrink-0" />
         </div>
@@ -58,7 +59,18 @@ export default function Header() {
           )}
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-end gap-5">
+          <Link
+            href="/shop"
+            className={cn(
+              "text-sm font-semibold uppercase tracking-wide transition-colors duration-bends-fast ease-bends",
+              pathname === "/shop" || pathname.startsWith("/shop/")
+                ? "text-gradient-bends"
+                : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+            )}
+          >
+            Shop
+          </Link>
           <ProfileNavLink placement="header" className="shrink-0" />
         </div>
       </div>

@@ -3,11 +3,10 @@ import type { Metadata } from "next";
 const FALLBACK_SITE_URL = "https://braindance.live";
 
 export function getSiteUrl(): URL {
-  const raw =
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
-    process.env.VERCEL_URL?.trim() ||
-    FALLBACK_SITE_URL;
+  // Public origin is braindance.live. Do not fall back to VERCEL_URL:
+  // that hostname is the generated *.vercel.app deployment, not the site.
+  // Set NEXT_PUBLIC_SITE_URL=http://localhost:3000 for local checkout redirects.
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim() || FALLBACK_SITE_URL;
 
   const withProtocol = raw.startsWith("http") ? raw : `https://${raw}`;
   try {
