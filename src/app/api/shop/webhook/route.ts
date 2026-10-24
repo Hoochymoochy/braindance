@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type Stripe from "stripe";
-import { fulfillCheckoutSession } from "@/app/lib/shop/fulfillment";
+import { handleShopStripeEvent } from "@/app/lib/shop/stripe-sync";
 import { getStripe } from "@/app/lib/shop/stripe";
 
 export const runtime = "nodejs";
@@ -23,7 +22,7 @@ export async function POST(request: NextRequest) {
   const rawBody = await request.text();
   const stripe = getStripe();
 
-  let event: Stripe.Event;
+  let event;
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, secret);
   } catch (err) {
@@ -32,25 +31,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    switch (event.type) {
-      case "checkout.session.completed":
-      case "checkout.session.async_payment_succeeded": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        await fulfillCheckoutSession(session);
-        break;
-      }
-      case "checkout.session.async_payment_failed": {
-        console.warn(
-          "[shop/webhook] async payment failed",
-          (event.data.object as Stripe.Checkout.Session).id
-        );
-        break;
-      }
-      default:
-        break;
-    }
+    await handleShopStripeEvent(event);
   } catch (error) {
-    console.error("[shop/webhook] fulfill", error);
+    console.error("[shop/webhook] sync", error);
     return NextResponse.json({ error: "Fulfillment failed" }, { status: 500 });
   }
 

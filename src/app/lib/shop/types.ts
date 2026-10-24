@@ -54,16 +54,27 @@ export type ShopOrderItem = {
   imageUrl?: string | null;
 };
 
+export type OrderActor = "admin" | "stripe" | "system" | "carrier";
+
 export type OrderEventType =
   | "order_created"
   | "payment_confirmed"
   | "payment_failed"
   | "payment_refunded"
+  | "refund_initiated"
+  | "refund_confirmed"
   | "fulfillment_started"
+  | "returned_to_unfulfilled"
   | "tracking_added"
+  | "tracking_updated"
   | "order_shipped"
+  | "shipment_confirmed"
   | "order_delivered"
-  | "order_cancelled";
+  | "delivery_manually_confirmed"
+  | "order_cancelled"
+  | "fulfillment_cancelled"
+  | "shipping_notification_sent"
+  | "shipping_notification_failed";
 
 export type ShopOrderEvent = {
   id: string;
@@ -72,6 +83,7 @@ export type ShopOrderEvent = {
   description: string;
   actor: string;
   createdAt: string;
+  metadata?: Record<string, unknown>;
 };
 
 export type ShopOrder = {
@@ -87,9 +99,18 @@ export type ShopOrder = {
   shippingPostal: string;
   shippingCountry: string;
   totalCents: number;
+  currency?: string;
   createdAt: string;
   trackingNumber?: string;
   shippingCarrier?: string;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
+  cancelledAt?: string | null;
+  amountRefundedCents?: number;
+  shippingNotifiedAt?: string | null;
+  shippingNotifyError?: string | null;
+  stripeCheckoutSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
   events?: ShopOrderEvent[];
 };
 

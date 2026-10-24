@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useShop } from "@/app/components/shop/ShopProvider";
 import { formatPrice } from "@/app/lib/shop/mock-data";
+import { summarizeOrders } from "@/app/lib/shop/order-policy";
 
 export default function AdminOverviewPage() {
   const router = useRouter();
@@ -18,23 +19,24 @@ export default function AdminOverviewPage() {
 
   const active = products.filter((p) => p.status === "active").length;
   const drafts = products.filter((p) => p.status === "draft").length;
-  const unfulfilled = orders.filter(
-    (o) => o.paymentStatus === "paid" && o.fulfillmentStatus === "unfulfilled"
-  ).length;
-  const processing = orders.filter(
-    (o) => o.fulfillmentStatus === "processing"
-  ).length;
-  const shipped = orders.filter((o) => o.fulfillmentStatus === "shipped").length;
-  const revenueCents = orders
-    .filter((o) => o.paymentStatus === "paid" || o.paymentStatus === "refunded")
-    .reduce((sum, o) => sum + o.totalCents, 0);
+  const counts = summarizeOrders(orders);
+  const revenueCents = orders.reduce((sum, order) => {
+    if (order.paymentStatus === "paid" || order.paymentStatus === "partially_refunded") {
+      return sum + order.totalCents - (order.amountRefundedCents ?? 0);
+    }
+    return sum;
+  }, 0);
 
   const stats = [
     { label: "Active products", value: String(active), href: "/admin/products" },
     { label: "Drafts", value: String(drafts), href: "/admin/products" },
-    { label: "Unfulfilled", value: String(unfulfilled), href: "/admin/orders" },
-    { label: "Processing", value: String(processing), href: "/admin/orders" },
-    { label: "Shipped", value: String(shipped), href: "/admin/orders" },
+    {
+      label: "Awaiting fulfillment",
+      value: String(counts.awaitingFulfillment),
+      href: "/admin/orders",
+    },
+    { label: "Processing", value: String(counts.processing), href: "/admin/orders" },
+    { label: "Shipped", value: String(counts.shipped), href: "/admin/orders" },
     {
       label: "Revenue",
       value: formatPrice(revenueCents),

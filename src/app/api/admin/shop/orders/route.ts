@@ -7,10 +7,12 @@ import {
 import {
   createTestOrder,
   listOrders,
+  OrderActionError,
+  retryShippingNotification,
   updateFulfillmentRecord,
 } from "@/app/lib/shop/db";
 
-const patchSchema = z.object({
+const fulfillmentSchema = z.object({
   id: z.string().uuid(),
   fulfillmentStatus: z.enum([
     "unfulfilled",
@@ -23,9 +25,25 @@ const patchSchema = z.object({
   shippingCarrier: z.string().optional(),
 });
 
+const retrySchema = z.object({
+  id: z.string().uuid(),
+  action: z.literal("retry_shipping_email"),
+});
+
 const createTestSchema = z.object({
   productId: z.string().uuid().optional(),
 });
+
+function adminError(error: unknown, fallback: string) {
+  if (error instanceof AdminAuthError) {
+    return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+  if (error instanceof OrderActionError) {
+    return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+  console.error("[admin/shop/orders]", error);
+  return NextResponse.json({ error: fallback }, { status: 500 });
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,11 +51,7 @@ export async function GET(request: NextRequest) {
     const orders = await listOrders();
     return NextResponse.json({ orders });
   } catch (error) {
-    if (error instanceof AdminAuthError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
-    }
-    console.error("[admin/shop/orders GET]", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return adminError(error, "Failed");
   }
 }
 
@@ -55,10 +69,15 @@ export async function POST(request: NextRequest) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    const message =
-      error instanceof Error ? error.message : "Failed to create test order";
+    if (error instanceof OrderActionError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    const message = error instanceof Error ? error.message : "";
+    if (message === "Add a product first") {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
     console.error("[admin/shop/orders POST]", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create test order" }, { status: 500 });
   }
 }
 
@@ -66,7 +85,12 @@ export async function PATCH(request: NextRequest) {
   try {
     const admin = await requireAdminFromRequest(request);
     const json = await request.json();
-    const parsed = patchSchema.safeParse(json);
+    const retry = retrySchema.safeParse(json);
+    if (retry.success) {
+      const order = await retryShippingNotification(retry.data.id, admin.email);
+      return NextResponse.json({ order });
+    }
+    const parsed = fulfillmentSchema.safeParse(json);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid body" }, { status: 400 });
     }
@@ -74,22 +98,11 @@ export async function PATCH(request: NextRequest) {
       fulfillmentStatus: parsed.data.fulfillmentStatus,
       trackingNumber: parsed.data.trackingNumber,
       shippingCarrier: parsed.data.shippingCarrier,
-      actor: `admin:${admin.email}`,
+      actor: "admin",
+      adminEmail: admin.email,
     });
     return NextResponse.json({ order });
   } catch (error) {
-    if (error instanceof AdminAuthError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
-    }
-    const message =
-      error instanceof Error ? error.message : "Failed to update order";
-    console.error("[admin/shop/orders PATCH]", error);
-    const status =
-      message.includes("must be confirmed") ||
-      message.includes("Cannot change") ||
-      message.includes("required")
-        ? 400
-        : 500;
-    return NextResponse.json({ error: message }, { status });
+    return adminError(error, "Failed to update order");
   }
 }

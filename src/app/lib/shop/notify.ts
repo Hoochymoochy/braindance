@@ -70,15 +70,37 @@ export function notifyOrderConfirmation(order: ShopOrder): void {
   );
 }
 
-export function notifyOrderShipped(order: ShopOrder): void {
-  safeNotify("order-shipped", () =>
-    postShopEmail("/emails/order-shipped", {
-      to: order.email,
-      orderNumber: shortOrderId(order.id),
-      carrier: order.shippingCarrier || "",
-      trackingNumber: order.trackingNumber || "",
-      trackingUrl:
-        trackingUrl(order.shippingCarrier, order.trackingNumber) || "",
-    })
-  );
+function shippedEmailBody(order: ShopOrder): Record<string, unknown> {
+  return {
+    to: order.email,
+    orderNumber: shortOrderId(order.id),
+    carrier: order.shippingCarrier || "",
+    trackingNumber: order.trackingNumber || "",
+    trackingUrl: trackingUrl(order.shippingCarrier, order.trackingNumber) || "",
+    items: order.items.map((item) => ({
+      name: item.productName,
+      size: item.size,
+      quantity: item.quantity,
+      unitPriceCents: item.unitPriceCents,
+    })),
+  };
+}
+
+/** Awaited by fulfillment so a failed send can be recorded without rolling back shipment. */
+export async function sendShippingNotification(
+  order: ShopOrder
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!shopBackendConfig()) {
+    console.warn(
+      "[shop/notify] SHOP_BACKEND_URL or SHOP_SERVICE_SECRET missing — skip shipping email"
+    );
+    return { ok: false, error: "Shipping email is not configured" };
+  }
+  try {
+    await postShopEmail("/emails/order-shipped", shippedEmailBody(order));
+    return { ok: true };
+  } catch (err) {
+    console.error("[shop/notify] order-shipped", err);
+    return { ok: false, error: "Shipping email could not be sent" };
+  }
 }

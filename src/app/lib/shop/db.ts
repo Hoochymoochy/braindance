@@ -1,8 +1,15 @@
 import { getDbClient } from "@/app/lib/listener-profile/db";
-import { notifyOrderConfirmation, notifyOrderShipped } from "./notify";
-import { canTransitionFulfillment } from "./order-utils";
+import { notifyOrderConfirmation, sendShippingNotification } from "./notify";
+import {
+  OrderActionError,
+  paymentFailureStatus,
+  paymentStatusAfterRefunds,
+  planFulfillmentChange,
+  planRefundActivity,
+} from "./order-policy";
 import type {
   FulfillmentStatus,
+  OrderActor,
   OrderEventType,
   PaymentStatus,
   ProductSize,
@@ -12,6 +19,8 @@ import type {
   ShopOrderItem,
   ShopProduct,
 } from "./types";
+
+export { OrderActionError };
 
 type ProductRow = {
   id: string;
@@ -48,8 +57,17 @@ type OrderRow = {
   total_cents: number;
   tracking_number: string | null;
   shipping_carrier: string | null;
+  currency: string;
   created_at: string;
   stripe_checkout_session_id: string | null;
+  stripe_payment_intent_id: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  cancelled_at: string | null;
+  amount_refunded_cents: number | null;
+  shipping_notified_at: string | null;
+  shipping_notify_error: string | null;
+  inventory_adjusted: boolean | null;
 };
 
 type OrderItemRow = {
@@ -66,8 +84,13 @@ type OrderEventRow = {
   event_type: string;
   description: string;
   actor: string;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 };
+
+function isUniqueViolation(error: { code?: string; message?: string }): boolean {
+  return error.code === "23505" || /duplicate key/i.test(error.message || "");
+}
 
 export function mapProduct(row: ProductRow): ShopProduct {
   return {
@@ -211,9 +234,12 @@ async function recordOrderEvent(input: {
   orderId: string;
   eventType: OrderEventType;
   description: string;
-  actor: string;
+  actor: OrderActor | string;
+  metadata?: Record<string, unknown>;
   /** Skip insert if this event type already exists for the order (webhook retries). */
   uniqueByType?: boolean;
+  /** Ignore unique-index conflicts (refund ids, retried webhooks). */
+  ignoreUnique?: boolean;
 }): Promise<void> {
   const db = getDbClient();
   if (input.uniqueByType) {
@@ -230,8 +256,12 @@ async function recordOrderEvent(input: {
     event_type: input.eventType,
     description: input.description,
     actor: input.actor,
+    metadata: input.metadata ?? {},
   });
-  if (error) throw error;
+  if (error) {
+    if (input.ignoreUnique && isUniqueViolation(error)) return;
+    throw error;
+  }
 }
 
 async function listOrderEvents(
@@ -254,6 +284,7 @@ async function listOrderEvents(
       eventType: row.event_type,
       description: row.description,
       actor: row.actor,
+      metadata: row.metadata ?? {},
       createdAt: row.created_at,
     });
     map.set(row.order_id, list);
@@ -279,24 +310,25 @@ function mapOrderRow(
     shippingPostal: row.shipping_postal,
     shippingCountry: row.shipping_country,
     totalCents: row.total_cents,
+    currency: row.currency || "usd",
     createdAt: row.created_at,
     trackingNumber: row.tracking_number ?? undefined,
     shippingCarrier: row.shipping_carrier ?? undefined,
+    shippedAt: row.shipped_at,
+    deliveredAt: row.delivered_at,
+    cancelledAt: row.cancelled_at,
+    amountRefundedCents: row.amount_refunded_cents ?? 0,
+    shippingNotifiedAt: row.shipping_notified_at,
+    shippingNotifyError: row.shipping_notify_error,
+    stripeCheckoutSessionId: row.stripe_checkout_session_id,
+    stripePaymentIntentId: row.stripe_payment_intent_id,
     events,
   };
 }
 
-export async function listOrders(): Promise<ShopOrder[]> {
-  const db = getDbClient();
-  const { data: orders, error } = await db
-    .from("shop_orders")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-
-  const orderRows = (orders || []) as OrderRow[];
+async function hydrateOrderRows(orderRows: OrderRow[]): Promise<ShopOrder[]> {
   if (orderRows.length === 0) return [];
-
+  const db = getDbClient();
   const ids = orderRows.map((o) => o.id);
   const { data: items, error: itemsError } = await db
     .from("shop_order_items")
@@ -348,9 +380,78 @@ export async function listOrders(): Promise<ShopOrder[]> {
   );
 }
 
+export async function listOrders(): Promise<ShopOrder[]> {
+  const db = getDbClient();
+  const { data: orders, error } = await db
+    .from("shop_orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return hydrateOrderRows((orders || []) as OrderRow[]);
+}
+
 export async function getOrderById(id: string): Promise<ShopOrder | null> {
-  const all = await listOrders();
-  return all.find((o) => o.id === id) ?? null;
+  const db = getDbClient();
+  const { data, error } = await db
+    .from("shop_orders")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const [order] = await hydrateOrderRows([data as OrderRow]);
+  return order ?? null;
+}
+
+async function loadOrderOrThrow(id: string): Promise<ShopOrder> {
+  const order = await getOrderById(id);
+  if (!order) throw new OrderActionError("Order not found", 404);
+  return order;
+}
+
+async function deliverShippingEmail(
+  orderId: string,
+  order: ShopOrder,
+  metadata: Record<string, unknown> = {}
+): Promise<ShopOrder> {
+  const latest = await getOrderById(orderId);
+  if (latest?.shippingNotifiedAt) return latest;
+
+  const result = await sendShippingNotification(latest ?? order);
+  const db = getDbClient();
+  if (result.ok) {
+    const { error } = await db
+      .from("shop_orders")
+      .update({
+        shipping_notified_at: new Date().toISOString(),
+        shipping_notify_error: null,
+      })
+      .eq("id", orderId)
+      .is("shipping_notified_at", null);
+    if (error) throw error;
+    await recordOrderEvent({
+      orderId,
+      eventType: "shipping_notification_sent",
+      description: "Shipping notification sent",
+      actor: "system",
+      metadata,
+      uniqueByType: true,
+    });
+    return (await getOrderById(orderId)) ?? order;
+  }
+
+  await db
+    .from("shop_orders")
+    .update({ shipping_notify_error: result.error })
+    .eq("id", orderId);
+  await recordOrderEvent({
+    orderId,
+    eventType: "shipping_notification_failed",
+    description: "Shipping notification failed",
+    actor: "system",
+    metadata: { ...metadata, error: result.error },
+  });
+  return (await getOrderById(orderId)) ?? order;
 }
 
 export async function updateFulfillmentRecord(
@@ -359,114 +460,85 @@ export async function updateFulfillmentRecord(
     fulfillmentStatus: FulfillmentStatus;
     trackingNumber?: string;
     shippingCarrier?: string;
-    actor?: string;
+    actor?: OrderActor;
+    adminEmail?: string;
   }
 ): Promise<ShopOrder> {
-  const current = await getOrderById(id);
-  if (!current) throw new Error("Order not found");
+  const current = await loadOrderOrThrow(id);
+  const plan = planFulfillmentChange({
+    paymentStatus: current.paymentStatus,
+    from: current.fulfillmentStatus,
+    to: patch.fulfillmentStatus,
+    trackingNumber: patch.trackingNumber,
+    shippingCarrier: patch.shippingCarrier,
+    currentTracking: current.trackingNumber,
+    currentCarrier: current.shippingCarrier,
+    shippingNotifiedAt: current.shippingNotifiedAt,
+  });
+  if (!plan.ok) throw new OrderActionError(plan.error);
+  if (plan.noop) return current;
 
-  if (current.paymentStatus !== "paid") {
-    throw new Error("Payment must be confirmed before fulfillment updates");
-  }
-
-  const nextStatus = patch.fulfillmentStatus;
-  if (!canTransitionFulfillment(current.fulfillmentStatus, nextStatus)) {
-    throw new Error(
-      `Cannot change fulfillment from ${current.fulfillmentStatus} to ${nextStatus}`
+  const now = new Date().toISOString();
+  const db = getDbClient();
+  const { data: updatedRows, error } = await db
+    .from("shop_orders")
+    .update({
+      fulfillment_status: plan.fulfillmentStatus,
+      tracking_number: plan.trackingNumber || null,
+      shipping_carrier: plan.shippingCarrier || null,
+      updated_at: now,
+      ...(plan.setShippedAt ? { shipped_at: now } : {}),
+      ...(plan.setDeliveredAt ? { delivered_at: now } : {}),
+      ...(plan.setCancelledAt ? { cancelled_at: now } : {}),
+    })
+    .eq("id", id)
+    .eq("fulfillment_status", current.fulfillmentStatus)
+    .select("id");
+  if (error) throw error;
+  if (!updatedRows || updatedRows.length === 0) {
+    throw new OrderActionError(
+      "This order changed while you were editing. Refresh and try again.",
+      409
     );
   }
 
-  const trackingNumber =
-    patch.trackingNumber !== undefined
-      ? patch.trackingNumber.trim()
-      : current.trackingNumber ?? "";
-  const shippingCarrier =
-    patch.shippingCarrier !== undefined
-      ? patch.shippingCarrier.trim()
-      : current.shippingCarrier ?? "";
-
-  if (nextStatus === "shipped") {
-    if (!trackingNumber) {
-      throw new Error("Tracking number is required to mark shipped");
-    }
-    if (!shippingCarrier) {
-      throw new Error("Carrier is required to mark shipped");
-    }
-  }
-
-  const db = getDbClient();
-  const { error } = await db
-    .from("shop_orders")
-    .update({
-      fulfillment_status: nextStatus,
-      tracking_number: trackingNumber || null,
-      shipping_carrier: shippingCarrier || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id);
-  if (error) throw error;
-
   const actor = patch.actor ?? "admin";
-  const statusChanged = nextStatus !== current.fulfillmentStatus;
-  const trackingChanged =
-    trackingNumber !== (current.trackingNumber ?? "") ||
-    shippingCarrier !== (current.shippingCarrier ?? "");
-
-  if (statusChanged && nextStatus === "processing") {
+  const metadata = patch.adminEmail ? { adminEmail: patch.adminEmail } : {};
+  for (const event of plan.events) {
     await recordOrderEvent({
       orderId: id,
-      eventType: "fulfillment_started",
-      description: "Fulfillment started",
+      eventType: event.type,
+      description: event.description,
       actor,
-    });
-  }
-  if (
-    trackingChanged &&
-    trackingNumber &&
-    (nextStatus === "shipped" || nextStatus === "processing")
-  ) {
-    await recordOrderEvent({
-      orderId: id,
-      eventType: "tracking_added",
-      description: shippingCarrier
-        ? `Tracking added · ${shippingCarrier} ${trackingNumber}`
-        : `Tracking added · ${trackingNumber}`,
-      actor,
-    });
-  }
-  if (statusChanged && nextStatus === "shipped") {
-    await recordOrderEvent({
-      orderId: id,
-      eventType: "order_shipped",
-      description: `Order shipped via ${shippingCarrier}`,
-      actor,
-    });
-  }
-  if (statusChanged && nextStatus === "delivered") {
-    await recordOrderEvent({
-      orderId: id,
-      eventType: "order_delivered",
-      description: "Order delivered",
-      actor,
-    });
-  }
-  if (statusChanged && nextStatus === "cancelled") {
-    await recordOrderEvent({
-      orderId: id,
-      eventType: "order_cancelled",
-      description: "Fulfillment cancelled",
-      actor,
+      metadata: {
+        ...metadata,
+        ...(event.type === "delivery_manually_confirmed" ? { manual: true } : {}),
+      },
     });
   }
 
-  const updated = await getOrderById(id);
-  if (!updated) throw new Error("Order updated but could not be loaded");
-
-  if (statusChanged && nextStatus === "shipped") {
-    notifyOrderShipped(updated);
+  let updated = await loadOrderOrThrow(id);
+  if (plan.sendShippingEmail) {
+    updated = await deliverShippingEmail(id, updated);
   }
-
   return updated;
+}
+
+export async function retryShippingNotification(
+  id: string,
+  adminEmail: string
+): Promise<ShopOrder> {
+  const current = await loadOrderOrThrow(id);
+  if (
+    current.fulfillmentStatus !== "shipped" &&
+    current.fulfillmentStatus !== "delivered"
+  ) {
+    throw new OrderActionError("Shipping email is sent after the order ships");
+  }
+  if (current.shippingNotifiedAt) {
+    throw new OrderActionError("Shipping email was already sent");
+  }
+  return deliverShippingEmail(id, current, { adminEmail, retry: true });
 }
 
 export async function findOrderByCheckoutSession(
@@ -480,6 +552,422 @@ export async function findOrderByCheckoutSession(
     .maybeSingle();
   if (error) throw error;
   return data as { id: string } | null;
+}
+
+type CheckoutOrderInput = {
+  outcome: "pending" | "paid" | "failed";
+  sessionId: string;
+  paymentIntentId: string | null;
+  email: string;
+  totalCents: number;
+  currency: string;
+  shippingName: string;
+  shippingLine1: string;
+  shippingCity: string;
+  shippingRegion: string;
+  shippingPostal: string;
+  shippingCountry: string;
+  productId: string;
+  productName: string;
+  size: string;
+  quantity: number;
+  unitPriceCents: number;
+};
+
+async function findOrderRowBySession(
+  sessionId: string
+): Promise<OrderRow | null> {
+  const db = getDbClient();
+  const { data, error } = await db
+    .from("shop_orders")
+    .select("*")
+    .eq("stripe_checkout_session_id", sessionId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as OrderRow | null) ?? null;
+}
+
+async function ensureOrderItem(
+  orderId: string,
+  input: CheckoutOrderInput
+): Promise<void> {
+  const db = getDbClient();
+  const { data, error } = await db
+    .from("shop_order_items")
+    .select("id")
+    .eq("order_id", orderId)
+    .limit(1);
+  if (error) throw error;
+  if (data && data.length > 0) return;
+  const { error: itemError } = await db.from("shop_order_items").insert({
+    order_id: orderId,
+    product_id: input.productId || null,
+    product_name: input.productName,
+    size: input.size,
+    quantity: input.quantity,
+    unit_price_cents: input.unitPriceCents,
+  });
+  if (itemError) throw itemError;
+}
+
+async function adjustInventoryOnce(
+  orderId: string,
+  productId: string,
+  size: string,
+  quantity: number
+): Promise<void> {
+  const db = getDbClient();
+  const { data, error } = await db
+    .from("shop_orders")
+    .update({ inventory_adjusted: true })
+    .eq("id", orderId)
+    .eq("inventory_adjusted", false)
+    .select("id");
+  if (error) throw error;
+  if (!data || data.length === 0 || !productId) return;
+
+  try {
+    const product = await getProductById(productId);
+    if (!product) return;
+    const nextInv = { ...product.inventoryBySize };
+    const current = nextInv[size as ProductSize] ?? 0;
+    nextInv[size as ProductSize] = Math.max(0, current - quantity);
+    const { error: invError } = await db
+      .from("shop_products")
+      .update({
+        inventory_by_size: nextInv,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", productId);
+    if (invError) throw invError;
+  } catch (err) {
+    await db
+      .from("shop_orders")
+      .update({ inventory_adjusted: false })
+      .eq("id", orderId);
+    throw err;
+  }
+}
+
+async function recomputeRefundState(orderId: string): Promise<void> {
+  const db = getDbClient();
+  const { data: order, error } = await db
+    .from("shop_orders")
+    .select("payment_status, total_cents")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!order) return;
+  const row = order as { payment_status: PaymentStatus; total_cents: number };
+  const { data: refunds, error: refundError } = await db
+    .from("shop_order_refunds")
+    .select("amount_cents, status")
+    .eq("order_id", orderId);
+  if (refundError) throw refundError;
+  const succeeded = ((refunds || []) as { amount_cents: number; status: string }[])
+    .filter((refund) => refund.status === "succeeded")
+    .reduce((sum, refund) => sum + refund.amount_cents, 0);
+  const nextStatus = paymentStatusAfterRefunds({
+    current: row.payment_status,
+    totalCents: row.total_cents,
+    succeededRefundCents: succeeded,
+  });
+  const { error: updateError } = await db
+    .from("shop_orders")
+    .update({
+      payment_status: nextStatus,
+      amount_refunded_cents: succeeded,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId);
+  if (updateError) throw updateError;
+}
+
+async function attachRefunds(
+  orderId: string,
+  paymentIntentId: string
+): Promise<void> {
+  const db = getDbClient();
+  const { error } = await db
+    .from("shop_order_refunds")
+    .update({ order_id: orderId })
+    .eq("payment_intent_id", paymentIntentId)
+    .is("order_id", null);
+  if (error) throw error;
+  await recomputeRefundState(orderId);
+}
+
+export async function hasStripeEvent(eventId: string): Promise<boolean> {
+  const db = getDbClient();
+  const { data, error } = await db
+    .from("shop_stripe_events")
+    .select("event_id")
+    .eq("event_id", eventId)
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export async function rememberStripeEvent(
+  eventId: string,
+  eventType: string
+): Promise<void> {
+  const db = getDbClient();
+  const { error } = await db.from("shop_stripe_events").insert({
+    event_id: eventId,
+    event_type: eventType,
+  });
+  if (error && isUniqueViolation(error)) return;
+  if (error) throw error;
+}
+
+export async function markPaymentFailedByIntent(
+  paymentIntentId: string
+): Promise<void> {
+  const db = getDbClient();
+  const { data, error } = await db
+    .from("shop_orders")
+    .select("id, payment_status")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return;
+  const row = data as { id: string; payment_status: PaymentStatus };
+  if (paymentFailureStatus(row.payment_status) === row.payment_status) return;
+  const { data: updated, error: updateError } = await db
+    .from("shop_orders")
+    .update({
+      payment_status: "failed",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", row.id)
+    .eq("payment_status", "pending")
+    .select("id");
+  if (updateError) throw updateError;
+  if (!updated || updated.length === 0) return;
+  await recordOrderEvent({
+    orderId: row.id,
+    eventType: "payment_failed",
+    description: "Payment failed",
+    actor: "stripe",
+    uniqueByType: true,
+  });
+}
+
+export async function applyStripeRefund(input: {
+  refundId: string;
+  amountCents: number;
+  status: string;
+  paymentIntentId: string | null;
+  currency: string;
+}): Promise<void> {
+  if (!input.paymentIntentId) return;
+  const db = getDbClient();
+  const { data: existing, error: readError } = await db
+    .from("shop_order_refunds")
+    .select("status, order_id")
+    .eq("stripe_refund_id", input.refundId)
+    .maybeSingle();
+  if (readError) throw readError;
+  const previous = (existing as { status: string } | null)?.status ?? null;
+
+  const { data: matched, error: matchError } = await db
+    .from("shop_orders")
+    .select("id")
+    .eq("stripe_payment_intent_id", input.paymentIntentId)
+    .maybeSingle();
+  if (matchError) throw matchError;
+  const orderId =
+    (matched as { id: string } | null)?.id ??
+    (existing as { order_id: string | null } | null)?.order_id ??
+    null;
+
+  const { error } = await db.from("shop_order_refunds").upsert({
+    stripe_refund_id: input.refundId,
+    order_id: orderId,
+    payment_intent_id: input.paymentIntentId,
+    amount_cents: input.amountCents,
+    currency: input.currency || "usd",
+    status: input.status,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
+  if (!orderId) return;
+
+  await recomputeRefundState(orderId);
+  const activity = planRefundActivity(previous, input.status);
+  if (!activity) return;
+  const amount = (input.amountCents / 100).toFixed(2);
+  await recordOrderEvent({
+    orderId,
+    eventType: activity,
+    description:
+      activity === "refund_confirmed"
+        ? `Refund confirmed · $${amount}`
+        : `Refund initiated · $${amount}`,
+    actor: "stripe",
+    metadata: {
+      stripeRefundId: input.refundId,
+      amountCents: input.amountCents,
+      status: input.status,
+    },
+    ignoreUnique: true,
+  });
+}
+
+export async function syncCheckoutOrder(
+  input: CheckoutOrderInput
+): Promise<string> {
+  const db = getDbClient();
+  let existing = await findOrderRowBySession(input.sessionId);
+  let created = false;
+
+  if (!existing) {
+    const initialStatus =
+      input.outcome === "paid"
+        ? "paid"
+        : input.outcome === "failed"
+          ? "failed"
+          : "pending";
+    const { data, error } = await db
+      .from("shop_orders")
+      .insert({
+        payment_status: initialStatus,
+        fulfillment_status: "unfulfilled",
+        email: input.email,
+        shipping_name: input.shippingName,
+        shipping_line1: input.shippingLine1,
+        shipping_city: input.shippingCity,
+        shipping_region: input.shippingRegion,
+        shipping_postal: input.shippingPostal,
+        shipping_country: input.shippingCountry,
+        total_cents: input.totalCents,
+        currency: input.currency,
+        stripe_checkout_session_id: input.sessionId,
+        stripe_payment_intent_id: input.paymentIntentId,
+        inventory_adjusted: false,
+      })
+      .select("*")
+      .single();
+    if (error && isUniqueViolation(error)) {
+      existing = await findOrderRowBySession(input.sessionId);
+      if (!existing) throw error;
+    } else if (error) {
+      throw error;
+    } else {
+      existing = data as OrderRow;
+      created = true;
+    }
+  }
+
+  const orderId = existing.id;
+  await ensureOrderItem(orderId, input);
+  await recordOrderEvent({
+    orderId,
+    eventType: "order_created",
+    description: "Order created",
+    actor: "stripe",
+    uniqueByType: true,
+  });
+
+  let becamePaid = created && existing.payment_status === "paid";
+  const now = new Date().toISOString();
+  const shippingPatch = {
+    ...(input.email ? { email: input.email } : {}),
+    ...(input.shippingName ? { shipping_name: input.shippingName } : {}),
+    ...(input.shippingLine1 ? { shipping_line1: input.shippingLine1 } : {}),
+    ...(input.shippingCity ? { shipping_city: input.shippingCity } : {}),
+    ...(input.shippingRegion ? { shipping_region: input.shippingRegion } : {}),
+    ...(input.shippingPostal ? { shipping_postal: input.shippingPostal } : {}),
+    ...(input.shippingCountry ? { shipping_country: input.shippingCountry } : {}),
+    ...(input.paymentIntentId
+      ? { stripe_payment_intent_id: input.paymentIntentId }
+      : {}),
+    updated_at: now,
+  };
+
+  if (!created && input.outcome === "paid") {
+    const { data, error } = await db
+      .from("shop_orders")
+      .update({
+        payment_status: "paid",
+        total_cents: input.totalCents,
+        currency: input.currency,
+        ...shippingPatch,
+      })
+      .eq("id", orderId)
+      .in("payment_status", ["pending", "failed"])
+      .select("id");
+    if (error) throw error;
+    becamePaid = Boolean(data && data.length > 0);
+    if (!becamePaid && input.paymentIntentId) {
+      await db
+        .from("shop_orders")
+        .update({ stripe_payment_intent_id: input.paymentIntentId })
+        .eq("id", orderId)
+        .is("stripe_payment_intent_id", null);
+    }
+  } else if (input.outcome === "failed") {
+    if (created) {
+      await recordOrderEvent({
+        orderId,
+        eventType: "payment_failed",
+        description: "Payment failed",
+        actor: "stripe",
+        uniqueByType: true,
+      });
+    } else {
+      const { data, error } = await db
+        .from("shop_orders")
+        .update({ payment_status: "failed", ...shippingPatch })
+        .eq("id", orderId)
+        .eq("payment_status", "pending")
+        .select("id");
+      if (error) throw error;
+      if (data && data.length > 0) {
+        await recordOrderEvent({
+          orderId,
+          eventType: "payment_failed",
+          description: "Payment failed",
+          actor: "stripe",
+          uniqueByType: true,
+        });
+      }
+    }
+  }
+
+  if (input.outcome === "paid") {
+    await recordOrderEvent({
+      orderId,
+      eventType: "payment_confirmed",
+      description: "Payment confirmed",
+      actor: "stripe",
+      uniqueByType: true,
+    });
+    await adjustInventoryOnce(
+      orderId,
+      input.productId,
+      input.size,
+      input.quantity
+    );
+  }
+
+  if (input.paymentIntentId) {
+    await attachRefunds(orderId, input.paymentIntentId);
+  }
+
+  if (becamePaid) {
+    const createdOrder = await getOrderById(orderId);
+    if (
+      createdOrder &&
+      (createdOrder.paymentStatus === "paid" ||
+        createdOrder.paymentStatus === "partially_refunded")
+    ) {
+      notifyOrderConfirmation(createdOrder);
+    }
+  }
+
+  return orderId;
 }
 
 export async function createPaidOrderFromCheckout(input: {
@@ -500,88 +988,7 @@ export async function createPaidOrderFromCheckout(input: {
   quantity: number;
   unitPriceCents: number;
 }): Promise<string> {
-  const db = getDbClient();
-  const existing = await findOrderByCheckoutSession(input.sessionId);
-  if (existing) {
-    // Idempotent retry: ensure payment confirmed event exists
-    await recordOrderEvent({
-      orderId: existing.id,
-      eventType: "payment_confirmed",
-      description: "Payment confirmed",
-      actor: "stripe",
-      uniqueByType: true,
-    });
-    return existing.id;
-  }
-
-  const { data: order, error } = await db
-    .from("shop_orders")
-    .insert({
-      payment_status: "paid",
-      fulfillment_status: "unfulfilled",
-      email: input.email,
-      shipping_name: input.shippingName,
-      shipping_line1: input.shippingLine1,
-      shipping_city: input.shippingCity,
-      shipping_region: input.shippingRegion,
-      shipping_postal: input.shippingPostal,
-      shipping_country: input.shippingCountry,
-      total_cents: input.totalCents,
-      currency: input.currency,
-      stripe_checkout_session_id: input.sessionId,
-      stripe_payment_intent_id: input.paymentIntentId,
-    })
-    .select("id")
-    .single();
-  if (error) throw error;
-
-  const orderId = (order as { id: string }).id;
-  const { error: itemError } = await db.from("shop_order_items").insert({
-    order_id: orderId,
-    product_id: input.productId || null,
-    product_name: input.productName,
-    size: input.size,
-    quantity: input.quantity,
-    unit_price_cents: input.unitPriceCents,
-  });
-  if (itemError) throw itemError;
-
-  // Decrement inventory once per successful payment (session-idempotent above)
-  const product = await getProductById(input.productId);
-  if (product) {
-    const nextInv = { ...product.inventoryBySize };
-    const current = nextInv[input.size as ProductSize] ?? 0;
-    nextInv[input.size as ProductSize] = Math.max(0, current - input.quantity);
-    await db
-      .from("shop_products")
-      .update({
-        inventory_by_size: nextInv,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", input.productId);
-  }
-
-  await recordOrderEvent({
-    orderId,
-    eventType: "order_created",
-    description: "Order created",
-    actor: "stripe",
-    uniqueByType: true,
-  });
-  await recordOrderEvent({
-    orderId,
-    eventType: "payment_confirmed",
-    description: "Payment confirmed",
-    actor: "stripe",
-    uniqueByType: true,
-  });
-
-  const created = await getOrderById(orderId);
-  if (created) {
-    notifyOrderConfirmation(created);
-  }
-
-  return orderId;
+  return syncCheckoutOrder({ ...input, outcome: "paid" });
 }
 
 /** Admin-only: seed a paid unfulfilled order for fulfillment UI testing. */
@@ -618,6 +1025,7 @@ export async function createTestOrder(productId?: string): Promise<ShopOrder> {
       currency: product.currency,
       stripe_checkout_session_id: null,
       stripe_payment_intent_id: null,
+      inventory_adjusted: true,
     })
     .select("*")
     .single();

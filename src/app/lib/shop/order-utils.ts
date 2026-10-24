@@ -1,4 +1,7 @@
-import type { FulfillmentStatus, PaymentStatus } from "./types";
+import { canTransitionFulfillment } from "./order-policy";
+import type { FulfillmentStatus, PaymentStatus, ShopOrderEvent } from "./types";
+
+export { canTransitionFulfillment };
 
 export function shortOrderId(id: string): string {
   return id.replace(/-/g, "").slice(0, 8).toUpperCase();
@@ -7,6 +10,14 @@ export function shortOrderId(id: string): string {
 export function formatOrderDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function formatOrderDateShort(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
     day: "numeric",
     year: "numeric",
   });
@@ -47,30 +58,42 @@ export function fulfillmentBadgeClass(status: FulfillmentStatus): string {
 export function paymentLabel(status: PaymentStatus): string {
   switch (status) {
     case "partially_refunded":
-      return "Partial refund";
+      return "Partially refunded";
+    case "pending":
+      return "Pending";
+    case "paid":
+      return "Paid";
+    case "failed":
+      return "Failed";
+    case "refunded":
+      return "Refunded";
     default:
-      return status.replace(/_/g, " ");
+      return status;
   }
 }
 
 export function fulfillmentLabel(status: FulfillmentStatus): string {
-  return status.replace(/_/g, " ");
+  switch (status) {
+    case "unfulfilled":
+      return "Unfulfilled";
+    case "processing":
+      return "Processing";
+    case "shipped":
+      return "Shipped";
+    case "delivered":
+      return "Delivered";
+    case "cancelled":
+      return "Cancelled";
+    default:
+      return status;
+  }
 }
 
-/** Valid admin-driven fulfillment transitions. */
-export function canTransitionFulfillment(
-  from: FulfillmentStatus,
-  to: FulfillmentStatus
-): boolean {
-  if (from === to) return true;
-  const allowed: Record<FulfillmentStatus, FulfillmentStatus[]> = {
-    unfulfilled: ["processing", "shipped", "cancelled"],
-    processing: ["unfulfilled", "shipped", "cancelled"],
-    shipped: ["delivered"],
-    delivered: [],
-    cancelled: [],
-  };
-  return allowed[from]?.includes(to) ?? false;
+export function eventActorLabel(event: ShopOrderEvent): string {
+  const email = event.metadata?.adminEmail;
+  if (event.actor === "admin" && typeof email === "string" && email) return email;
+  if (event.actor.startsWith("admin:")) return event.actor.slice("admin:".length);
+  return event.actor;
 }
 
 export function trackingUrl(
@@ -92,7 +115,7 @@ export function trackingUrl(
   if (c.includes("dhl")) {
     return `https://www.dhl.com/en/express/tracking.html?AWB=${t}`;
   }
-  return `https://www.google.com/search?q=${t}+tracking`;
+  return null;
 }
 
 export function formatShippingAddress(order: {

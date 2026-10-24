@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import { createPaidOrderFromCheckout } from "./db";
+import { syncCheckoutOrder } from "./db";
 
 type ShippingBits = {
   name?: string | null;
@@ -22,11 +22,10 @@ function readShipping(session: Stripe.Checkout.Session): ShippingBits {
   return legacy ?? {};
 }
 
-export async function fulfillCheckoutSession(
-  session: Stripe.Checkout.Session
+export async function ingestCheckoutSession(
+  session: Stripe.Checkout.Session,
+  outcome: "pending" | "paid" | "failed"
 ): Promise<void> {
-  if (session.payment_status === "unpaid") return;
-
   const meta = session.metadata || {};
   const productId = meta.shop_product_id || "";
   const productName = meta.product_name || "Merch";
@@ -36,13 +35,13 @@ export async function fulfillCheckoutSession(
 
   const shipping = readShipping(session);
   const address = shipping.address;
-
   const paymentIntentId =
     typeof session.payment_intent === "string"
       ? session.payment_intent
       : session.payment_intent?.id ?? null;
 
-  await createPaidOrderFromCheckout({
+  await syncCheckoutOrder({
+    outcome,
     sessionId: session.id,
     paymentIntentId,
     email:
@@ -63,4 +62,20 @@ export async function fulfillCheckoutSession(
     quantity,
     unitPriceCents,
   });
+}
+
+/** @deprecated Prefer ingestCheckoutSession with an explicit outcome. */
+export async function fulfillCheckoutSession(
+  session: Stripe.Checkout.Session
+): Promise<void> {
+  if (
+    session.payment_status === "paid" ||
+    session.payment_status === "no_payment_required"
+  ) {
+    await ingestCheckoutSession(session, "paid");
+    return;
+  }
+  if (session.payment_status === "unpaid") {
+    await ingestCheckoutSession(session, "pending");
+  }
 }

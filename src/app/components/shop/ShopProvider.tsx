@@ -33,7 +33,8 @@ type ShopContextValue = {
       trackingNumber?: string;
       shippingCarrier?: string;
     }
-  ) => Promise<void>;
+  ) => Promise<ShopOrder>;
+  retryShippingEmail: (orderId: string) => Promise<ShopOrder>;
   createTestOrder: (productId?: string) => Promise<void>;
   resetDemoData: () => void;
 };
@@ -154,7 +155,26 @@ export function ShopProvider({
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || "Update failed");
       }
+      const data = (await res.json()) as { order: ShopOrder };
       await refreshAdmin();
+      return data.order;
+    },
+    [refreshAdmin]
+  );
+
+  const retryShippingEmail = useCallback(
+    async (orderId: string) => {
+      const res = await adminFetch("/api/admin/shop/orders", {
+        method: "PATCH",
+        body: JSON.stringify({ id: orderId, action: "retry_shipping_email" }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Could not resend shipping email");
+      }
+      const data = (await res.json()) as { order: ShopOrder };
+      await refreshAdmin();
+      return data.order;
     },
     [refreshAdmin]
   );
@@ -190,6 +210,7 @@ export function ShopProvider({
       upsertProduct,
       deleteProduct,
       updateFulfillment,
+      retryShippingEmail,
       createTestOrder,
       resetDemoData,
     }),
@@ -202,6 +223,7 @@ export function ShopProvider({
       upsertProduct,
       deleteProduct,
       updateFulfillment,
+      retryShippingEmail,
       createTestOrder,
       resetDemoData,
     ]
