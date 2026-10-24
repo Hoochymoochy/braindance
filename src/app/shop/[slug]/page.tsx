@@ -142,7 +142,7 @@ function ProductDetailInner() {
               />
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-8">
               <button
                 type="button"
                 disabled={!canBuy || busy}
@@ -155,10 +155,6 @@ function ProductDetailInner() {
                     ? "Checkout with Stripe"
                     : "Select a size"}
               </button>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Test mode: use card{" "}
-                <span className="font-mono">4242 4242 4242 4242</span>
-              </p>
             </div>
             {checkoutError ? (
               <p className="mt-3 text-sm text-red-600 dark:text-red-400">
