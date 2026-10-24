@@ -18,9 +18,7 @@ function SuccessContent() {
           Thanks — payment received
         </h1>
         <p className="mt-4 text-base text-zinc-600 dark:text-zinc-400">
-          Stripe confirms the charge. Your order is written when the webhook
-          lands (check admin → Orders). You&apos;ll get Stripe&apos;s receipt by
-          email.
+          You&apos;ll get a receipt by email.
         </p>
         {sessionId ? (
           <p className="mt-6 break-all border border-zinc-200 bg-zinc-50 px-4 py-3 font-mono text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
@@ -33,12 +31,6 @@ function SuccessContent() {
             className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 dark:bg-brand-from dark:text-zinc-950 dark:hover:bg-brand-via"
           >
             Back to shop
-          </Link>
-          <Link
-            href="/admin/orders"
-            className="text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-          >
-            Admin orders
           </Link>
         </div>
       </div>

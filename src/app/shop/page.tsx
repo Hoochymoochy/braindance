@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ProductCard } from "@/app/components/shop/ProductCard";
 import { useShop } from "@/app/components/shop/ShopProvider";
 import { getActiveProducts } from "@/app/lib/shop/store";
@@ -55,14 +54,8 @@ export default function ShopPage() {
               Nothing live yet
             </p>
             <p className="mt-2 text-sm text-zinc-500">
-              Publish a product from admin to show it here.
+              New pieces will show up here when a drop goes live.
             </p>
-            <Link
-              href="/admin/products"
-              className="mt-6 inline-block text-sm font-medium text-brand-via hover:underline"
-            >
-              Open admin
-            </Link>
           </div>
         ) : (
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
