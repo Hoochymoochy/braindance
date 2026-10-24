@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Filter } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useShop } from "@/app/components/shop/ShopProvider";
 import { formatPrice } from "@/app/lib/shop/mock-data";
 import {
@@ -34,7 +35,7 @@ const FILTERS: { value: StatusFilter; label: string }[] = [
 ];
 
 const PAYMENT_FILTERS: { value: PaymentFilter; label: string }[] = [
-  { value: "all", label: "Any payment" },
+  { value: "all", label: "Any" },
   { value: "pending", label: "Pending" },
   { value: "paid", label: "Paid" },
   { value: "failed", label: "Failed" },
@@ -49,9 +50,35 @@ const SORTS: { value: SortOrder; label: string }[] = [
 
 export default function AdminOrdersPage() {
   const { ready, orders } = useShop();
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("all");
   const [sort, setSort] = useState<SortOrder>("newest");
+  const filtersActive =
+    filter !== "all" || paymentFilter !== "all" || sort !== "newest";
+  const filterRootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (!filterRootRef.current?.contains(target)) setFiltersOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFiltersOpen(false);
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [filtersOpen]);
 
   const counts = useMemo(() => summarizeOrders(orders), [orders]);
 
@@ -79,50 +106,49 @@ export default function AdminOrdersPage() {
         <Metric label="Delivered" value={counts.delivered} />
         <Metric label="Needs attention" value={counts.attention} />
       </div>
-      <p className="max-w-3xl text-xs leading-relaxed text-zinc-500">
-        Counts are every stored order, not the current filter. Awaiting
-        fulfillment is paid or partially refunded and still unfulfilled.
-        Cancelled orders and unpaid orders are left out of that count. Needs
-        attention is awaiting fulfillment, paid orders in processing, and
-        shipments whose email failed.
-      </p>
 
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-1">
-          {FILTERS.map((option) => (
-            <FilterButton
-              key={option.value}
-              active={filter === option.value}
-              onClick={() => setFilter(option.value)}
-            >
-              {option.label}
-            </FilterButton>
-          ))}
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-1">
-            {PAYMENT_FILTERS.map((option) => (
-              <FilterButton
-                key={option.value}
-                active={paymentFilter === option.value}
-                onClick={() => setPaymentFilter(option.value)}
-              >
-                {option.label}
-              </FilterButton>
-            ))}
+      <div ref={filterRootRef} className="relative flex justify-end">
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          aria-haspopup="dialog"
+          aria-label={filtersOpen ? "Close filters" : "Open filters"}
+          onClick={() => setFiltersOpen((open) => !open)}
+          className={cn(
+            "relative inline-flex h-8 w-8 items-center justify-center text-zinc-400 transition-colors duration-bends-fast ease-bends hover:text-zinc-800 dark:hover:text-zinc-100",
+            filtersOpen && "text-zinc-900 dark:text-zinc-50"
+          )}
+        >
+          <Filter className="h-4 w-4" aria-hidden />
+          {filtersActive ? (
+            <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
+          ) : null}
+        </button>
+
+        {filtersOpen ? (
+          <div className="absolute right-0 top-full z-20 mt-1.5 w-64 rounded-lg border border-black/8 bg-[var(--page-bg)]/95 p-3 shadow-md backdrop-blur-md dark:border-white/10">
+            <div className="space-y-3">
+              <FilterSelect
+                label="Fulfillment"
+                value={filter}
+                options={FILTERS}
+                onChange={setFilter}
+              />
+              <FilterSelect
+                label="Payment"
+                value={paymentFilter}
+                options={PAYMENT_FILTERS}
+                onChange={setPaymentFilter}
+              />
+              <FilterSelect
+                label="Sort"
+                value={sort}
+                options={SORTS}
+                onChange={setSort}
+              />
+            </div>
           </div>
-          <div className="flex gap-1 sm:border-l sm:border-zinc-200 sm:pl-3 dark:sm:border-zinc-700">
-            {SORTS.map((option) => (
-              <FilterButton
-                key={option.value}
-                active={sort === option.value}
-                onClick={() => setSort(option.value)}
-              >
-                {option.label}
-              </FilterButton>
-            ))}
-          </div>
-        </div>
+        ) : null}
       </div>
 
       {orders.length === 0 ? (
@@ -194,27 +220,33 @@ function Metric({ label, value }: { label: string; value: number }) {
   );
 }
 
-function FilterButton({
-  active,
-  onClick,
-  children,
+function FilterSelect<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
 }: {
-  active: boolean;
-  onClick: () => void;
-  children: string;
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "px-2.5 py-1 text-xs font-medium transition-colors",
-        active
-          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950"
-          : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-      )}
-    >
-      {children}
-    </button>
+    <label className="block">
+      <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+        {label}
+      </span>
+      <select
+        className="input-bends !py-2 !text-sm"
+        value={value}
+        onChange={(event) => onChange(event.target.value as T)}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
