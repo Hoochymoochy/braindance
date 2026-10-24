@@ -1,13 +1,6 @@
-"use client";
-
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 
-function SuccessContent() {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
-
+export default function ShopSuccessPage() {
   return (
     <div className="container mx-auto px-4 py-20 md:py-28">
       <div className="mx-auto max-w-lg text-center">
@@ -20,11 +13,6 @@ function SuccessContent() {
         <p className="mt-4 text-base text-zinc-600 dark:text-zinc-400">
           You&apos;ll get a receipt by email.
         </p>
-        {sessionId ? (
-          <p className="mt-6 break-all border border-zinc-200 bg-zinc-50 px-4 py-3 font-mono text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
-            {sessionId}
-          </p>
-        ) : null}
         <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/shop"
@@ -35,19 +23,5 @@ function SuccessContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function ShopSuccessPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="container mx-auto px-4 py-28 text-center text-sm text-zinc-500">
-          Loading…
-        </div>
-      }
-    >
-      <SuccessContent />
-    </Suspense>
   );
 }

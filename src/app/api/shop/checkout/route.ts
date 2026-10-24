@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: stripePriceId, quantity: 1 }],
-      success_url: `${siteUrl}/shop/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${siteUrl}/shop/success`,
       cancel_url: `${siteUrl}/shop/${product.slug}?canceled=1`,
       shipping_address_collection: {
         allowed_countries: ["US", "CA"],
