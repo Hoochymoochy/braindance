@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // Skip Vercel Image Optimization — serve originals via plain <img>.
+    unoptimized: true,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
