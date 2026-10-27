@@ -31,7 +31,7 @@ type DjSet = {
 
 type DjSetsResponse = {
   currentSets?: DjSet[];
-  /** Full catalog (duration-filtered only); used for Random, includes sets older than 90 days. */
+  /** Same full catalog as currentSets; used for Random. */
   allSets?: DjSet[];
 };
 

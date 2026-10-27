@@ -65,8 +65,6 @@ type BackendDjSetsListResponse =
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_DURATION_SECONDS = 30 * 60;
-/** Sets older than this are hidden from list/featured but stay in `allSets` for Random. */
-const MAX_LIST_AGE_DAYS = 90;
 
 /** Keep legacy rows that never got duration_seconds; only drop known-short videos. */
 function passesDurationFilter(item: DjSet): boolean {
@@ -83,6 +81,18 @@ function withinDays(isoDate: string, days: number): boolean {
 
 function sortByViewsDesc(items: DjSet[]): DjSet[] {
   return [...items].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+}
+
+/** Recently added first, then most recently published. */
+function sortByNewestAdded(items: DjSet[]): DjSet[] {
+  return [...items].sort((a, b) => {
+    const af = Date.parse(a.fetched_at || "") || 0;
+    const bf = Date.parse(b.fetched_at || "") || 0;
+    if (bf !== af) return bf - af;
+    const ap = Date.parse(a.published_at || "") || 0;
+    const bp = Date.parse(b.published_at || "") || 0;
+    return bp - ap;
+  });
 }
 
 function topViewed(items: DjSet[], days: number, limit = 6): DjSet[] {
@@ -109,7 +119,7 @@ async function fetchDjSetsListWithFallback(timeoutMs: number): Promise<{
   const backup = getBackupBackendUrl(LOG);
 
   const tryList = async (base: string) => {
-    const upstream = `${base}/dj-sets?limit=500`;
+    const upstream = `${base}/dj-sets?limit=2000`;
     const backendPayload = (await fetchJsonWithTimeout(
       upstream,
       timeoutMs,
@@ -246,13 +256,12 @@ export async function GET(request: NextRequest) {
       /* catalog still works if vault table unavailable */
     }
 
-    const filtered = items
-      .filter((item) => Boolean(item.video_id) && passesDurationFilter(item))
-      .filter((item) => !vaultIds.has(item.video_id))
-      .map(withDisplayCleanup);
-
-    const listSets = filtered.filter((item) =>
-      withinDays(item.published_at, MAX_LIST_AGE_DAYS)
+    // Full catalog (duration + vault filtered) — home infinite scroll walks all of it.
+    const listSets = sortByNewestAdded(
+      items
+        .filter((item) => Boolean(item.video_id) && passesDurationFilter(item))
+        .filter((item) => !vaultIds.has(item.video_id))
+        .map(withDisplayCleanup)
     );
 
     const backendFeatured = Array.isArray(backendPayload)
@@ -260,17 +269,16 @@ export async function GET(request: NextRequest) {
       : (backendPayload.featured ?? null);
 
     const backendWeekly = backendFeatured?.weekly
-      ?.filter((item) => withinDays(item.published_at, MAX_LIST_AGE_DAYS))
-      .filter((item) => !vaultIds.has(item.video_id))
+      ?.filter((item) => !vaultIds.has(item.video_id))
       .map(withDisplayCleanup);
 
     const payload = {
       updatedAt,
       count: listSets.length,
       currentSets: listSets,
-      allSets: filtered,
+      allSets: listSets,
       featured: {
-        daily: topViewed(listSets, 1, 4),
+        daily: topViewed(listSets, 1, 5),
         weekly:
           backendWeekly?.length
             ? backendWeekly
@@ -282,8 +290,7 @@ export async function GET(request: NextRequest) {
     routeLog("api/dj-sets", "GET OK", {
       backendSource: source,
       itemsRaw: items.length,
-      itemsAfterDurationFilter: filtered.length,
-      itemsAfterAgeFilter: listSets.length,
+      catalogCount: listSets.length,
       count: payload.count,
     });
     return NextResponse.json(payload, {
