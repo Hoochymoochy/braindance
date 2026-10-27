@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ShoppingBag } from "lucide-react";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import AuthSessionSync from "@/app/components/AuthSessionSync";
@@ -73,14 +74,21 @@ function MobileHeader({
         {!isStreamWatch ? (
           <Link
             href="/shop"
+            aria-label="Shop"
+            aria-current={isShop ? "page" : undefined}
+            title="Shop"
             className={cn(
-              "shrink-0 text-xs font-semibold uppercase tracking-wide transition-colors duration-bends-fast ease-bends",
+              "inline-flex size-11 shrink-0 items-center justify-center transition-colors duration-bends-fast ease-bends",
               isShop
-                ? "text-gradient-bends"
+                ? "text-zinc-900 dark:text-brand-from"
                 : "text-zinc-400 hover:text-zinc-700 dark:hover:text-brand-from"
             )}
           >
-            Shop
+            <ShoppingBag
+              className="h-6 w-6"
+              fill={isShop ? "currentColor" : "none"}
+              aria-hidden
+            />
           </Link>
         ) : null}
         <ProfileNavLink
