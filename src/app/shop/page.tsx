@@ -30,10 +30,6 @@ export default function ShopPage() {
             Braindance
             <span className="block text-gradient-bends">Merch</span>
           </h1>
-          <p className="mt-5 max-w-md text-base text-zinc-600 dark:text-zinc-400">
-            Small drops. Built for the booth and the after. Design preview —
-            checkout wires up next.
-          </p>
         </div>
       </section>
 
