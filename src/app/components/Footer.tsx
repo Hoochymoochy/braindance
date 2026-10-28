@@ -15,9 +15,10 @@ export default function Footer({ showOnMobile = false }: { showOnMobile?: boolea
       <div className="container mx-auto px-4 py-4 md:py-5">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 sm:justify-start">
+            {/* Shop nav hidden for now — keep markup for a quick restore */}
             <Link
               href="/shop"
-              className="text-sm text-zinc-600 transition-colors duration-bends-fast ease-bends hover:text-brand-via"
+              className="hidden text-sm text-zinc-600 transition-colors duration-bends-fast ease-bends hover:text-brand-via"
             >
               Shop
             </Link>

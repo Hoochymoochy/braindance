@@ -71,6 +71,7 @@ function MobileHeader({
         ) : (
           <div className="min-w-0 flex-1" aria-hidden />
         )}
+        {/* Shop nav hidden for now — keep markup for a quick restore */}
         {!isStreamWatch ? (
           <Link
             href="/shop"
@@ -78,7 +79,7 @@ function MobileHeader({
             aria-current={isShop ? "page" : undefined}
             title="Shop"
             className={cn(
-              "inline-flex size-11 shrink-0 items-center justify-center transition-colors duration-bends-fast ease-bends",
+              "hidden inline-flex size-11 shrink-0 items-center justify-center transition-colors duration-bends-fast ease-bends",
               isShop
                 ? "text-zinc-900 dark:text-brand-from"
                 : "text-zinc-400 hover:text-zinc-700 dark:hover:text-brand-from"
