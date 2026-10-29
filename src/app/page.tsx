@@ -43,7 +43,6 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
-const PAGE_SIZE = 9;
 const DJ_SETS_CACHE_KEY = "home:dj-sets";
 const CLIENT_CACHE_MS = CATALOG_REVALIDATE_SECONDS * 1000;
 
@@ -52,7 +51,6 @@ export default function Home() {
   const [allDjSets, setAllDjSets] = useState<DjSet[]>([]);
   const [catalogSets, setCatalogSets] = useState<DjSet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const { query: searchQuery } = useHomeSearch();
   const deferredQuery = useDeferredValue(searchQuery);
   const djSetsPromiseRef = useRef<Promise<DjSetsResponse | null> | null>(null);
@@ -60,7 +58,6 @@ export default function Home() {
   const allDjSetsRef = useRef<DjSet[]>([]);
   const heroSentinelRef = useRef<HTMLDivElement | null>(null);
   const heroPassedRef = useRef(false);
-  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
   const wasSearchingRef = useRef(false);
   const isSearching = deferredQuery.trim().length > 0;
 
@@ -141,12 +138,6 @@ export default function Home() {
     return catalogSets.filter((set) => matchesDjSetQuery(set, deferredQuery));
   }, [isSearching, allDjSets, catalogSets, deferredQuery]);
 
-  const visibleDjSets = useMemo(
-    () => filteredSets.slice(0, visibleCount),
-    [filteredSets, visibleCount]
-  );
-
-  const hasMore = visibleCount < filteredSets.length;
   const emptySearch = isSearching && !loading && filteredSets.length === 0;
 
   useLockBodyScroll(emptySearch);
@@ -155,31 +146,6 @@ export default function Home() {
     if (!emptySearch) return;
     window.scrollTo(0, 0);
   }, [emptySearch]);
-
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [deferredQuery]);
-
-  useEffect(() => {
-    if (loading || !hasMore) return;
-    const el = loadMoreSentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries[0]?.isIntersecting) return;
-        setVisibleCount((c) =>
-          c >= filteredSets.length
-            ? c
-            : Math.min(c + PAGE_SIZE, filteredSets.length)
-        );
-      },
-      { rootMargin: "400px 0px", threshold: 0 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [loading, hasMore, filteredSets.length, visibleCount]);
 
   const goRandomSet = async () => {
     let pool =
@@ -295,10 +261,6 @@ export default function Home() {
                 {filteredSets.length}{" "}
                 {filteredSets.length === 1 ? "result" : "results"}
               </p>
-            ) : !loading && allDjSets.length > 0 ? (
-              <p className="mt-1 tabular-nums text-xs text-brand-from/65">
-                Showing {visibleDjSets.length} of {allDjSets.length}
-              </p>
             ) : null}
           </div>
           {emptySearch ? (
@@ -317,7 +279,7 @@ export default function Home() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading && skeletons(6)}
               {!loading &&
-                visibleDjSets.map((set, i) => (
+                filteredSets.map((set, i) => (
                   <StreamCard
                     key={set.video_id}
                     set={set}
@@ -326,13 +288,6 @@ export default function Home() {
                   />
                 ))}
             </div>
-          )}
-          {!loading && hasMore && (
-            <div
-              ref={loadMoreSentinelRef}
-              className="mb-8 mt-12 h-px w-full"
-              aria-hidden
-            />
           )}
         </section>
       </div>

@@ -1,9 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag } from "lucide-react";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import AuthSessionSync from "@/app/components/AuthSessionSync";
@@ -39,10 +37,8 @@ function MobileHeader({
   isHome: boolean;
   isStreamWatch: boolean;
 }) {
-  const pathname = usePathname();
   const { query, setQuery } = useHomeSearch();
   const solid = useHomeHeaderSolid();
-  const isShop = pathname === "/shop" || pathname.startsWith("/shop/");
 
   return (
     <header
@@ -67,27 +63,6 @@ function MobileHeader({
         ) : (
           <div className="min-w-0 flex-1" aria-hidden />
         )}
-        {/* Shop nav hidden for now — keep markup for a quick restore */}
-        {!isStreamWatch ? (
-          <Link
-            href="/shop"
-            aria-label="Shop"
-            aria-current={isShop ? "page" : undefined}
-            title="Shop"
-            className={cn(
-              "hidden inline-flex size-11 shrink-0 items-center justify-center transition-colors duration-bends-fast ease-bends",
-              isShop
-                ? "text-zinc-900 dark:text-brand-from"
-                : "text-zinc-400 hover:text-zinc-700 dark:hover:text-brand-from"
-            )}
-          >
-            <ShoppingBag
-              className="h-6 w-6"
-              fill={isShop ? "currentColor" : "none"}
-              aria-hidden
-            />
-          </Link>
-        ) : null}
         <ProfileNavLink
           placement="mobile"
           variant="icon"

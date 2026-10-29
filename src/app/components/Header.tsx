@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BraindanceBrandLink from "@/app/components/BraindanceBrandLink";
 import ProfileNavLink from "@/app/components/ProfileNavLink";
@@ -57,18 +56,6 @@ export default function Header() {
         </div>
 
         <div className="flex items-center justify-end gap-5">
-          {/* Shop nav hidden for now — keep markup for a quick restore */}
-          <Link
-            href="/shop"
-            className={cn(
-              "hidden text-sm font-semibold uppercase tracking-wide transition-colors duration-bends-fast ease-bends",
-              pathname === "/shop" || pathname.startsWith("/shop/")
-                ? "text-gradient-bends"
-                : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
-            )}
-          >
-            Shop
-          </Link>
           <ProfileNavLink placement="header" className="shrink-0" />
         </div>
       </div>
