@@ -421,17 +421,11 @@ export function useYoutubePlaybackAnalytics({
             onReady: (event) => {
               if (cancelled) return;
               player = event.target;
+              // Apply any queued seek only — do not autoplay; user clicks the embed to start.
               if (queuedSeek != null) {
                 const s = queuedSeek;
                 queuedSeek = null;
                 applySeek(s);
-              } else {
-                // Moment deep-links / autoplay embeds: nudge play once API is bound.
-                try {
-                  event.target.playVideo?.();
-                } catch {
-                  /* ignore */
-                }
               }
               try {
                 if (event.target.getPlayerState() === YT_PLAYING) {

@@ -15,10 +15,7 @@ import {
   useHomeSearch,
 } from "@/app/components/dj-sets/HomeSearchContext";
 import { SetsSearchField } from "@/app/components/dj-sets/SetsSearchField";
-import {
-  StreamPageChromeProvider,
-  useStreamPageTitle,
-} from "@/app/components/stream/StreamPageChrome";
+import { RandomSetButton } from "@/app/components/dj-sets/RandomSetButton";
 import { useLockBodyScroll } from "@/app/lib/hooks/useLockBodyScroll";
 import {
   homeHeaderChromeClass,
@@ -45,7 +42,6 @@ function MobileHeader({
   const pathname = usePathname();
   const { query, setQuery } = useHomeSearch();
   const solid = useHomeHeaderSolid();
-  const streamTitle = useStreamPageTitle();
   const isShop = pathname === "/shop" || pathname.startsWith("/shop/");
 
   return (
@@ -64,10 +60,10 @@ function MobileHeader({
             onSubmit={scrollToCurrentDjSets}
             className="max-w-none flex-1"
           />
-        ) : isStreamWatch && streamTitle ? (
-          <h1 className="min-w-0 flex-1 truncate text-center text-sm font-bold leading-tight tracking-tight text-gradient-bends">
-            {streamTitle}
-          </h1>
+        ) : isStreamWatch ? (
+          <div className="flex min-w-0 flex-1 justify-center">
+            <RandomSetButton size="header" />
+          </div>
         ) : (
           <div className="min-w-0 flex-1" aria-hidden />
         )}
@@ -124,29 +120,27 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <HomeSearchProvider>
-      <StreamPageChromeProvider>
-        <AuthSessionSync />
-        <Header />
-        <MobileHeader isHome={isHome} isStreamWatch={isStreamWatch} />
-        <main
-          className={cn(
-            isLogin ? "flex h-svh flex-col overflow-hidden" : "min-h-svh",
-            isHome
-              ? "pt-0"
-              : isStreamWatch
-                ? "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]"
-                : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
-            isProfile || isStreamWatch
-              ? "pb-[env(safe-area-inset-bottom,0px)]"
-              : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
-            isStreamWatch &&
-              "max-md:overflow-x-hidden max-md:overscroll-none"
-          )}
-        >
-          {children}
-        </main>
-        {isProfile || isStreamWatch ? null : <Footer />}
-      </StreamPageChromeProvider>
+      <AuthSessionSync />
+      <Header />
+      <MobileHeader isHome={isHome} isStreamWatch={isStreamWatch} />
+      <main
+        className={cn(
+          isLogin ? "flex h-svh flex-col overflow-hidden" : "min-h-svh",
+          isHome
+            ? "pt-0"
+            : isStreamWatch
+              ? "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]"
+              : "pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px)+1.25rem)] md:pt-[calc(var(--nav-header-h)+env(safe-area-inset-top,0px))]",
+          isProfile || isStreamWatch
+            ? "pb-[env(safe-area-inset-bottom,0px)]"
+            : "pb-[env(safe-area-inset-bottom,0px)] md:pb-[calc(var(--nav-footer-h)+env(safe-area-inset-bottom,0px))]",
+          isStreamWatch &&
+            "max-md:overflow-x-hidden max-md:overscroll-none"
+        )}
+      >
+        {children}
+      </main>
+      {isProfile || isStreamWatch ? null : <Footer />}
     </HomeSearchProvider>
   );
 }

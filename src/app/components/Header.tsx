@@ -9,7 +9,7 @@ import {
   scrollToCurrentDjSets,
   useHomeSearch,
 } from "@/app/components/dj-sets/HomeSearchContext";
-import { useStreamPageTitle } from "@/app/components/stream/StreamPageChrome";
+import { RandomSetButton } from "@/app/components/dj-sets/RandomSetButton";
 import {
   homeHeaderChromeClass,
   useHomeHeaderSolid,
@@ -26,7 +26,6 @@ export default function Header() {
   const isStreamWatch = isStreamWatchPath(pathname);
   const { query, setQuery } = useHomeSearch();
   const solid = useHomeHeaderSolid();
-  const streamTitle = useStreamPageTitle();
 
   return (
     <header
@@ -50,10 +49,8 @@ export default function Header() {
                 className="max-w-none"
               />
             </div>
-          ) : isStreamWatch && streamTitle ? (
-            <h1 className="max-w-2xl truncate text-center text-base font-bold leading-tight tracking-tight text-gradient-bends md:text-lg">
-              {streamTitle}
-            </h1>
+          ) : isStreamWatch ? (
+            <RandomSetButton size="header" />
           ) : (
             <div className="w-full max-w-md" aria-hidden />
           )}

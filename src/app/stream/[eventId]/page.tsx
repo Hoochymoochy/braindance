@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { useParams } from "next/navigation";
-import { ArrowUpRight, Play } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 const GlobeHeatmap = dynamic(() => import("@/app/components/GlobeHeatmap"), {
   ssr: false,
@@ -20,17 +19,14 @@ import { getLinks } from "@/app/lib/events/links";
 import { getEventById } from "@/app/lib/events/event";
 import {
   buildYoutubeEmbedSrc,
-  upgradeYoutubeThumbnail,
   youtubeVideoIdFromUrl,
   YOUTUBE_IFRAME_ALLOW,
 } from "@/app/lib/utils/youtube";
-import { trackEvent } from "@/app/lib/analytics";
 import {
   useYoutubePlaybackAnalytics,
   type YoutubePlayerApi,
 } from "@/app/lib/hooks/useYoutubePlaybackAnalytics";
 import { StreamCrateQueue } from "@/app/components/stream/StreamCrateQueue";
-import { useRegisterStreamPageTitle } from "@/app/components/stream/StreamPageChrome";
 import { AddSetToCrateButton } from "@/app/components/profile/AddSetToCrateButton";
 import { VaultLockedTeaser } from "@/app/components/vault/VaultLockedTeaser";
 import type { VaultWeek } from "@/app/lib/vault/types";
@@ -164,7 +160,7 @@ export default function BraindanceUserStream() {
   const [topCity, setTopCity] = useState("");
   const [event, setEvent] = useState<Event | null>(null);
   const [merchItems, setMerchItems] = useState<
-    { title: string; subtitle: string; url: string; kind?: "youtube_set" | "youtube_channel" | "other" }[]
+    { title: string; subtitle: string; url: string }[]
   >([]);
   const [djSet, setDjSet] = useState<DjSetItem | null>(null);
   const [isDbEvent, setIsDbEvent] = useState<boolean>(false);
@@ -179,19 +175,9 @@ export default function BraindanceUserStream() {
   const [djSetTracklistError, setDjSetTracklistError] = useState<string | null>(
     null
   );
-  const [isPlayerActivated, setIsPlayerActivated] = useState(
-    () => readStartSecondsFromLocation() !== undefined
-  );
   /** Initial YouTube embed offset (from `?t=` or first tracklist seek before play). */
   const [startSeconds, setStartSeconds] = useState<number | undefined>(
     readStartSecondsFromLocation
-  );
-  /**
-   * Moment / `?t=` deep links autoplay muted so mobile browsers actually start
-   * playback (unmuted autoplay is blocked after navigation).
-   */
-  const [autoplayMuted, setAutoplayMuted] = useState(
-    () => readStartSecondsFromLocation() !== undefined
   );
   const playerApiRef = useRef<YoutubePlayerApi | null>(null);
   const [analyticsSource, setAnalyticsSource] = useState<string | undefined>();
@@ -219,12 +205,8 @@ export default function BraindanceUserStream() {
     const deepLinkStart = readStartSecondsFromLocation();
     if (deepLinkStart !== undefined) {
       setStartSeconds(deepLinkStart);
-      setIsPlayerActivated(true);
-      setAutoplayMuted(true);
     } else {
-      setIsPlayerActivated(false);
       setStartSeconds(undefined);
-      setAutoplayMuted(false);
     }
 
     try {
@@ -238,28 +220,18 @@ export default function BraindanceUserStream() {
     }
   }, [eventId]);
 
-  const handleSeek = useCallback(
-    (seconds: number) => {
-      const s = Math.max(0, Math.floor(seconds));
-      if (!Number.isFinite(s)) return;
+  const handleSeek = useCallback((seconds: number) => {
+    const s = Math.max(0, Math.floor(seconds));
+    if (!Number.isFinite(s)) return;
 
-      if (!isPlayerActivated) {
-        setStartSeconds(s);
-        setAutoplayMuted(true);
-        setIsPlayerActivated(true);
-        return;
-      }
+    if (playerApiRef.current) {
+      playerApiRef.current.seekTo(s);
+      return;
+    }
 
-      if (playerApiRef.current) {
-        playerApiRef.current.seekTo(s);
-        return;
-      }
-
-      // API not ready yet — remount embed at this offset.
-      setStartSeconds(s);
-    },
-    [isPlayerActivated]
-  );
+    // API not ready yet — remount embed at this offset.
+    setStartSeconds(s);
+  }, []);
 
   const getPlaybackSeconds = useCallback(() => {
     return playerApiRef.current?.getCurrentTime() ?? null;
@@ -367,28 +339,17 @@ export default function BraindanceUserStream() {
             setViews(0);
             setTopCity("Global");
 
-            const links: {
-              title: string;
-              subtitle: string;
-              url: string;
-              kind?: "youtube_set" | "youtube_channel" | "other";
-            }[] = [
-              {
-                title: "Watch on YouTube",
-                subtitle: body.artist,
-                url: body.youtube_url,
-                kind: "youtube_set",
-              },
-            ];
-            if (body.soundcloud_url) {
-              links.push({
-                title: "SoundCloud",
-                subtitle: "Listen on SoundCloud",
-                url: body.soundcloud_url,
-                kind: "other",
-              });
-            }
-            setMerchItems(links);
+            setMerchItems(
+              body.soundcloud_url
+                ? [
+                    {
+                      title: "SoundCloud",
+                      subtitle: "Listen on SoundCloud",
+                      url: body.soundcloud_url,
+                    },
+                  ]
+                : []
+            );
             return;
           }
         }
@@ -423,7 +384,6 @@ export default function BraindanceUserStream() {
           title: link.label,
           subtitle: link.description || "Exclusive drop – limited time only!",
           url: link.link,
-          kind: "other" as const,
         }))
       );
 
@@ -446,22 +406,7 @@ export default function BraindanceUserStream() {
         setPlatform("youtube");
         setViews(payload.item.view_count ?? 0);
         setTopCity("Global");
-        setMerchItems([
-          {
-            title: "Watch on YouTube",
-            subtitle: "Open the source video on YouTube",
-            url: payload.item.url,
-            kind: "youtube_set",
-          },
-          {
-            title: "More From Channel",
-            subtitle: payload.item.channel,
-            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(
-              payload.item.channel
-            )}`,
-            kind: "youtube_channel",
-          },
-        ]);
+        setMerchItems([]);
 
         try {
           const tr = await fetch(
@@ -514,12 +459,11 @@ export default function BraindanceUserStream() {
     if (platform === "twitch") {
       const parent =
         process.env.NEXT_PUBLIC_TWITCH_PARENT ?? "localhost";
-      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&autoplay=${isPlayerActivated ? "true" : "false"}&muted=${isPlayerActivated ? "false" : "true"}`;
+      return `https://player.twitch.tv/?channel=${encodeURIComponent(url)}&parent=${encodeURIComponent(parent)}&autoplay=false&muted=false`;
     }
     return buildYoutubeEmbedSrc(url, {
-      autoplay: isPlayerActivated,
-      // Deep-link / pre-play seeks: mute so autoplay is allowed; click-to-play stays unmuted.
-      mute: autoplayMuted || !isPlayerActivated,
+      autoplay: false,
+      mute: false,
       start: startSeconds,
     });
   };
@@ -535,10 +479,6 @@ export default function BraindanceUserStream() {
       pipelineStream?.title || event?.title || djSet?.title || "Live DJ Set";
     return cleanSetTitle(raw) || raw;
   }, [pipelineStream?.title, event?.title, djSet?.title]);
-
-  useRegisterStreamPageTitle(
-    streamLoading || vaultGate.checking ? null : headerTitle
-  );
 
   const analyticsMeta = useMemo(() => {
     if (pipelineStream) {
@@ -572,11 +512,8 @@ export default function BraindanceUserStream() {
   const playerMountKey = `${PLAYER_IFRAME_ID}-${startSeconds ?? "live"}`;
 
   useYoutubePlaybackAnalytics({
-    enabled:
-      !vaultLocked &&
-      isPlayerActivated &&
-      platform === "youtube" &&
-      Boolean(stream),
+    // Bind as soon as the embed mounts — no click-to-play gate.
+    enabled: !vaultLocked && platform === "youtube" && Boolean(stream),
     iframeId: PLAYER_IFRAME_ID,
     meta: analyticsMeta,
     source: analyticsSource,
@@ -616,60 +553,12 @@ export default function BraindanceUserStream() {
           null,
       }
     : null;
-  const streamArtwork =
-    upgradeYoutubeThumbnail(
-      event?.image_url || djSet?.thumbnail || pipelineStream?.thumbnail || "",
-      djSet?.video_id || youtubeVideoIdFromUrl(pipelineStream?.youtube_url ?? "")
-    ) ||
-    event?.image_url ||
-    djSet?.thumbnail ||
-    pipelineStream?.thumbnail ||
-    "";
-
   const renderPlayer = () => {
     if (!stream) {
       return (
         <div className="flex h-full w-full items-center justify-center bg-zinc-900/50 text-zinc-900">
           Stream unavailable.
         </div>
-      );
-    }
-
-    if (!isPlayerActivated) {
-      return (
-        <button
-          type="button"
-          onClick={() => {
-            setAutoplayMuted(false);
-            setIsPlayerActivated(true);
-          }}
-          className="group absolute inset-0 h-full w-full overflow-hidden text-left"
-          aria-label={`Play ${headerTitle}`}
-        >
-          {streamArtwork ? (
-            <Image
-              src={streamArtwork}
-              alt={headerTitle}
-              fill
-              sizes="(max-width: 1024px) 100vw, 66vw"
-              quality={90}
-              className="object-cover opacity-55"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-to/40 to-brand-from/20" />
-          )}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="rounded-full bg-gradient-to-r from-brand-from via-brand-via to-brand-to p-[2px] shadow-glow-brand-via">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/65 backdrop-blur-md">
-                <Play
-                  className="ml-0.5 h-6 w-6 fill-current text-zinc-100"
-                  aria-hidden
-                />
-              </div>
-            </div>
-          </div>
-        </button>
       );
     }
 
@@ -739,18 +628,6 @@ export default function BraindanceUserStream() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex max-w-full items-center gap-1 text-zinc-500 transition-colors duration-bends-fast ease-bends hover:text-brand-from focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-brand-from/40"
-                onClick={() => {
-                  const payload = {
-                    set_id: analyticsMeta.set_id,
-                    set_title: analyticsMeta.set_title,
-                    artist: analyticsMeta.artist,
-                  };
-                  if (item.kind === "youtube_set") {
-                    trackEvent("youtube_set_clicked", payload);
-                  } else if (item.kind === "youtube_channel") {
-                    trackEvent("youtube_channel_clicked", payload);
-                  }
-                }}
               >
                 <ArrowUpRight
                   className="h-3 w-3 shrink-0 opacity-70"
